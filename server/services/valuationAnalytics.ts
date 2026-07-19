@@ -29,8 +29,8 @@ export async function trackValuationView(data: InsertValuationView) {
   }
 
   try {
-    const [result] = await db.insert(valuationViews).values(data);
-    return result.insertId;
+    const [inserted] = await db.insert(valuationViews).values(data).returning();
+    return (inserted as any)?.id ?? null;
   } catch (error) {
     console.error("[ValuationAnalytics] Failed to track view:", error);
     return null;
@@ -65,8 +65,8 @@ export async function trackTabEngagement(data: InsertValuationTabEngagement) {
   if (!db) return null;
 
   try {
-    const [result] = await db.insert(valuationTabEngagement).values(data);
-    return result.insertId;
+    const [inserted] = await db.insert(valuationTabEngagement).values(data).returning();
+    return (inserted as any)?.id ?? null;
   } catch (error) {
     console.error("[ValuationAnalytics] Failed to track tab engagement:", error);
     return null;
@@ -105,7 +105,7 @@ export async function trackConversion(data: InsertValuationConversion) {
   if (!db) return null;
 
   try {
-    const [result] = await db.insert(valuationConversions).values(data);
+    const [result] = (await db.insert(valuationConversions).values(data) as any);
     
     // Also update the view record
     if (data.viewId) {
@@ -122,7 +122,7 @@ export async function trackConversion(data: InsertValuationConversion) {
       }
     }
     
-    return result.insertId;
+    return (result as any)?.id;
   } catch (error) {
     console.error("[ValuationAnalytics] Failed to track conversion:", error);
     return null;
@@ -174,8 +174,8 @@ export async function trackFeedback(data: InsertValuationFeedback) {
   if (!db) return null;
 
   try {
-    const [result] = await db.insert(valuationFeedback).values(data);
-    return result.insertId;
+    const [inserted] = await db.insert(valuationFeedback).values(data).returning();
+    return (inserted as any)?.id ?? null;
   } catch (error) {
     console.error("[ValuationAnalytics] Failed to track feedback:", error);
     return null;

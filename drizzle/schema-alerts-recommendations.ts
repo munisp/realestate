@@ -59,7 +59,26 @@ export const alertConfigurations = pgTable("alert_configurations", {
   enabled: boolean("enabled").default(true).notNull(),
   notifyEmail: boolean("notifyEmail").default(true).notNull(),
   notifyPush: boolean("notifyPush").default(false).notNull(),
-  
+  // Extended notification channels
+  emailRecipients: json("emailRecipients").$type<string[]>().default([]),
+  smsEnabled: boolean("smsEnabled").default(false).notNull(),
+  smsRecipients: json("smsRecipients").$type<string[]>().default([]),
+  webhookEnabled: boolean("webhookEnabled").default(false).notNull(),
+  webhookUrl: varchar("webhookUrl", { length: 2048 }),
+  // Delivery tracking (per-evaluation run)
+  emailSent: boolean("emailSent").default(false).notNull(),
+  smsSent: boolean("smsSent").default(false).notNull(),
+  webhookSent: boolean("webhookSent").default(false).notNull(),
+  // Severity and service context (for system-wide alerts)
+  severity: varchar("severity", { length: 32 }).default("info"),
+  serviceName: varchar("serviceName", { length: 128 }),
+  metricName: varchar("metricName", { length: 128 }),
+  // Threshold evaluation settings
+  evaluationWindow: integer("evaluationWindow").default(300), // seconds
+  thresholdValue: varchar("thresholdValue", { length: 64 }),
+  comparisonOperator: varchar("comparisonOperator", { length: 10 }).default("gt"), // gt/lt/gte/lte/eq
+  cooldownPeriod: integer("cooldownPeriod").default(3600), // seconds between re-alerts
+  emailEnabled: boolean("emailEnabled").default(true).notNull(),
   // Metadata
   description: text("description"),
   metadata: json("metadata"),
@@ -93,7 +112,15 @@ export const alertHistory = pgTable("alert_history", {
   // Acknowledgment
   acknowledgedAt: timestamp("acknowledgedAt"),
   acknowledgedBy: integer("acknowledgedBy"), // User ID
-  
+  resolvedAt: timestamp("resolvedAt"),
+  // Extended metric tracking
+  serviceName: varchar("serviceName", { length: 128 }),
+  metricName: varchar("metricName", { length: 128 }),
+  metricValue: varchar("metricValue", { length: 64 }),
+  thresholdValue: varchar("thresholdValue", { length: 64 }),
+  emailSent: boolean("emailSent").default(false).notNull(),
+  smsSent: boolean("smsSent").default(false).notNull(),
+  webhookSent: boolean("webhookSent").default(false).notNull(),
   // Metadata
   metadata: json("metadata"),
   

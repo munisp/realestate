@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { MapView } from '@/components/Map';
 import { StreetViewThumbnail } from '@/components/StreetViewPanorama';

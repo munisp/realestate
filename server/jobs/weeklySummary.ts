@@ -110,17 +110,17 @@ export async function runWeeklySummary(): Promise<{
           // Get market data for this property
           const marketData = await competitorDataService.getMarketAnalysis({
             city: property.propertyCity,
-            bedrooms: property.propertyBedrooms,
-            bathrooms: property.propertyBathrooms,
-            guests: property.propertyBedrooms * 2,
+            bedrooms: property.propertyBedrooms ?? 0,
+            bathrooms: property.propertyBathrooms ?? 0,
+            guests: (property.propertyBedrooms ?? 1) * 2,
           });
 
           if (!marketData) continue;
 
           totalCompetitors += marketData.totalListings || 0;
 
-          const avgCompetitorPrice = marketData.avgPrice || 0;
-          const recommendedPrice = marketData.recommendedPrice || property.propertyPrice;
+          const avgCompetitorPrice = marketData.averagePrice || 0;
+          const recommendedPrice = marketData.averagePrice || property.propertyPrice;
 
           // Calculate market position
           const marketPosition = property.propertyPrice ? 
@@ -129,7 +129,7 @@ export async function runWeeklySummary(): Promise<{
 
           propertySummaries.push({
             propertyId: property.propertyId,
-            propertyTitle: property.propertyTitle,
+            propertyTitle: property.propertyTitle ?? "Untitled Property",
             competitorCount: marketData.totalListings || 0,
             avgCompetitorPrice,
             recommendedPrice,

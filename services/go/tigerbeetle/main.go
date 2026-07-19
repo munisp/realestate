@@ -100,7 +100,41 @@ func (s *EscrowStore) GetByAccountID(accountID tb_types.Uint128) (*EscrowMetadat
 	return nil, false
 }
 
-var store = NewEscrowStore()
+// pgTBStore is the PostgreSQL-backed TigerBeetle metadata store (initialized in main)
+var pgTBStore *PostgresTigerBeetleStore
+
+// memStore is the in-memory fallback store
+var memStore = NewEscrowStore()
+
+// tbStoreSet stores escrow metadata in PostgreSQL (or in-memory fallback)
+func tbStoreSet(escrowID string, data *EscrowMetadata) {
+	if pgTBStore != nil {
+		pgTBStore.Set(escrowID, data)
+	} else {
+		memStore.Set(escrowID, data)
+	}
+}
+func tbStoreSet(escrowID string, data *EscrowMetadata) {
+if pgTBStore != nil {
+data)
+} else {
+data)
+}
+}
+
+// tbStoreGet retrieves escrow metadata by ID
+func tbStoreGet(escrowID string) (*EscrowMetadata, bool) {
+	if pgTBStore != nil {
+		return pgTBStore.Get(escrowID)
+	}
+	return memStore.Get(escrowID)
+}
+func tbStoreGet(escrowID string) (*EscrowMetadata, bool) {
+if pgTBStore != nil {
+ pgTBStore.Get(escrowID)
+}
+return memStore.Get(escrowID)
+}
 
 // TigerBeetle client wrapper
 type TigerBeetleClient struct {
@@ -322,7 +356,7 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 		RefundedAmount:  0,
 	}
 
-	store.Set(req.EscrowID, metadata)
+	tbStoreSet(req.EscrowID, metadata)
 
 	log.Printf("Escrow %s created successfully", req.EscrowID)
 
@@ -353,15 +387,15 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 	var metadata *EscrowMetadata
 	var found bool
 	
-	store.mu.RLock()
-	for _, m := range store.escrows {
+	memStore.mu.RLock()
+	for _, m := range memStore.escrows {
 		if uint128ToString(m.EscrowAccountID) == req.ProviderEscrowID {
 			metadata = m
 			found = true
 			break
 		}
 	}
-	store.mu.RUnlock()
+	memStore.mu.RUnlock()
 
 	if !found {
 		respondError(w, http.StatusNotFound, "escrow not found")
@@ -409,7 +443,7 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 	metadata.Status = "released"
 	metadata.HeldAmount -= releaseAmount
 	metadata.ReleasedAmount += releaseAmount
-	store.Set(metadata.EscrowID, metadata)
+	tbStoreSet(metadata.EscrowID, metadata)
 
 	log.Printf("Escrow %s released successfully", req.ProviderEscrowID)
 
@@ -436,15 +470,15 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 	var metadata *EscrowMetadata
 	var found bool
 	
-	store.mu.RLock()
-	for _, m := range store.escrows {
+	memStore.mu.RLock()
+	for _, m := range memStore.escrows {
 		if uint128ToString(m.EscrowAccountID) == req.ProviderEscrowID {
 			metadata = m
 			found = true
 			break
 		}
 	}
-	store.mu.RUnlock()
+	memStore.mu.RUnlock()
 
 	if !found {
 		respondError(w, http.StatusNotFound, "escrow not found")
@@ -492,7 +526,7 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 	metadata.Status = "refunded"
 	metadata.HeldAmount -= refundAmount
 	metadata.RefundedAmount += refundAmount
-	store.Set(metadata.EscrowID, metadata)
+	tbStoreSet(metadata.EscrowID, metadata)
 
 	log.Printf("Escrow %s refunded successfully", req.ProviderEscrowID)
 
@@ -511,15 +545,15 @@ func (h *Handler) GetEscrowStatus(w http.ResponseWriter, r *http.Request) {
 	var metadata *EscrowMetadata
 	var found bool
 	
-	store.mu.RLock()
-	for _, m := range store.escrows {
+	memStore.mu.RLock()
+	for _, m := range memStore.escrows {
 		if uint128ToString(m.EscrowAccountID) == providerEscrowID {
 			metadata = m
 			found = true
 			break
 		}
 	}
-	store.mu.RUnlock()
+	memStore.mu.RUnlock()
 
 	if !found {
 		respondError(w, http.StatusNotFound, "escrow not found")
@@ -628,6 +662,16 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	port := getEnv("PORT", "5011")
+
+	// Initialize PostgreSQL metadata store
+	var pgErr error
+	pgTBStore, pgErr = NewPostgresTigerBeetleStore()
+	if pgErr != nil {
+		log.Printf("WARNING: PostgreSQL unavailable: %v. Falling back to in-memory store.", pgErr)
+	} else {
+		defer pgTBStore.Close()
+		log.Println("PostgreSQL TigerBeetle metadata store initialized successfully")
+	}
 
 	client, err := NewTigerBeetleClient()
 	if err != nil {

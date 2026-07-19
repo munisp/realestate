@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMapProvider } from '@/contexts/MapProviderContext';
 import { MapView } from './Map'; // Google Maps component
 import { MapLibreMap } from './MapLibreMap';

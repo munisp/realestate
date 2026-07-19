@@ -1,4 +1,4 @@
-import { eq, desc, and, sql, like, gte, lte, asc } from "drizzle-orm";
+import { eq, desc, and, or, ne, sql, like, gte, lte, asc, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { 
   InsertUser, users,
@@ -181,10 +181,10 @@ export async function searchProperties(filters: {
   if (filters.status)       conditions.push(eq(properties.status, filters.status as any));
   if (filters.propertyType) conditions.push(eq(properties.propertyType, filters.propertyType as any));
   if (filters.listingType)  conditions.push(eq(properties.listingType, filters.listingType as any));
-  if (filters.minPrice)     conditions.push(gte(properties.price, filters.minPrice.toString()));
-  if (filters.maxPrice)     conditions.push(lte(properties.price, filters.maxPrice.toString()));
+  if (filters.minPrice)     conditions.push(gte(properties.price, filters.minPrice));
+  if (filters.maxPrice)     conditions.push(lte(properties.price, filters.maxPrice));
   if (filters.minBedrooms)  conditions.push(gte(properties.bedrooms, filters.minBedrooms));
-  if (filters.minBathrooms) conditions.push(gte(properties.bathrooms, filters.minBathrooms.toString()));
+  if (filters.minBathrooms) conditions.push(gte(properties.bathrooms, filters.minBathrooms));
 
   const limit  = Math.min(filters.limit  ?? 20, 100); // cap at 100
   const offset = filters.offset ?? 0;
@@ -759,7 +759,7 @@ export async function createBuilder(data: any) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(builders).values(data);
+  const [result] = await db.insert(builders).values(data).returning({ id: builders.id });
   return { id: result.id };
 }
 
@@ -902,7 +902,7 @@ export async function getSimilarProperties(propertyId: number, limit: number = 6
     .where(
       and(
         ne(properties.id, propertyId),
-        eq(properties.status, "available"),
+        eq(properties.status, 'active'),
         or(
           eq(properties.city, refProperty.city),
           eq(properties.state, refProperty.state)
@@ -953,7 +953,7 @@ export async function getRecommendedProperties(userId: number, limit: number = 6
     .select({ propertyId: propertyViews.propertyId })
     .from(propertyViews)
     .where(eq(propertyViews.userId, userId))
-    .orderBy(desc(propertyViews.viewedAt))
+    .orderBy(desc(propertyViews.createdAt))
     .limit(20);
 
   const interactedPropertyIds = [
@@ -966,7 +966,7 @@ export async function getRecommendedProperties(userId: number, limit: number = 6
     return await db
       .select()
       .from(properties)
-      .where(eq(properties.status, "available"))
+      .where(eq(properties.status, 'active'))
       .orderBy(desc(properties.createdAt))
       .limit(limit);
   }
@@ -978,7 +978,7 @@ export async function getRecommendedProperties(userId: number, limit: number = 6
     .where(
       and(
         sql`${properties.id} IN (${sql.join(interactedPropertyIds.map(id => sql`${id}`), sql`, `)})`,
-        eq(properties.status, "available")
+        eq(properties.status, 'active')
       )
     );
 
@@ -986,7 +986,7 @@ export async function getRecommendedProperties(userId: number, limit: number = 6
     return await db
       .select()
       .from(properties)
-      .where(eq(properties.status, "available"))
+      .where(eq(properties.status, 'active'))
       .limit(limit);
   }
 
@@ -1009,7 +1009,7 @@ export async function getRecommendedProperties(userId: number, limit: number = 6
     .where(
       and(
         sql`${properties.id} NOT IN (${sql.join(interactedPropertyIds.map(id => sql`${id}`), sql`, `)})`,
-        eq(properties.status, "available")
+        eq(properties.status, 'active')
       )
     )
     .limit(limit * 3);
@@ -1042,7 +1042,7 @@ export async function getRecentPropertyViews(propertyIds: number[], limit: numbe
       .select()
       .from(propertyViews)
       .where(sql`${propertyViews.propertyId} IN (${sql.join(propertyIds.map(id => sql`${id}`), sql`, `)})`)
-      .orderBy(desc(propertyViews.viewedAt))
+      .orderBy(desc(propertyViews.createdAt))
       .limit(limit);
 
     return views;
@@ -1451,8 +1451,11 @@ export async function createEscrowAccount(escrow: {
   const db = await getDb();
   if (!db) return undefined;
   
-  const result = await db.insert(escrowAccounts).values(escrow);
-  return result[0];
+  const [result] = await db.insert(escrowAccounts).values({
+    ...escrow,
+    amount: escrow.totalAmount, // amount is required
+  } as any).returning();
+  return result;
 }
 
 export async function getEscrowByTransactionId(transactionId: number) {
@@ -1510,8 +1513,8 @@ export async function createEscrowMilestone(milestone: any) {
   const db = await getDb();
   if (!db) return undefined;
   
-  const result = await db.insert(escrowMilestones).values(milestone);
-  return result[0];
+  const [result] = await db.insert(escrowMilestones).values(milestone).returning();
+  return result;
 }
 
 export async function updateMilestoneStatus(
@@ -1540,8 +1543,8 @@ export async function createEscrowTransaction(transaction: any) {
   const db = await getDb();
   if (!db) return undefined;
   
-  const result = await db.insert(escrowTransactions).values(transaction);
-  return result[0];
+  const [result] = await db.insert(escrowTransactions).values(transaction).returning();
+  return result;
 }
 
 export async function getEscrowTransactions(escrowAccountId: number) {
@@ -1557,8 +1560,8 @@ export async function createEscrowDispute(dispute: any) {
   const db = await getDb();
   if (!db) return undefined;
   
-  const result = await db.insert(escrowDisputes).values(dispute);
-  return result[0];
+  const [result] = await db.insert(escrowDisputes).values(dispute).returning();
+  return result;
 }
 
 export async function getEscrowDisputes(escrowAccountId: number) {

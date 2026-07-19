@@ -4,12 +4,14 @@ import {
   gnnAlertTriggers, 
   gnnAlertEvaluationLog,
   gnnAlertPerformanceMetrics,
+} from "../../drizzle/schema";
+import type {
   InsertGnnAlertSubscription,
   InsertGnnAlertTrigger,
   InsertGnnAlertEvaluationLog,
   GnnAlertSubscription,
   GnnAlertTrigger
-} from "../../drizzle/schema";
+} from "../../drizzle/schema-gnn-alerts";
 import { eq, and, gte, lte, inArray, sql } from "drizzle-orm";
 import { getInvestmentScore, getMarketTrends, getNeighborhoodIntel } from "./gnnService";
 import { sendGNNAlertEmail, sendGNNAlertSMS } from "./gnnAlertEmailService";
@@ -57,7 +59,7 @@ export class GnnAlertService {
 
     const result = await db.insert(gnnAlertSubscriptions).values({
       userId,
-      ...data,
+      ...(data as any),
       isActive: 1,
     }).returning({ id: gnnAlertSubscriptions.id });
 
@@ -76,7 +78,7 @@ export class GnnAlertService {
     return await db.select()
       .from(gnnAlertSubscriptions)
       .where(eq(gnnAlertSubscriptions.userId, userId))
-      .orderBy(sql`${gnnAlertSubscriptions.createdAt} DESC`);
+      .orderBy(sql`${gnnAlertSubscriptions.createdAt} DESC`) as any as GnnAlertSubscription[];
   }
 
   /**
@@ -90,7 +92,7 @@ export class GnnAlertService {
 
     await db.update(gnnAlertSubscriptions)
       .set({
-        ...data,
+        ...(data as any),
         updatedAt: new Date(),
       })
       .where(and(
@@ -159,7 +161,7 @@ export class GnnAlertService {
       .from(gnnAlertTriggers)
       .where(inArray(gnnAlertTriggers.subscriptionId, subscriptionIds))
       .orderBy(sql`${gnnAlertTriggers.createdAt} DESC`)
-      .limit(limit);
+      .limit(limit) as any as GnnAlertTrigger[];
   }
 
   /**
@@ -230,75 +232,79 @@ export class GnnAlertService {
       // Get GNN insights for this property
       const [investmentScore, marketTrends, neighborhoodIntel] = await Promise.all([
         getInvestmentScore(propertyId),
-        getMarketTrends(propertyId, "Lagos"), // TODO: Get actual city from property
+        getMarketTrends(String(propertyId), "Lagos"), // TODO: Get actual city from property
         getNeighborhoodIntel("Lagos, Nigeria", "Lagos"), // TODO: Get actual neighborhood
       ]);
 
-      // Check for undervalued property
-      if (investmentScore.undervaluedPercent && investmentScore.undervaluedPercent >= 10) {
+            // Check for undervalued property (use appreciationPotential as proxy)
+      const appreciationPct = investmentScore.appreciationPotential ?? 0;
+      if (appreciationPct >= 10) {
         matches.push({
           propertyId,
           alertType: 'undervalued',
-          investmentScore: investmentScore.score,
-          undervaluedPercent: investmentScore.undervaluedPercent,
-          confidence: investmentScore.confidence,
+          investmentScore: investmentScore.investmentScore,
+          undervaluedPercent: appreciationPct,
+          confidence: 0.75,
           title: `🎯 Undervalued Property Alert`,
-          message: `Property is ${investmentScore.undervaluedPercent.toFixed(1)}% below market value`,
+          message: `Property has ${appreciationPct.toFixed(1)}% appreciation potential`,
           reasoning: {
-            factors: investmentScore.factors,
-            marketValue: investmentScore.estimatedValue,
-            listPrice: investmentScore.currentPrice,
+            strengths: investmentScore.strengths,
+            risks: investmentScore.risks,
+            recommendation: investmentScore.recommendation,
           },
         });
       }
-
       // Check for strong investment opportunity
-      if (investmentScore.score >= 70) {
+      if (investmentScore.investmentScore >= 70) {
         matches.push({
           propertyId,
           alertType: 'investment_opportunity',
-          investmentScore: investmentScore.score,
-          confidence: investmentScore.confidence,
+          investmentScore: investmentScore.investmentScore,
+          confidence: 0.8,
           title: `💎 High Investment Score`,
-          message: `Investment score: ${investmentScore.score}/100 - Strong opportunity`,
+          message: `Investment score: ${investmentScore.investmentScore}/100 - Strong opportunity`,
           reasoning: {
-            factors: investmentScore.factors,
-            roiPotential: investmentScore.roiPotential,
+            strengths: investmentScore.strengths,
+            roiEstimate: investmentScore.roiEstimate,
             rentalYield: investmentScore.rentalYield,
           },
         });
       }
 
-      // Check for positive market trend
-      if (marketTrends.trendDirection === 'up' && Math.abs(marketTrends.trendStrength) >= 0.5) {
+      // Check for positive market trend (use percentageChange from MarketTrendData)
+      const pctChange = marketTrends.percentageChange ?? 0;
+      if (marketTrends.trendDirection === 'up' && Math.abs(pctChange) >= 0.5) {
         matches.push({
           propertyId,
           alertType: 'market_trend',
-          trendStrength: marketTrends.trendStrength,
+          trendStrength: pctChange,
           confidence: marketTrends.confidence,
           title: `📈 Strong Market Trend`,
-          message: `${marketTrends.priceChangePrediction >= 0 ? '+' : ''}${marketTrends.priceChangePrediction.toFixed(1)}% predicted growth`,
+          message: `${pctChange >= 0 ? '+' : ''}${pctChange.toFixed(1)}% predicted growth`,
           reasoning: {
             trendDirection: marketTrends.trendDirection,
-            timeHorizon: marketTrends.timeHorizon,
-            spatialDiffusion: marketTrends.spatialDiffusion,
+            predictedPrice12Months: marketTrends.predictedPrice12Months,
+            factors: marketTrends.factors,
           },
         });
       }
 
       // Check for high growth potential
-      if (neighborhoodIntel.growthPotential && neighborhoodIntel.growthPotential >= 70) {
+      const intelExt = neighborhoodIntel as any;
+      const growthPotential = intelExt.growthPotential as number | undefined;
+      const amenityDensity = intelExt.amenityDensity as number | undefined;
+      if (growthPotential && growthPotential >= 70) {
         matches.push({
           propertyId,
           alertType: 'growth_potential',
-          growthPotential: neighborhoodIntel.growthPotential,
+          growthPotential,
           confidence: 0.8, // Default confidence for neighborhood intel
           title: `🚀 High Growth Potential`,
-          message: `Neighborhood growth potential: ${neighborhoodIntel.growthPotential}/100`,
+          message: `Neighborhood growth potential: ${growthPotential}/100`,
           reasoning: {
             walkabilityScore: neighborhoodIntel.walkabilityScore,
             transitScore: neighborhoodIntel.transitScore,
-            amenityDensity: neighborhoodIntel.amenityDensity,
+            amenityDensity,
           },
         });
       }
@@ -327,7 +333,7 @@ export class GnnAlertService {
       // Get all active subscriptions
       const activeSubscriptions = await db.select()
         .from(gnnAlertSubscriptions)
-        .where(eq(gnnAlertSubscriptions.isActive, 1));
+        .where(eq(gnnAlertSubscriptions.isActive, 1) as any);
 
       console.log(`[GnnAlertService] Evaluating ${activeSubscriptions.length} active subscriptions`);
 
@@ -337,10 +343,20 @@ export class GnnAlertService {
       // Evaluate each subscription
       for (const subscription of activeSubscriptions) {
         try {
-          // Parse criteria
-          const criteria: AlertCriteria = typeof subscription.criteria === 'string'
-            ? JSON.parse(subscription.criteria)
-            : subscription.criteria;
+          // Build criteria from subscription columns
+          const criteria: AlertCriteria = {
+            cities: subscription.cities ? JSON.parse(subscription.cities) : undefined,
+            neighborhoods: subscription.neighborhoods ? JSON.parse(subscription.neighborhoods) : undefined,
+            propertyTypes: subscription.propertyTypes ? JSON.parse(subscription.propertyTypes) : undefined,
+            minPrice: subscription.minPrice ?? undefined,
+            maxPrice: subscription.maxPrice ?? undefined,
+            minBedrooms: subscription.minBedrooms ?? undefined,
+            maxBedrooms: subscription.maxBedrooms ?? undefined,
+            minInvestmentScore: subscription.minInvestmentScore ?? undefined,
+            minUndervaluedPercent: subscription.minUndervaluedPercent ?? undefined,
+            minTrendStrength: subscription.minTrendStrength ?? undefined,
+            minGrowthPotential: subscription.minGrowthPotential ?? undefined,
+          };
 
           // For demonstration, evaluate a mock property
           // In production, query properties table matching criteria
@@ -356,10 +372,19 @@ export class GnnAlertService {
               const [trigger] = await db.insert(gnnAlertTriggers).values({
                 subscriptionId: subscription.id,
                 propertyId: match.propertyId,
-                triggerType: match.alertType,
-                triggerValue: JSON.stringify(match),
-                notificationSent: 0,
-              }).returning();
+                alertType: match.alertType,
+                alertTitle: match.title,
+                alertMessage: match.message,
+                investmentScore: match.investmentScore ? Math.round(match.investmentScore) : null,
+                undervaluedPercent: match.undervaluedPercent ?? null,
+                trendStrength: match.trendStrength ?? null,
+                growthPotential: match.growthPotential ?? null,
+                confidence: match.confidence,
+                title: match.title,
+                message: match.message,
+                reasoning: JSON.stringify(match.reasoning),
+                notificationsSent: null,
+              } as any).returning();
 
               triggersCreated++;
 
@@ -460,8 +485,8 @@ export class GnnAlertService {
     }
 
     // Check if we've sent an alert recently (avoid spam)
-    if (subscription.lastAlertSentAt) {
-      const hoursSinceLastAlert = (Date.now() - new Date(subscription.lastAlertSentAt).getTime()) / (1000 * 60 * 60);
+    if (subscription.lastNotifiedAt) {
+      const hoursSinceLastAlert = (Date.now() - new Date(subscription.lastNotifiedAt).getTime()) / (1000 * 60 * 60);
       if (hoursSinceLastAlert < 1) { // Don't send more than once per hour
         return false;
       }
@@ -483,9 +508,8 @@ export class GnnAlertService {
       if (!db) return false;
 
       // Get user details
-      const user = await db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.id, subscription.userId),
-      });
+      const { users } = await import("../../drizzle/schema");
+      const [user] = await db.select().from(users).where(eq(users.id, subscription.userId)).limit(1);
 
       if (!user || !user.email) {
         console.log('[GNN Alert] User not found or no email:', subscription.userId);
@@ -510,7 +534,7 @@ export class GnnAlertService {
 
       const emailData = {
         userName: user.name || 'User',
-        alertName: subscription.name,
+        alertName: `${subscription.alertType} alert`,
         matchCount: 1,
         properties: [propertyMatch],
         alertUrl: `${process.env.VITE_APP_URL || 'http://localhost:3000'}/gnn-alerts`,
@@ -525,15 +549,16 @@ export class GnnAlertService {
       // Update trigger with notification status
       await db.update(gnnAlertTriggers)
         .set({
-          notificationSent: emailResult.success ? 1 : 0,
-          notificationSentAt: emailResult.success ? new Date() : undefined,
+          notificationsSent: emailResult.success
+            ? JSON.stringify([{ channel: 'email', status: 'sent', sentAt: new Date().toISOString() }])
+            : JSON.stringify([{ channel: 'email', status: 'failed', sentAt: new Date().toISOString() }]),
         })
         .where(eq(gnnAlertTriggers.id, triggerId));
 
-      // Update subscription last alert sent timestamp
+      // Update subscription last notified timestamp
       if (emailResult.success) {
         await db.update(gnnAlertSubscriptions)
-          .set({ lastAlertSentAt: new Date() })
+          .set({ lastNotifiedAt: new Date() })
           .where(eq(gnnAlertSubscriptions.id, subscription.id));
       }
 

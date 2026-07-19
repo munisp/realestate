@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, integer, varchar, text, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, integer, varchar, text, timestamp, json, real } from "drizzle-orm/pg-core";
 
 /**
  * GNN Training Data Schema
@@ -229,17 +229,30 @@ export const gnnAlertSubscriptions = pgTable("gnn_alert_subscriptions", {
   longitude: varchar("longitude", { length: 20 }),
   radiusKm: integer("radiusKm"),
   neighborhoods: text("neighborhoods"), // JSON array of neighborhood names
+  // Additional geographic filters
+  cities: text("cities"), // JSON array: ["Lagos", "Abuja"]
+  // Property filters
+  propertyTypes: text("propertyTypes"), // JSON array: ["single_family", "condo"]
+  minBedrooms: integer("minBedrooms"),
+  maxBedrooms: integer("maxBedrooms"),
   // Price filters
   minPrice: integer("minPrice"),
   maxPrice: integer("maxPrice"),
+  // GNN-specific thresholds (real/float)
+  minUndervaluedPercent: real("minUndervaluedPercent"),
+  minTrendStrength: real("minTrendStrength"),
+  minGrowthPotential: real("minGrowthPotential"),
   // Notification preferences
   enabled: integer("enabled").default(1).notNull(), // 1 = enabled, 0 = disabled
+  isActive: integer("isActive").default(1).notNull(), // alias for enabled
   notifyEmail: integer("notifyEmail").default(1),
   notifySms: integer("notifySms").default(0),
   notifyInApp: integer("notifyInApp").default(1),
+  notificationChannels: text("notificationChannels"), // JSON array: ["email", "push", "sms"]
   frequency: alertFrequencyEnum("frequency").default("daily").notNull(),
   // Metadata
   lastTriggered: timestamp("lastTriggered"),
+  lastNotifiedAt: timestamp("lastNotifiedAt"),
   triggerCount: integer("triggerCount").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -263,15 +276,31 @@ export const gnnAlertTriggers = pgTable("gnn_alert_triggers", {
   centralityScore: varchar("centralityScore", { length: 20 }),
   predictedPriceChange: varchar("predictedPriceChange", { length: 20 }),
   confidenceScore: varchar("confidenceScore", { length: 20 }),
+  // Additional GNN metrics (real/float)
+  undervaluedPercent: real("undervaluedPercent"),
+  trendStrength: real("trendStrength"),
+  growthPotential: real("growthPotential"),
+  confidence: real("confidence"),
+  // Alert content
+  title: varchar("title", { length: 255 }),
+  message: text("message"),
+  reasoning: text("reasoning"), // JSON
   // Delivery status
   emailSent: integer("emailSent").default(0),
   smsSent: integer("smsSent").default(0),
   inAppSent: integer("inAppSent").default(1),
+  notificationsSent: text("notificationsSent"), // JSON: [{channel, status, sentAt}]
   // User interaction
   viewed: integer("viewed").default(0),
+  userViewed: integer("userViewed").default(0),
   viewedAt: timestamp("viewedAt"),
   clicked: integer("clicked").default(0),
   clickedAt: timestamp("clickedAt"),
+  userDismissed: integer("userDismissed").default(0),
+  dismissedAt: timestamp("dismissedAt"),
+  userSavedProperty: integer("userSavedProperty").default(0),
+  userViewedProperty: integer("userViewedProperty").default(0),
+  userContactedAgent: integer("userContactedAgent").default(0),
   // Timestamps
   triggeredAt: timestamp("triggeredAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

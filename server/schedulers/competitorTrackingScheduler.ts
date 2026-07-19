@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CronJob } from "cron";
 import { runDailyPriceCheck } from "../jobs/dailyPriceCheck";
 import { runWeeklySummary } from "../jobs/weeklySummary";

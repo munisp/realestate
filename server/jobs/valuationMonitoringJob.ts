@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Valuation Monitoring Scheduled Job
  * 

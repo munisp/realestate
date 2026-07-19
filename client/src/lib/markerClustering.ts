@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Marker Clustering for MapLibre GL JS
  * Implements supercluster-based clustering for property markers

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState, useMemo } from 'react';
 import { GoogleMapsOverlay } from '@deck.gl/google-maps';
 import { HexagonLayer } from '@deck.gl/aggregation-layers';

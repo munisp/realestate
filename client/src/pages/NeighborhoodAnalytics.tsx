@@ -104,7 +104,7 @@ export default function NeighborhoodAnalytics() {
                         <Home className="w-5 h-5 text-blue-600" />
                         <span className="text-sm font-medium">Properties</span>
                       </div>
-                      <span className="text-xl font-bold">{stats.propertyCount || 0}</span>
+                      <span className="text-xl font-bold">{(stats as any).propertyCount || 0}</span>
                     </div>
 
                     <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950 rounded-lg">
@@ -113,7 +113,7 @@ export default function NeighborhoodAnalytics() {
                         <span className="text-sm font-medium">Avg Price</span>
                       </div>
                       <span className="text-xl font-bold">
-                        ${(stats.avgPrice || 0).toLocaleString()}
+                        ${((stats as any).avgPrice || 0).toLocaleString()}
                       </span>
                     </div>
 
@@ -122,9 +122,9 @@ export default function NeighborhoodAnalytics() {
                         <TrendingUp className="w-5 h-5 text-purple-600" />
                         <span className="text-sm font-medium">Price Trend</span>
                       </div>
-                      <Badge variant={stats.priceChange >= 0 ? 'default' : 'destructive'}>
-                        {stats.priceChange >= 0 ? '+' : ''}
-                        {stats.priceChange || 0}%
+                      <Badge variant={(stats as any).priceChange >= 0 ? 'default' : 'destructive'}>
+                        {(stats as any).priceChange >= 0 ? '+' : ''}
+                        {(stats as any).priceChange || 0}%
                       </Badge>
                     </div>
 
@@ -134,7 +134,7 @@ export default function NeighborhoodAnalytics() {
                         <span className="text-sm font-medium">Population</span>
                       </div>
                       <span className="text-xl font-bold">
-                        {(stats.population || 0).toLocaleString()}
+                        {((stats as any).population || 0).toLocaleString()}
                       </span>
                     </div>
                   </>
@@ -190,19 +190,19 @@ export default function NeighborhoodAnalytics() {
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Min Price</span>
                           <span className="font-semibold">
-                            ${(stats.minPrice || 0).toLocaleString()}
+                            ${((stats as any).minPrice || 0).toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Median Price</span>
                           <span className="font-semibold">
-                            ${(stats.medianPrice || 0).toLocaleString()}
+                            ${((stats as any).medianPrice || 0).toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Max Price</span>
                           <span className="font-semibold">
-                            ${(stats.maxPrice || 0).toLocaleString()}
+                            ${((stats as any).maxPrice || 0).toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -220,15 +220,15 @@ export default function NeighborhoodAnalytics() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Listings (30d)</span>
-                          <span className="font-semibold">{stats.recentListings || 0}</span>
+                          <span className="font-semibold">{(stats as any).recentListings || 0}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Sales (30d)</span>
-                          <span className="font-semibold">{stats.recentSales || 0}</span>
+                          <span className="font-semibold">{(stats as any).recentSales || 0}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Avg Days on Market</span>
-                          <span className="font-semibold">{stats.avgDaysOnMarket || 0}</span>
+                          <span className="font-semibold">{(stats as any).avgDaysOnMarket || 0}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -245,23 +245,23 @@ export default function NeighborhoodAnalytics() {
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">YoY Price Change</span>
-                          <Badge variant={stats.yoyPriceChange >= 0 ? 'default' : 'destructive'}>
-                            {stats.yoyPriceChange >= 0 ? '+' : ''}
-                            {stats.yoyPriceChange || 0}%
+                          <Badge variant={(stats as any).yoyPriceChange >= 0 ? 'default' : 'destructive'}>
+                            {(stats as any).yoyPriceChange >= 0 ? '+' : ''}
+                            {(stats as any).yoyPriceChange || 0}%
                           </Badge>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Inventory Change</span>
                           <Badge
-                            variant={stats.inventoryChange >= 0 ? 'default' : 'destructive'}
+                            variant={(stats as any).inventoryChange >= 0 ? 'default' : 'destructive'}
                           >
-                            {stats.inventoryChange >= 0 ? '+' : ''}
-                            {stats.inventoryChange || 0}%
+                            {(stats as any).inventoryChange >= 0 ? '+' : ''}
+                            {(stats as any).inventoryChange || 0}%
                           </Badge>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Demand Score</span>
-                          <span className="font-semibold">{stats.demandScore || 0}/100</span>
+                          <span className="font-semibold">{(stats as any).demandScore || 0}/100</span>
                         </div>
                       </div>
                     </CardContent>
@@ -280,10 +280,10 @@ export default function NeighborhoodAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold mb-2">
-                        {(stats.population || 0).toLocaleString()}
+                        {((stats as any).population || 0).toLocaleString()}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Density: {stats.populationDensity || 0}/km²
+                        Density: {(stats as any).populationDensity || 0}/km²
                       </div>
                     </CardContent>
                   </Card>
@@ -293,7 +293,7 @@ export default function NeighborhoodAnalytics() {
                       <CardTitle className="text-sm">Median Age</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{stats.medianAge || 0}</div>
+                      <div className="text-2xl font-bold">{(stats as any).medianAge || 0}</div>
                     </CardContent>
                   </Card>
 
@@ -303,7 +303,7 @@ export default function NeighborhoodAnalytics() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">
-                        ${(stats.medianIncome || 0).toLocaleString()}
+                        ${((stats as any).medianIncome || 0).toLocaleString()}
                       </div>
                     </CardContent>
                   </Card>
@@ -313,7 +313,7 @@ export default function NeighborhoodAnalytics() {
                       <CardTitle className="text-sm">Education</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{stats.collegeGradRate || 0}%</div>
+                      <div className="text-2xl font-bold">{(stats as any).collegeGradRate || 0}%</div>
                       <div className="text-xs text-muted-foreground">College graduates</div>
                     </CardContent>
                   </Card>
@@ -330,9 +330,9 @@ export default function NeighborhoodAnalytics() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold mb-2">{stats.schoolCount || 0}</div>
+                      <div className="text-2xl font-bold mb-2">{(stats as any).schoolCount || 0}</div>
                       <div className="text-xs text-muted-foreground">
-                        Avg Rating: {stats.avgSchoolRating || 0}/10
+                        Avg Rating: {(stats as any).avgSchoolRating || 0}/10
                       </div>
                     </CardContent>
                   </Card>
@@ -345,7 +345,7 @@ export default function NeighborhoodAnalytics() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{stats.shoppingCount || 0}</div>
+                      <div className="text-2xl font-bold">{(stats as any).shoppingCount || 0}</div>
                       <div className="text-xs text-muted-foreground">Retail locations</div>
                     </CardContent>
                   </Card>
@@ -358,7 +358,7 @@ export default function NeighborhoodAnalytics() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{stats.restaurantCount || 0}</div>
+                      <div className="text-2xl font-bold">{(stats as any).restaurantCount || 0}</div>
                       <div className="text-xs text-muted-foreground">Restaurants & cafes</div>
                     </CardContent>
                   </Card>
@@ -371,7 +371,7 @@ export default function NeighborhoodAnalytics() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{stats.transitScore || 0}/100</div>
+                      <div className="text-2xl font-bold">{(stats as any).transitScore || 0}/100</div>
                       <div className="text-xs text-muted-foreground">Walk Score</div>
                     </CardContent>
                   </Card>

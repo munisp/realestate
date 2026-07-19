@@ -28,6 +28,17 @@ export const ENV = {
   redisUrl:            process.env.REDIS_URL ?? "redis://localhost:6379",
   sentryDsn:           process.env.SENTRY_DSN ?? "",
   appUrl:              process.env.VITE_APP_URL ?? "http://localhost:3000",
+  // Keycloak OIDC configuration
+  keycloakUrl:         process.env.KEYCLOAK_URL ?? "",
+  keycloakRealm:       process.env.KEYCLOAK_REALM ?? "realestate",
+  keycloakClientId:    process.env.KEYCLOAK_CLIENT_ID ?? "realestate-app",
+  // Fluvio streaming configuration
+  fluvioEndpoint:      process.env.FLUVIO_ENDPOINT ?? "",
+  fluvioApiKey:        process.env.FLUVIO_API_KEY ?? "",
+  // Permify authorization configuration
+  permifyEndpoint:     process.env.PERMIFY_ENDPOINT ?? "",
+  permifyApiKey:       process.env.PERMIFY_API_KEY ?? "",
+  permifyTenantId:     process.env.PERMIFY_TENANT_ID ?? "t1",
 };
 
 // Warn about missing optional-but-recommended variables in production

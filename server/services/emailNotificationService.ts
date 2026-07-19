@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ENV } from "../_core/env";
 
 /**

@@ -1,21 +1,21 @@
 /**
  * Payment Provider Interface
- * 
+ *
  * Defines the contract that all payment providers must implement
  * to support escrow operations in a provider-agnostic way.
  */
 
 export interface CreateEscrowParams {
-  escrowId: number;
-  amount: number; // in cents
+  escrowId?: string | number;
+  amount: number;
   currency: string;
-  buyerId: number;
-  sellerId: number;
+  buyerId?: string | number;
+  sellerId?: string | number;
   metadata?: any;
 }
 
 export interface CreateEscrowResponse {
-  success: boolean;
+  success?: boolean;
   providerEscrowId: string;
   status: string;
   metadata?: any;
@@ -23,29 +23,50 @@ export interface CreateEscrowResponse {
 }
 
 export interface ReleaseEscrowResponse {
-  success: boolean;
+  success?: boolean;
   transactionId: string;
   amount: number;
+  status?: string;
   metadata?: any;
   error?: string;
 }
 
 export interface RefundEscrowResponse {
-  success: boolean;
+  success?: boolean;
   transactionId: string;
   amount: number;
+  status?: string;
   metadata?: any;
   error?: string;
 }
 
 export interface EscrowStatusResponse {
-  escrowId: string;
+  escrowId?: string;
   status: string;
-  heldAmount: number;
-  releasedAmount: number;
-  refundedAmount: number;
+  heldAmount?: number;
+  releasedAmount?: number;
+  refundedAmount?: number;
   metadata?: any;
 }
+
+export interface EscrowReleaseParams {
+  providerEscrowId?: string;
+  amount?: number;
+  metadata?: any;
+}
+
+export interface EscrowRefundParams {
+  providerEscrowId?: string;
+  amount?: number;
+  reason?: string;
+  metadata?: any;
+}
+
+// Result type aliases used by provider implementations
+export type EscrowCreateResult = CreateEscrowResponse;
+export type EscrowReleaseResult = ReleaseEscrowResponse;
+export type EscrowRefundResult = RefundEscrowResponse;
+export type EscrowStatusResult = EscrowStatusResponse;
 
 export interface WebhookEvent {
   provider: string;
@@ -59,58 +80,22 @@ export interface WebhookEvent {
  * Base interface that all payment providers must implement
  */
 export interface IPaymentProvider {
-  /**
-   * Provider name (e.g., 'stripe', 'mojaloop', 'tigerbeetle')
-   */
   readonly name: string;
-
-  /**
-   * Provider display name (e.g., 'Stripe', 'Mojaloop', 'TigerBeetle')
-   */
   readonly displayName: string;
-
-  /**
-   * Supported currencies
-   */
   readonly supportedCurrencies: string[];
-
-  /**
-   * Provider capabilities
-   */
   readonly capabilities: string[];
 
-  /**
-   * Initialize the provider with configuration
-   */
   initialize(config: any): Promise<void>;
 
-  /**
-   * Create an escrow account and hold funds
-   */
   createEscrow(params: CreateEscrowParams): Promise<CreateEscrowResponse>;
 
-  /**
-   * Release funds from escrow to seller
-   */
-  releaseEscrow(providerEscrowId: string, amount?: number): Promise<ReleaseEscrowResponse>;
+  releaseEscrow(params: EscrowReleaseParams): Promise<ReleaseEscrowResponse>;
 
-  /**
-   * Refund funds from escrow to buyer
-   */
-  refundEscrow(providerEscrowId: string, amount?: number): Promise<RefundEscrowResponse>;
+  refundEscrow(params: EscrowRefundParams): Promise<RefundEscrowResponse>;
 
-  /**
-   * Get current status of an escrow
-   */
   getEscrowStatus(providerEscrowId: string): Promise<EscrowStatusResponse>;
 
-  /**
-   * Handle webhook events from provider
-   */
-  handleWebhook(event: WebhookEvent): Promise<void>;
+  handleWebhook(event: WebhookEvent | any): Promise<void>;
 
-  /**
-   * Check provider health status
-   */
   healthCheck(): Promise<boolean>;
 }

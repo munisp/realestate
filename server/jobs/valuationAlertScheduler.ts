@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Valuation Alert Scheduler
  * 

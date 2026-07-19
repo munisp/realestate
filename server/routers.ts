@@ -94,9 +94,21 @@ import { bulkVerificationRouter } from "./routers/bulkVerification";
 import { deepseekOCRRouter } from "./routers/deepseekOCR";
 import { cofoRouter } from "./routers/cofo";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as db from "./db";
+import { getDb } from "./db";
 import { invokeLLM } from "./_core/llm";
+import { eq, and, or, lte, gte, sql } from "drizzle-orm";
+import {
+
+import { publishPropertyView, publishPropertySearch } from "./services/fluvioClient";
+  messages,
+  shortLetBookings,
+  properties as propertiesTable,
+  appointments as appointmentsTable,
+  agents,
+} from "../drizzle/schema";
 
 export const appRouter = router({
   system: systemRouter,
@@ -190,9 +202,16 @@ export const appRouter = router({
     // Get single property by ID
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
+      .query(async ({ input, ctx }) => {
         const property = await db.getPropertyById(input.id);
         if (!property) throw new Error("Property not found");
+        // Publish property view event to Fluvio (non-blocking)
+        publishPropertyView(
+          String(input.id),
+          ctx.user?.openId,
+          undefined,
+          { title: property.title, location: property.location }
+        ).catch(() => {/* non-critical */});
         return property;
       }),
 
@@ -260,12 +279,14 @@ export const appRouter = router({
     // Owner analytics
     ownerAnalytics: protectedProcedure
       .query(async ({ ctx }) => {
-        const properties = await db.getPropertiesByOwner(ctx.user.id);
-        const totalViews = properties.reduce((sum, p) => sum + (p.viewCount || 0), 0);
-        const totalFavorites = properties.reduce((sum, p) => sum + (p.favoriteCount || 0), 0);
-        const inquiries = await db.select().from(messages).where(eq(messages.receiverId, userId));
-        const appointments = await db.select().from(appointments).where(eq(appointments.agentId, userId));
-        const totalInquiries = inquiries.length + appointments.length;
+        const dbInstance = await getDb();
+        if (!dbInstance) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Database not available' });
+        const ownedProperties = await db.getPropertiesByOwner(ctx.user.id);
+        const totalViews = ownedProperties.reduce((sum, p) => sum + (p.viewCount || 0), 0);
+        const totalFavorites = ownedProperties.reduce((sum, p) => sum + ((p as any).favoriteCount || 0), 0);
+        const inquiries = await dbInstance.select().from(messages).where(eq(messages.receiverId, ctx.user.id));
+        const ownerAppointments = await dbInstance.select().from(appointmentsTable).where(eq(appointmentsTable.agentId, ctx.user.id));
+        const totalInquiries = inquiries.length + ownerAppointments.length;
         
         return {
           totalViews,
@@ -288,7 +309,7 @@ export const appRouter = router({
           type: 'view',
           description: 'Someone viewed your property',
           propertyTitle: properties.find(p => p.id === view.propertyId)?.title || 'Property',
-          timestamp: view.viewedAt,
+          timestamp: view.createdAt,
         }));
       }),
 
@@ -296,7 +317,7 @@ export const appRouter = router({
     updateStatus: protectedProcedure
       .input(z.object({
         id: z.number(),
-        status: z.enum(["active", "pending", "sold", "off_market", "archived", "inactive"]),
+        status: z.enum(["active", "pending", "sold", "off_market", "archived"]),
       }))
       .mutation(async ({ input }) => {
         await db.updateProperty(input.id, { status: input.status });
@@ -715,16 +736,13 @@ Provide a valuation estimate with confidence interval (lower and upper bounds) a
     // Get agent by ID
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        const { agents } = await import('../drizzle/schema');
-        const { eq } = await import('drizzle-orm');
-        const db_instance = await db.getDb();
-        if (!db_instance) throw new Error("Database not available");
-        const result = await db_instance.select().from(agents).where(eq(agents.id, input.id)).limit(1);
+            .query(async ({ input }) => {
+        const dbInstance = await getDb();
+        if (!dbInstance) throw new Error("Database not available");
+        const result = await dbInstance.select().from(agents).where(eq(agents.id, input.id)).limit(1);
         return result[0];
       }),
   }),
-
   // Property Comparisons
   comparisons: router({
     // Create new comparison
@@ -938,7 +956,7 @@ Provide a valuation estimate with confidence interval (lower and upper bounds) a
         const projects = await db.getPublishedBuilderProjects();
         return projects.filter(p => {
           if (input.constructionStatus && p.constructionStatus !== input.constructionStatus) return false;
-          if (input.city && p.city !== input.city) return false;
+          if (input.city && (p as any).city !== input.city) return false;
           if (input.minPrice && p.currentPrice < input.minPrice) return false;
           if (input.maxPrice && p.currentPrice > input.maxPrice) return false;
           return true;
@@ -986,13 +1004,14 @@ Provide a valuation estimate with confidence interval (lower and upper bounds) a
         limit: z.number().default(20),
         offset: z.number().default(0),
       }))
-      .query(async ({ input }) => {
-        const properties = await db.getShortLetProperties();
-        if (!input.checkIn || !input.checkOut) return properties;
-
+            .query(async ({ input }) => {
+        const shortLetProps = await db.getShortLetProperties();
+        if (!input.checkIn || !input.checkOut) return shortLetProps;
         const checkIn = new Date(input.checkIn);
         const checkOut = new Date(input.checkOut);
-        const bookings = await db.select().from(shortLetBookings)
+        const dbInstance = await getDb();
+        if (!dbInstance) return shortLetProps;
+        const conflictingBookings = await dbInstance.select().from(shortLetBookings)
           .where(and(
             eq(shortLetBookings.status, 'confirmed'),
             or(
@@ -1000,9 +1019,8 @@ Provide a valuation estimate with confidence interval (lower and upper bounds) a
               and(lte(shortLetBookings.checkIn, checkOut), gte(shortLetBookings.checkOut, checkOut))
             )
           ));
-
-        const bookedPropertyIds = new Set(bookings.map(b => b.propertyId));
-        return properties.filter(p => !bookedPropertyIds.has(p.id));
+        const bookedPropertyIds = new Set(conflictingBookings.map((b: any) => b.propertyId));
+        return shortLetProps.filter(p => !bookedPropertyIds.has(p.id));
       }),
     
     // Get short-let property by ID
@@ -1047,50 +1065,55 @@ Provide a valuation estimate with confidence interval (lower and upper bounds) a
         numberOfGuests: z.number(),
         specialRequests: z.string().optional(),
       }))
-      .mutation(async ({ ctx, input }) => {
-        const db = await getDb();
-        if (!db) throw new Error('Database not available');
-
+            .mutation(async ({ ctx, input }) => {
+        const dbConn = await getDb();
+        if (!dbConn) throw new Error('Database not available');
         const checkInDate = new Date(input.checkIn);
         const checkOutDate = new Date(input.checkOut);
         const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        const property = await db.select().from(properties).where(eq(properties.id, input.propertyId)).limit(1);
+        const property = await dbConn.select().from(propertiesTable).where(eq(propertiesTable.id, input.propertyId)).limit(1);
         if (!property.length) throw new Error('Property not found');
-
         const pricePerNight = property[0].price || 0;
         const subtotal = pricePerNight * nights;
-        const serviceFee = subtotal * 0.10;
+        const serviceFee = Math.round(subtotal * 0.10);
         const cleaningFee = 5000;
         const totalAmount = subtotal + serviceFee + cleaningFee;
-
-        const existingBookings = await db.select().from(bookings)
+        // Check for conflicting shortlet bookings
+        const existingBookings = await dbConn.select().from(shortLetBookings)
           .where(
             and(
-              eq(bookings.propertyId, input.propertyId),
+              eq(shortLetBookings.propertyId, input.propertyId),
+              eq(shortLetBookings.status, 'confirmed'),
               or(
                 and(
-                  sql`${bookings.checkIn} <= ${input.checkIn}`,
-                  sql`${bookings.checkOut} > ${input.checkIn}`
+                  sql`${shortLetBookings.checkIn} <= ${input.checkIn}`,
+                  sql`${shortLetBookings.checkOut} > ${input.checkIn}`
                 ),
                 and(
-                  sql`${bookings.checkIn} < ${input.checkOut}`,
-                  sql`${bookings.checkOut} >= ${input.checkOut}`
+                  sql`${shortLetBookings.checkIn} < ${input.checkOut}`,
+                  sql`${shortLetBookings.checkOut} >= ${input.checkOut}`
                 )
               )
             )
           );
-
         if (existingBookings.length > 0) {
           throw new Error('Property not available for selected dates');
         }
-
-        const [booking] = await db.insert(bookings).values({
+        // shortLetBookings requires guestId, hostId, nights, nightlyRate, totalNights
+        const shortLetProp = await db.getShortLetByPropertyId(input.propertyId);
+        const hostId = shortLetProp?.hostId ?? 0;
+        const [booking] = await dbConn.insert(shortLetBookings).values({
           propertyId: input.propertyId,
-          userId: ctx.user.id,
+          guestId: ctx.user.id,
+          hostId,
           checkIn: checkInDate,
           checkOut: checkOutDate,
+          nights,
           numberOfGuests: input.numberOfGuests,
+          nightlyRate: pricePerNight,
+          totalNights: nights,
+          cleaningFee,
+          serviceFee,
           totalAmount,
           status: 'pending',
           specialRequests: input.specialRequests,

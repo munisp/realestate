@@ -147,7 +147,7 @@ export default function GNNAlertManagement() {
   });
 
   // Mock data for demonstration (fallback)
-  const mockSubscriptions: AlertSubscription[] = subscriptions.length > 0 ? subscriptions.map(sub => ({
+  const mockSubscriptions: AlertSubscription[] = subscriptions.length > 0 ? subscriptions.map((sub: any) => ({
     id: sub.id,
     alertType: sub.alertType as AlertType,
     filters: sub.filters ? JSON.parse(sub.filters) : {},
@@ -184,7 +184,7 @@ export default function GNNAlertManagement() {
     },
   ];
 
-  const mockTriggers = triggers.length > 0 ? triggers.map(trigger => ({
+  const mockTriggers = triggers.length > 0 ? triggers.map((trigger: any) => ({
     id: trigger.id,
     alertType: trigger.alertType,
     alertData: trigger.alertData ? JSON.parse(trigger.alertData) : {},

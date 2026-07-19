@@ -486,25 +486,31 @@ func main() {
 		port = "5000"
 	}
 
-	// Check if Redis is configured
+	// Initialize PostgreSQL store (primary persistent store)
+	var store StoreInterface
+	pgStore, pgErr := NewPostgresEscrowStore()
+	if pgErr != nil {
+		log.Printf("WARNING: PostgreSQL unavailable: %v. Falling back to in-memory store.", pgErr)
+		store = NewEscrowStore()
+	} else {
+		defer pgStore.Close()
+		store = pgStore
+		log.Println("PostgreSQL escrow store initialized successfully")
+	}
+
+	// Optionally layer Redis cache on top if configured
 	redisURL := os.Getenv("REDIS_URL")
 	useRedis := redisURL != ""
-
-	var store StoreInterface
 	if useRedis {
-		log.Printf("Using Redis storage: %s", redisURL)
+		log.Printf("Redis cache configured: %s", redisURL)
 		redisStore, err := NewRedisEscrowStore(redisURL)
 		if err != nil {
-			log.Printf("Failed to connect to Redis: %v. Falling back to in-memory storage.", err)
-			store = NewEscrowStore()
+			log.Printf("Failed to connect to Redis: %v. Using PostgreSQL only.", err)
 		} else {
 			store = redisStore
 			defer redisStore.Close()
 			log.Println("Redis storage initialized successfully")
 		}
-	} else {
-		log.Println("Using in-memory storage (not recommended for production)")
-		store = NewEscrowStore()
 	}
 
 	service := NewEscrowService(store)

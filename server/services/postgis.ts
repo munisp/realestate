@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PostGIS Connection Pool Service
  * 

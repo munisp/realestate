@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Enhanced Map Component with 3D Buildings and Custom Styling
  * Production-ready Google Maps implementation

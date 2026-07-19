@@ -1,4 +1,7 @@
-const CACHE_NAME = 'realestate-v1';
+// Cache version is injected at build time via Vite's define plugin
+// Falls back to a timestamp-based version for development
+const BUILD_VERSION = typeof __BUILD_VERSION__ !== 'undefined' ? __BUILD_VERSION__ : Date.now().toString();
+const CACHE_NAME = 'realestate-v' + BUILD_VERSION;
 const urlsToCache = [
   '/',
   '/index.html',

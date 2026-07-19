@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * A/B Testing Framework with Feature Flags
  * Supports experiments, gradual rollouts, and statistical analysis

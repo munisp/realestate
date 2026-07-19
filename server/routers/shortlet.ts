@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { protectedProcedure, publicProcedure, router } from '../_core/trpc';
 import { getDb } from '../db';
-import { properties, appointments, transactions, shortLetProperties, shortLetBookings, shortletReviews, savedMapSearches, shortletAvailability, savedMapSearchAlerts } from '../../drizzle/schema';
+import { properties, appointments, transactions, shortLetProperties, shortLetBookings, shortletReviews, savedMapSearches, shortletAvailability, savedMapSearchAlerts, users } from '../../drizzle/schema';
 import { eq, and, gte, lte, between, desc, sql } from 'drizzle-orm';
 
 export const shortletRouter = router({
@@ -24,40 +24,23 @@ export const shortletRouter = router({
       const db = await getDb();
       if (!db) return { properties: [], total: 0 };
 
-      let query = db
+      const listConditions: any[] = [eq(properties.listingType, 'rent' as any)];
+      if (input.city) listConditions.push(eq(properties.city, input.city));
+      if (input.minPrice) listConditions.push(gte(properties.price, input.minPrice));
+      if (input.maxPrice) listConditions.push(lte(properties.price, input.maxPrice));
+
+      const results = await db
         .select()
         .from(properties)
-        .where(eq(properties.listingType, 'shortlet'));
-
-      // Filter by city
-      if (input.city) {
-        query = query.where(
-          and(
-            eq(properties.listingType, 'shortlet'),
-            eq(properties.city, input.city)
-          )
-        ) as any;
-      }
-
-      // Filter by price range
-      if (input.minPrice || input.maxPrice) {
-        const conditions = [eq(properties.listingType, 'shortlet')];
-        if (input.minPrice) {
-          conditions.push(gte(properties.price, input.minPrice));
-        }
-        if (input.maxPrice) {
-          conditions.push(lte(properties.price, input.maxPrice));
-        }
-        query = query.where(and(...conditions)) as any;
-      }
-
-      const results = await query.limit(input.limit).offset(input.offset);
+        .where(and(...listConditions))
+        .limit(input.limit)
+        .offset(input.offset);
 
       // Get total count
       const countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(properties)
-        .where(eq(properties.listingType, 'shortlet'));
+        .where(eq(properties.listingType, 'rent' as any));
 
       return {
         properties: results.map((p) => ({
@@ -84,7 +67,7 @@ export const shortletRouter = router({
         .where(
           and(
             eq(properties.id, input.propertyId),
-            eq(properties.listingType, 'shortlet')
+            eq(properties.listingType, 'rent' as any)
           )
         )
         .limit(1);
@@ -114,6 +97,7 @@ export const shortletRouter = router({
         end: new Date(b.appointmentDate.getTime() + 24 * 60 * 60 * 1000), // Add 1 day
       }));
 
+      const prop = property[0] as any;
       return {
         ...property[0],
         pricePerNight: property[0].price,
@@ -130,7 +114,7 @@ export const shortletRouter = router({
           'Check-in after 2:00 PM',
           'Check-out before 11:00 AM',
         ],
-        amenities: property[0].amenities || [],
+        amenities: prop.amenities || [],
         cancellationPolicy: 'flexible', // flexible, moderate, strict
       };
     }),
@@ -151,7 +135,7 @@ export const shortletRouter = router({
       const checkInDate = new Date(input.checkIn);
       const checkOutDate = new Date(input.checkOut);
 
-      // Check for overlapping bookings
+      // Check for overlapping bookings using PostgreSQL interval syntax
       const overlapping = await db
         .select()
         .from(appointments)
@@ -160,7 +144,7 @@ export const shortletRouter = router({
             eq(appointments.propertyId, input.propertyId),
             eq(appointments.status, 'confirmed'),
             sql`${appointments.appointmentDate} < ${checkOutDate}`,
-            sql`DATE_ADD(${appointments.appointmentDate}, INTERVAL 1 DAY) > ${checkInDate}`
+            sql`${appointments.appointmentDate} + INTERVAL '1 day' > ${checkInDate}`
           )
         );
 
@@ -218,7 +202,7 @@ export const shortletRouter = router({
       const checkInDate = new Date(input.checkIn);
       const checkOutDate = new Date(input.checkOut);
 
-      // Verify availability
+      // Verify availability using PostgreSQL interval syntax
       const overlapping = await db
         .select()
         .from(appointments)
@@ -227,7 +211,7 @@ export const shortletRouter = router({
             eq(appointments.propertyId, input.propertyId),
             eq(appointments.status, 'confirmed'),
             sql`${appointments.appointmentDate} < ${checkOutDate}`,
-            sql`DATE_ADD(${appointments.appointmentDate}, INTERVAL 1 DAY) > ${checkInDate}`
+            sql`${appointments.appointmentDate} + INTERVAL '1 day' > ${checkInDate}`
           )
         );
 
@@ -258,26 +242,26 @@ export const shortletRouter = router({
       const serviceFee = Math.round(subtotal * 0.10);
       const total = subtotal + cleaningFee + serviceFee;
 
-      // Create booking appointment
-      const appointmentResult = await db.insert(appointments).values({
+      // Create booking appointment (buyerId is the correct column name)
+      const [appointmentRecord] = await db.insert(appointments).values({
         propertyId: input.propertyId,
-        userId,
+        buyerId: userId,
         agentId: property[0].agentId,
         appointmentDate: checkInDate,
         tourType: 'shortlet',
         status: 'pending',
         notes: `Shortlet booking: ${nights} nights, ${input.guests} guests. ${input.specialRequests || ''}`,
-      });
+      } as any).returning({ id: appointments.id });
 
-      const bookingId = Number(appointmentResult.insertId);
+      const bookingId = appointmentRecord?.id ?? 0;
 
-      // Create transaction record
+      // Create transaction record (ownerId is the seller)
       await db.insert(transactions).values({
         propertyId: input.propertyId,
         buyerId: userId,
-        sellerId: property[0].userId,
+        sellerId: property[0].ownerId,
         amount: total,
-        transactionType: 'shortlet_booking',
+        transactionType: 'rent' as any,
         status: 'pending',
       });
 
@@ -306,8 +290,8 @@ export const shortletRouter = router({
       .leftJoin(properties, eq(appointments.propertyId, properties.id))
       .where(
         and(
-          eq(appointments.userId, userId),
-          eq(appointments.tourType, 'shortlet')
+          eq(appointments.buyerId, userId),  // Fixed: buyerId not userId
+          eq(appointments.tourType, 'shortlet' as any)
         )
       )
       .orderBy(desc(appointments.appointmentDate));
@@ -340,14 +324,14 @@ export const shortletRouter = router({
 
       const userId = ctx.user!.id;
 
-      // Verify ownership
+      // Verify ownership (buyerId is the correct column)
       const booking = await db
         .select()
         .from(appointments)
         .where(
           and(
             eq(appointments.id, input.bookingId),
-            eq(appointments.userId, userId)
+            eq(appointments.buyerId, userId)  // Fixed: buyerId not userId
           )
         )
         .limit(1);
@@ -381,15 +365,15 @@ export const shortletRouter = router({
         })
         .where(eq(appointments.id, input.bookingId));
 
-      // Update transaction
+      // Update transaction to cancelled (transactions status enum does not include 'refunded')
       await db
         .update(transactions)
-        .set({ status: 'refunded' })
+        .set({ status: 'cancelled' })
         .where(
           and(
             eq(transactions.propertyId, booking[0].propertyId),
             eq(transactions.buyerId, userId),
-            eq(transactions.transactionType, 'shortlet_booking')
+            eq(transactions.transactionType, 'rent' as any)
           )
         );
 
@@ -422,20 +406,21 @@ export const shortletRouter = router({
       const [booking] = await db.select().from(shortLetBookings).where(eq(shortLetBookings.id, input.bookingId)).limit(1);
       if (!booking) throw new Error('Booking not found');
 
+      // Map input field names to schema column names
       await db.insert(shortletReviews).values({
         bookingId: input.bookingId,
         propertyId: booking.propertyId,
         guestId: userId,
         hostId: booking.hostId,
-        overallRating: input.overallRating,
-        cleanlinessRating: input.cleanlinessRating,
-        accuracyRating: input.accuracyRating,
-        communicationRating: input.communicationRating,
-        locationRating: input.locationRating,
-        valueRating: input.valueRating,
-        reviewText: input.review,
+        overallRating: input.rating,           // input.rating -> overallRating
+        cleanlinessRating: input.cleanliness,  // input.cleanliness -> cleanlinessRating
+        accuracyRating: input.accuracy,        // input.accuracy -> accuracyRating
+        communicationRating: input.communication, // input.communication -> communicationRating
+        locationRating: input.location,        // input.location -> locationRating
+        valueRating: input.value,              // input.value -> valueRating
+        reviewText: input.comment,             // input.comment -> reviewText
         status: 'published',
-      });
+      } as any);
 
       return {
         success: true,
@@ -485,14 +470,14 @@ export const shortletRouter = router({
 
       const userId = ctx.user!.id;
 
-      // Get all shortlet properties owned by user
+      // Get all shortlet properties owned by user (ownerId is the correct column)
       const userProperties = await db
         .select()
         .from(properties)
         .where(
           and(
-            eq(properties.userId, userId),
-            eq(properties.listingType, 'shortlet')
+            eq(properties.ownerId, userId),  // Fixed: ownerId not userId
+            eq(properties.listingType, 'rent' as any)
           )
         );
 
@@ -514,7 +499,7 @@ export const shortletRouter = router({
         .where(
           and(
             eq(transactions.sellerId, userId),
-            eq(transactions.transactionType, 'shortlet_booking')
+            eq(transactions.transactionType, 'rent' as any)
           )
         );
 
@@ -618,7 +603,7 @@ export const shortletRouter = router({
 
       const userId = ctx.user!.id;
 
-      const result = await db.insert(savedMapSearches).values({
+      const [savedSearch] = await db.insert(savedMapSearches).values({
         userId,
         name: input.name,
         northEastLat: input.northEastLat,
@@ -633,11 +618,11 @@ export const shortletRouter = router({
         maxPrice: input.maxPrice,
         amenities: input.amenities ? JSON.stringify(input.amenities) : null,
         alertEnabled: input.alertEnabled ? 1 : 0,
-      });
+      }).returning({ id: savedMapSearches.id });
 
       return {
         success: true,
-        searchId: Number(result.insertId),
+        searchId: savedSearch?.id ?? 0,
         message: 'Map search saved successfully',
       };
     }),

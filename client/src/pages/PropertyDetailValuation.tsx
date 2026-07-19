@@ -132,8 +132,8 @@ export default function PropertyDetailValuation() {
               <CardTitle className="text-2xl mb-2">Estimated Market Value</CardTitle>
               <CardDescription>Based on 5 advanced ML models</CardDescription>
             </div>
-            <Badge variant={valuation.confidence >= 0.8 ? "default" : "secondary"} className="text-lg px-4 py-2">
-              {formatPercent(valuation.confidence)} Confidence
+            <Badge variant={(valuation as any).confidence >= 0.8 ? "default" : "secondary"} className="text-lg px-4 py-2">
+              {formatPercent((valuation as any).confidence)} Confidence
             </Badge>
           </div>
         </CardHeader>
@@ -142,17 +142,17 @@ export default function PropertyDetailValuation() {
             {/* Estimated Value */}
             <div className="text-center p-4 bg-primary/5 rounded-lg">
               <div className="text-sm text-muted-foreground mb-2">Estimated Value</div>
-              <div className="text-3xl font-bold text-primary">{formatCurrency(valuation.estimatedValue)}</div>
+              <div className="text-3xl font-bold text-primary">{formatCurrency((valuation as any).estimatedValue)}</div>
             </div>
 
             {/* Value Range */}
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-sm text-muted-foreground mb-2">Value Range</div>
               <div className="text-lg font-semibold">
-                {formatCurrency(valuation.valueLow)} - {formatCurrency(valuation.valueHigh)}
+                {formatCurrency((valuation as any).valueLow)} - {formatCurrency((valuation as any).valueHigh)}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                ±{formatPercent((valuation.valueHigh - valuation.valueLow) / (2 * valuation.estimatedValue))}
+                ±{formatPercent(((valuation as any).valueHigh - (valuation as any).valueLow) / (2 * (valuation as any).estimatedValue))}
               </div>
             </div>
 
@@ -160,10 +160,10 @@ export default function PropertyDetailValuation() {
             <div className="text-center p-4 bg-muted rounded-lg">
               <div className="text-sm text-muted-foreground mb-2">Last Updated</div>
               <div className="text-lg font-semibold">
-                {new Date(valuation.createdAt).toLocaleDateString()}
+                {new Date((valuation as any).createdAt).toLocaleDateString()}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                {new Date(valuation.createdAt).toLocaleTimeString()}
+                {new Date((valuation as any).createdAt).toLocaleTimeString()}
               </div>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function PropertyDetailValuation() {
               Model Contributions
             </h3>
             <div className="space-y-3">
-              {valuation.modelBreakdown && Object.entries(valuation.modelBreakdown).map(([model, value]) => (
+              {(valuation as any).modelBreakdown && Object.entries((valuation as any).modelBreakdown).map(([model, value]) => (
                 <div key={model} className="flex items-center justify-between">
                   <span className="text-sm capitalize">{model.replace('_', ' ')}</span>
                   <span className="font-semibold">{formatCurrency(value as number)}</span>
@@ -221,9 +221,9 @@ export default function PropertyDetailValuation() {
                 <CardDescription>Computer vision assessment from satellite imagery</CardDescription>
               </CardHeader>
               <CardContent>
-                {visualAssessment?.aerialImageUrl && (
+                {(visualAssessment as any)?.aerialImageUrl && (
                   <img 
-                    src={visualAssessment.aerialImageUrl} 
+                    src={(visualAssessment as any).aerialImageUrl} 
                     alt="Aerial view" 
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
@@ -231,21 +231,21 @@ export default function PropertyDetailValuation() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Overall Condition</span>
-                    <Badge variant={visualAssessment?.overallCondition === 'excellent' ? 'default' : 'secondary'}>
-                      {visualAssessment?.overallCondition || 'Good'}
+                    <Badge variant={(visualAssessment as any)?.overallCondition === 'excellent' ? 'default' : 'secondary'}>
+                      {(visualAssessment as any)?.overallCondition || 'Good'}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Roof Condition</span>
-                    <span className="font-semibold capitalize">{visualAssessment?.roofCondition || 'Good'}</span>
+                    <span className="font-semibold capitalize">{(visualAssessment as any)?.roofCondition || 'Good'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Exterior Quality</span>
-                    <span className="font-semibold capitalize">{visualAssessment?.exteriorQuality || 'Good'}</span>
+                    <span className="font-semibold capitalize">{(visualAssessment as any)?.exteriorQuality || 'Good'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Landscaping</span>
-                    <span className="font-semibold capitalize">{visualAssessment?.landscaping || 'Average'}</span>
+                    <span className="font-semibold capitalize">{(visualAssessment as any)?.landscaping || 'Average'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -261,9 +261,9 @@ export default function PropertyDetailValuation() {
                 <CardDescription>Ground-level property assessment</CardDescription>
               </CardHeader>
               <CardContent>
-                {visualAssessment?.streetImageUrl && (
+                {(visualAssessment as any)?.streetImageUrl && (
                   <img 
-                    src={visualAssessment.streetImageUrl} 
+                    src={(visualAssessment as any).streetImageUrl} 
                     alt="Street view" 
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
@@ -271,19 +271,19 @@ export default function PropertyDetailValuation() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Curb Appeal</span>
-                    <Badge variant="default">{visualAssessment?.curbAppeal || 'High'}</Badge>
+                    <Badge variant="default">{(visualAssessment as any)?.curbAppeal || 'High'}</Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Maintenance Level</span>
-                    <span className="font-semibold capitalize">{visualAssessment?.maintenanceLevel || 'Well-maintained'}</span>
+                    <span className="font-semibold capitalize">{(visualAssessment as any)?.maintenanceLevel || 'Well-maintained'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Neighborhood Quality</span>
-                    <span className="font-semibold capitalize">{visualAssessment?.neighborhoodQuality || 'Excellent'}</span>
+                    <span className="font-semibold capitalize">{(visualAssessment as any)?.neighborhoodQuality || 'Excellent'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Street Condition</span>
-                    <span className="font-semibold capitalize">{visualAssessment?.streetCondition || 'Good'}</span>
+                    <span className="font-semibold capitalize">{(visualAssessment as any)?.streetCondition || 'Good'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -307,24 +307,24 @@ export default function PropertyDetailValuation() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-sm text-muted-foreground mb-2">Neighborhood Score</div>
-                  <div className="text-2xl font-bold">{neighborhoodInfluence?.neighborhoodScore?.toFixed(1) || '8.5'}/10</div>
+                  <div className="text-2xl font-bold">{(neighborhoodInfluence as any)?.neighborhoodScore?.toFixed(1) || '8.5'}/10</div>
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-sm text-muted-foreground mb-2">Comparable Sales</div>
-                  <div className="text-2xl font-bold">{neighborhoodInfluence?.comparableSales || 24}</div>
+                  <div className="text-2xl font-bold">{(neighborhoodInfluence as any)?.comparableSales || 24}</div>
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-sm text-muted-foreground mb-2">Market Trend</div>
                   <div className="text-2xl font-bold flex items-center justify-center gap-2">
-                    {(neighborhoodInfluence?.marketTrend || 0) > 0 ? (
+                    {((neighborhoodInfluence as any)?.marketTrend || 0) > 0 ? (
                       <>
                         <TrendingUp className="h-5 w-5 text-green-600" />
-                        <span className="text-green-600">+{formatPercent(neighborhoodInfluence?.marketTrend || 0.05)}</span>
+                        <span className="text-green-600">+{formatPercent((neighborhoodInfluence as any)?.marketTrend || 0.05)}</span>
                       </>
                     ) : (
                       <>
                         <TrendingDown className="h-5 w-5 text-red-600" />
-                        <span className="text-red-600">{formatPercent(neighborhoodInfluence?.marketTrend || -0.02)}</span>
+                        <span className="text-red-600">{formatPercent((neighborhoodInfluence as any)?.marketTrend || -0.02)}</span>
                       </>
                     )}
                   </div>
@@ -335,7 +335,7 @@ export default function PropertyDetailValuation() {
 
               <h3 className="font-semibold mb-4">Key Factors</h3>
               <div className="space-y-3">
-                {neighborhoodInfluence?.factors && Object.entries(neighborhoodInfluence.factors).map(([factor, impact]) => (
+                {(neighborhoodInfluence as any)?.factors && Object.entries((neighborhoodInfluence as any).factors).map(([factor, impact]) => (
                   <div key={factor} className="flex items-center justify-between">
                     <span className="text-sm capitalize">{factor.replace('_', ' ')}</span>
                     <div className="flex items-center gap-2">
@@ -372,37 +372,37 @@ export default function PropertyDetailValuation() {
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Schools</span>
-                      <Badge variant="outline">{altData?.poiCounts?.schools || 5} nearby</Badge>
+                      <Badge variant="outline">{(altData as any)?.poiCounts?.schools || 5} nearby</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Average distance: {altData?.poiDistances?.schools?.toFixed(1) || '0.8'} km
+                      Average distance: {(altData as any)?.poiDistances?.schools?.toFixed(1) || '0.8'} km
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Restaurants</span>
-                      <Badge variant="outline">{altData?.poiCounts?.restaurants || 12} nearby</Badge>
+                      <Badge variant="outline">{(altData as any)?.poiCounts?.restaurants || 12} nearby</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Average distance: {altData?.poiDistances?.restaurants?.toFixed(1) || '0.5'} km
+                      Average distance: {(altData as any)?.poiDistances?.restaurants?.toFixed(1) || '0.5'} km
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Shopping</span>
-                      <Badge variant="outline">{altData?.poiCounts?.shopping || 8} nearby</Badge>
+                      <Badge variant="outline">{(altData as any)?.poiCounts?.shopping || 8} nearby</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Average distance: {altData?.poiDistances?.shopping?.toFixed(1) || '1.2'} km
+                      Average distance: {(altData as any)?.poiDistances?.shopping?.toFixed(1) || '1.2'} km
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Healthcare</span>
-                      <Badge variant="outline">{altData?.poiCounts?.healthcare || 3} nearby</Badge>
+                      <Badge variant="outline">{(altData as any)?.poiCounts?.healthcare || 3} nearby</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Average distance: {altData?.poiDistances?.healthcare?.toFixed(1) || '2.1'} km
+                      Average distance: {(altData as any)?.poiDistances?.healthcare?.toFixed(1) || '2.1'} km
                     </div>
                   </div>
                 </div>
@@ -423,14 +423,14 @@ export default function PropertyDetailValuation() {
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Employment Rate</span>
-                      <span className="font-semibold">{formatPercent(altData?.economicIndicators?.employmentRate || 0.92)}</span>
+                      <span className="font-semibold">{formatPercent((altData as any)?.economicIndicators?.employmentRate || 0.92)}</span>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Income Growth</span>
                       <span className="font-semibold text-green-600">
-                        +{formatPercent(altData?.economicIndicators?.incomeGrowth || 0.08)}
+                        +{formatPercent((altData as any)?.economicIndicators?.incomeGrowth || 0.08)}
                       </span>
                     </div>
                   </div>
@@ -438,7 +438,7 @@ export default function PropertyDetailValuation() {
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Population Growth</span>
                       <span className="font-semibold text-green-600">
-                        +{formatPercent(altData?.economicIndicators?.populationGrowth || 0.03)}
+                        +{formatPercent((altData as any)?.economicIndicators?.populationGrowth || 0.03)}
                       </span>
                     </div>
                   </div>
@@ -448,7 +448,7 @@ export default function PropertyDetailValuation() {
                       <Badge variant="default">Low</Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {altData?.economicIndicators?.crimeRate || '2.1'} incidents per 1,000 residents
+                      {(altData as any)?.economicIndicators?.crimeRate || '2.1'} incidents per 1,000 residents
                     </div>
                   </div>
                 </div>
@@ -487,7 +487,7 @@ export default function PropertyDetailValuation() {
                     <li className="flex items-start gap-2">
                       <span className="text-green-600 mt-1">•</span>
                       <span className="text-sm">
-                        <strong>Strong Market Trend:</strong> Local market showing {formatPercent(neighborhoodInfluence?.marketTrend || 0.05)} growth
+                        <strong>Strong Market Trend:</strong> Local market showing {formatPercent((neighborhoodInfluence as any)?.marketTrend || 0.05)} growth
                       </span>
                     </li>
                     <li className="flex items-start gap-2">

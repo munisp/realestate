@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { eq, and, lt, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import {

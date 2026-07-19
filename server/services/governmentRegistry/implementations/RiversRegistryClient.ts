@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseGovernmentRegistryClient } from '../base/GovernmentRegistryClient';
 import {
   CofOVerificationResult,

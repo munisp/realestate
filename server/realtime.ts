@@ -74,17 +74,17 @@ export function initializeSocketIO(server: HTTPServer) {
   
   // Initialize real-time metrics broadcasting
   import('./_core/realtimeMetrics').then(({ initializeRealtimeMetrics }) => {
-    initializeRealtimeMetrics(io);
+    initializeRealtimeMetrics(io!);
   });
   
   // Initialize real-time recommendations
   import('./services/realtimeRecommendations').then(({ initializeRealtimeRecommendations }) => {
-    initializeRealtimeRecommendations(io);
+    initializeRealtimeRecommendations(io!);
   });
   
   // Initialize real-time cluster updates
   import('./services/realtimeClusterService').then(({ realtimeClusterService }) => {
-    realtimeClusterService.initialize(io);
+    realtimeClusterService.initialize(io!);
   });
   
   return io;

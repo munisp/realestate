@@ -28,7 +28,12 @@ class SMSService {
 
   constructor() {
     this.fromNumber = process.env.TWILIO_PHONE_NUMBER || '+1234567890';
+    this.mockMode = true; // default until async init completes
+    // Initialize Twilio asynchronously
+    this.initTwilio().catch(() => {});
+  }
 
+  private async initTwilio(): Promise<void> {
     // Check if Twilio credentials are configured
     if (
       process.env.TWILIO_ACCOUNT_SID &&
@@ -37,6 +42,7 @@ class SMSService {
     ) {
       try {
         // Dynamically import Twilio only if credentials are present
+        // @ts-ignore - twilio is an optional peer dependency
         const { default: twilio } = await import('twilio');
         this.twilioClient = twilio(
           process.env.TWILIO_ACCOUNT_SID,

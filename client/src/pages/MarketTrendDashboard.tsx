@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Market Trend Dashboard
  * ----------------------

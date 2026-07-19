@@ -40,7 +40,7 @@ export interface ReverseGeocodingResult {
  */
 async function geocodeWithGoogle(address: string): Promise<GeocodingResult | null> {
   try {
-    const response = await makeRequest('geocode/json', {
+    const response: any = await makeRequest('geocode/json', {
       address,
     });
 
@@ -80,7 +80,7 @@ async function geocodeWithGoogle(address: string): Promise<GeocodingResult | nul
  */
 async function geocodeWithNominatim(address: string): Promise<GeocodingResult | null> {
   try {
-    const response = await fetch(
+    const response: any = await fetch(
       `https://nominatim.openstreetmap.org/search?` +
         new URLSearchParams({
           q: address,
@@ -156,7 +156,7 @@ async function reverseGeocodeWithGoogle(
   lng: number
 ): Promise<ReverseGeocodingResult | null> {
   try {
-    const response = await makeRequest('geocode/json', {
+    const response: any = await makeRequest('geocode/json', {
       latlng: `${lat},${lng}`,
     });
 
@@ -194,7 +194,7 @@ async function reverseGeocodeWithNominatim(
   lng: number
 ): Promise<ReverseGeocodingResult | null> {
   try {
-    const response = await fetch(
+    const response: any = await fetch(
       `https://nominatim.openstreetmap.org/reverse?` +
         new URLSearchParams({
           lat: lat.toString(),

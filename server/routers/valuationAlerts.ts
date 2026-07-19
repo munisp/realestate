@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import { valuationMonitoring, emailDeliveryLog } from "../../drizzle/schema";
+import { eq, and, gte, lte, count, sql, desc } from "drizzle-orm";
 import {
   createMonitoring,
   getUserMonitoring,
@@ -69,9 +72,6 @@ export const valuationAlertsRouter = router({
     const preferences = await getUserAlertPreferences(ctx.user.id);
     return preferences;
   }),
-
-  // NOTE: getAlertHistory and getAlertStats are implemented below with full functionality
-  // (Duplicate TODO implementations removed)
 
   // Bulk update monitoring
   bulkUpdateMonitoring: protectedProcedure
@@ -168,7 +168,8 @@ export const valuationAlertsRouter = router({
       z.object({
         startDate: z.date().optional(),
         endDate: z.date().optional(),
-        status: z.enum(["sent", "delivered", "opened", "clicked", "failed"]).optional(),
+        // emailDeliveryLog status enum: pending, sent, delivered, failed, bounced
+        status: z.enum(["sent", "delivered", "failed", "bounced", "pending"]).optional(),
         statusFilter: z.string().optional(),
         typeFilter: z.string().optional(),
         limit: z.number().min(1).max(100).default(50),
@@ -178,10 +179,7 @@ export const valuationAlertsRouter = router({
       const db = await getDb();
       if (!db) return { alerts: [] };
 
-      const { emailDeliveryLog } = await import("../../drizzle/schema");
-      const { eq, and, gte, lte, desc } = await import("drizzle-orm");
-
-      const conditions = [eq(emailDeliveryLog.userId, ctx.user.id)];
+      const conditions: any[] = [eq(emailDeliveryLog.userId, ctx.user.id)];
 
       if (input.startDate) {
         conditions.push(gte(emailDeliveryLog.sentAt, input.startDate));
@@ -193,10 +191,11 @@ export const valuationAlertsRouter = router({
         conditions.push(eq(emailDeliveryLog.status, input.status));
       }
       if (input.statusFilter && input.statusFilter !== "all") {
-        conditions.push(eq(emailDeliveryLog.status, input.statusFilter));
+        conditions.push(eq(emailDeliveryLog.status, input.statusFilter as any));
       }
       if (input.typeFilter && input.typeFilter !== "all") {
-        conditions.push(eq(emailDeliveryLog.alertType, input.typeFilter));
+        // emailDeliveryLog has emailType column, not alertType
+        conditions.push(eq(emailDeliveryLog.emailType, input.typeFilter));
       }
 
       const alerts = await db
@@ -209,19 +208,19 @@ export const valuationAlertsRouter = router({
       return {
         alerts: alerts.map((alert) => ({
           id: alert.id,
-          propertyId: alert.propertyId,
-          alertType: alert.alertType,
-          alertTitle: `${alert.alertType} Alert`,
+          propertyId: null,                                    // Fixed: emailDeliveryLog has no propertyId column
+          alertType: alert.emailType,                          // Fixed: emailType not alertType
+          alertTitle: `${alert.emailType || 'Email'} Alert`,
           alertMessage: alert.subject,
-          propertyAddress: null, // Would need to join with properties table
+          propertyAddress: null,
           sentAt: alert.sentAt,
           deliveryStatus: alert.status,
           opened: alert.openedAt !== null,
           clicked: alert.clickedAt !== null,
           openedAt: alert.openedAt,
           clickedAt: alert.clickedAt,
-          changeType: alert.alertType?.includes("increase") ? "increase" : "decrease",
-          error: alert.error,
+          changeType: alert.emailType?.includes("increase") ? "increase" : "decrease",
+          error: alert.errorMessage,                           // Fixed: errorMessage not error
           status: alert.status,
         })),
       };
@@ -247,10 +246,7 @@ export const valuationAlertsRouter = router({
         };
       }
 
-      const { emailDeliveryLog } = await import("../../drizzle/schema");
-      const { eq, and, gte, lte, count, sql } = await import("drizzle-orm");
-
-      const conditions = [eq(emailDeliveryLog.userId, ctx.user.id)];
+      const conditions: any[] = [eq(emailDeliveryLog.userId, ctx.user.id)];
 
       if (input.startDate) {
         conditions.push(gte(emailDeliveryLog.sentAt, input.startDate));

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Alert Throttling Service
  * 

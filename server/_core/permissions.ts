@@ -354,3 +354,18 @@ export function getPermissionName(permission: Permission): string {
   };
   return names[permission];
 }
+
+// ==================== PERMIFY INTEGRATION ====================
+// Re-export Permify client for use in routers and middleware
+export {
+  checkPermission,
+  grantRelationship,
+  revokeRelationship,
+  isPermifyConfigured,
+  canViewProperty,
+  canEditProperty,
+  canViewTransaction,
+  isAdmin as isPermifyAdmin,
+  setupPropertyOwnership,
+  setupTransactionRelationships,
+} from "./permify";

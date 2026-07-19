@@ -392,6 +392,56 @@ export class PaymentServiceClient {
     });
     return await response.json();
   }
+
+  async calculateMortgage(request: {
+    loanAmount: number;
+    annualInterestRate: number;
+    loanTermYears: number;
+  }): Promise<{
+    monthlyPayment: number;
+    totalPayment: number;
+    totalInterest: number;
+    amortizationSchedule: Array<{ month: number; principal: number; interest: number; balance: number }>;
+  }> {
+    try {
+      const response = await fetch('http://localhost:5110/api/payment/mortgage/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+      });
+      if (!response.ok) throw new Error('Service unavailable');
+      return await response.json();
+    } catch {
+      // Fallback: calculate locally using standard amortization formula
+      const { loanAmount, annualInterestRate, loanTermYears } = request;
+      const monthlyRate = annualInterestRate / 100 / 12;
+      const numPayments = loanTermYears * 12;
+      const monthlyPayment = monthlyRate === 0
+        ? loanAmount / numPayments
+        : (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+          (Math.pow(1 + monthlyRate, numPayments) - 1);
+      const totalPayment = monthlyPayment * numPayments;
+      const totalInterest = totalPayment - loanAmount;
+      let balance = loanAmount;
+      const amortizationSchedule = Array.from({ length: Math.min(numPayments, 360) }, (_, i) => {
+        const interest = balance * monthlyRate;
+        const principal = monthlyPayment - interest;
+        balance = Math.max(0, balance - principal);
+        return {
+          month: i + 1,
+          principal: Math.round(principal * 100) / 100,
+          interest: Math.round(interest * 100) / 100,
+          balance: Math.round(balance * 100) / 100,
+        };
+      });
+      return {
+        monthlyPayment: Math.round(monthlyPayment * 100) / 100,
+        totalPayment: Math.round(totalPayment * 100) / 100,
+        totalInterest: Math.round(totalInterest * 100) / 100,
+        amortizationSchedule,
+      };
+    }
+  }
 }
 
 // ============================================================================

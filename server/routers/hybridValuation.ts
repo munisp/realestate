@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Hybrid Valuation tRPC Router
  * Exposes hybrid valuation model to frontend

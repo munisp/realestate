@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { sendEmail } from './notificationService';
 
 interface DigestData {

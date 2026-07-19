@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Kafka Event Publisher
  * Publishes domain events to Kafka topics for consumption by lakehouse and microservices

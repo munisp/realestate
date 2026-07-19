@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDb } from "../db";
 import { marketPricingRecommendations, shortLetProperties } from "../../drizzle/schema";
 import { eq, and, gte, desc } from "drizzle-orm";

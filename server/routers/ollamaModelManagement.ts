@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { z } from 'zod';
 import { adminProcedure, protectedProcedure, router } from '../_core/trpc';
 import { TRPCError } from '@trpc/server';

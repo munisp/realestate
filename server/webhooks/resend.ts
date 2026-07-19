@@ -153,7 +153,7 @@ async function updateEmailDeliveryStatus(payload: ResendWebhookPayload) {
     const result = await db
       .update(emailDeliveryLog)
       .set(updateFields)
-      .where(eq(emailDeliveryLog.messageId, emailId));
+      .where(eq((emailDeliveryLog as any).externalMessageId, emailId));
 
     console.log(`[Resend Webhook] Updated email ${emailId} to status: ${status}`);
   } catch (error) {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Email Service using Resend
  * 

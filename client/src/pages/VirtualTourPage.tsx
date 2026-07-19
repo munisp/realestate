@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useParams, Link } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/button';

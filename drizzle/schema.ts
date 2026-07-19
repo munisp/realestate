@@ -2782,3 +2782,5 @@ export * from './schema-gnn-alerts';
 
 // Import and re-export scheduled verification tables
 export * from "./schema-scheduled-verifications";
+// Import and re-export system tables (audit_logs, fluvio_events, app_versions)
+export * from "./schema-system-tables";

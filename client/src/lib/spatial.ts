@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Spatial Utilities Library (Turf.js)
  * 

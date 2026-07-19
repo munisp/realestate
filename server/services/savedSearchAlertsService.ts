@@ -212,7 +212,7 @@ export async function createSavedSearch(
       searchCriteria: JSON.stringify(criteria),
       notificationsEnabled: notificationsEnabled ? 1 : 0,
     })
-    .$returningId();
+    .returning();
 
   const [created] = await db
     .select()

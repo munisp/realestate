@@ -187,7 +187,7 @@ async function sendEmailNotification(user: any, alertType: string, alertData: an
  */
 async function sendSMSNotification(user: any, alertType: string, alertData: any) {
   // In production, use SMS service (Twilio, etc.)
-  console.log(`[SMS] Sending ${alertType} alert to ${user.phoneNumber}`);
+  console.log(`[SMS] Sending ${alertType} alert to ${((user as any).phoneNumber)}`);
   return true;
 }
 
@@ -235,7 +235,7 @@ export async function evaluateGNNAlerts() {
         const user = userResult[0];
 
         // Parse filters
-        const filters = subscription.filters ? JSON.parse(subscription.filters) : {};
+        const filters = subscription.neighborhoods ? JSON.parse(subscription.neighborhoods) : {};
 
         // Evaluate based on alert type
         let alertData = null;
@@ -249,56 +249,57 @@ export async function evaluateGNNAlerts() {
           case 'neighborhood_growth':
             alertData = await detectNeighborhoodGrowth(filters);
             break;
-          case 'price_momentum':
+          case 'price_momentum' as any:
             alertData = await detectPriceMomentum(filters);
             break;
-          case 'investment_opportunity':
+          case 'investment_opportunity' as any:
             alertData = await detectInvestmentOpportunities(filters);
             break;
         }
 
         // If alert condition met, trigger notification
-        if (alertData && alertData.confidence >= (subscription.confidenceThreshold || 80)) {
+        if (alertData && alertData.confidence >= (subscription.minUndervaluedPercent || 80)) {
           console.log(`[GNN Alerts] Triggering ${subscription.alertType} alert for user ${user.id}`);
 
           // Create alert trigger record
-          const triggerResult = await db.insert(gnnAlertTriggers).values({
+          const [triggerRow] = await db.insert(gnnAlertTriggers).values({
             subscriptionId: subscription.id,
             userId: subscription.userId,
             alertType: subscription.alertType,
-            alertData: JSON.stringify(alertData),
+            alertTitle: `${subscription.alertType} Alert`,
+            alertMessage: JSON.stringify(alertData),
             confidence: Math.round(alertData.confidence),
             emailSent: 0,
             smsSent: 0,
-            pushSent: 0,
+            inAppSent: 0,
             viewed: 0,
-            dismissed: 0,
-          });
+          } as any).returning({ id: gnnAlertTriggers.id });
+          const triggerId = triggerRow?.id ?? 0;
 
           // Send notifications based on preferences
-          if (subscription.emailEnabled && user.email) {
+          if (subscription.notifyEmail && user.email) {
             await sendEmailNotification(user, subscription.alertType, alertData);
             // Update trigger record
             await db
               .update(gnnAlertTriggers)
               .set({ emailSent: 1 })
-              .where(eq(gnnAlertTriggers.id, Number(triggerResult.insertId)));
+              .where(eq(gnnAlertTriggers.id, triggerId));
           }
 
-          if (subscription.smsEnabled && user.phoneNumber) {
+          if (subscription.notifySms && ((user as any).phoneNumber)) {
             await sendSMSNotification(user, subscription.alertType, alertData);
             await db
               .update(gnnAlertTriggers)
               .set({ smsSent: 1 })
-              .where(eq(gnnAlertTriggers.id, Number(triggerResult.insertId)));
+              .where(eq(gnnAlertTriggers.id, triggerId));
           }
 
-          if (subscription.pushEnabled) {
+          if (subscription.notifyInApp) {
             await sendPushNotification(user, subscription.alertType, alertData);
             await db
               .update(gnnAlertTriggers)
-              .set({ pushSent: 1 })
-              .where(eq(gnnAlertTriggers.id, Number(triggerResult.insertId)));
+              .set({ inAppSent: 1 })
+              .where(eq(gnnAlertTriggers.id, triggerId));
           }
 
           // Update subscription last triggered time

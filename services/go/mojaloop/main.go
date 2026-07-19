@@ -88,7 +88,50 @@ func (s *EscrowStore) GetByProviderID(providerEscrowID string) (*EscrowData, boo
 	return nil, false
 }
 
-var store = NewEscrowStore()
+// pgStore is the PostgreSQL-backed escrow store (initialized in main)
+var pgMojaloopStore *PostgresMojaloopStore
+
+// memStore is the in-memory fallback store
+var memStore = NewEscrowStore()
+
+// storeSet stores an escrow in PostgreSQL (or in-memory fallback)
+func storeSet(escrowID string, data *EscrowData) {
+if pgMojaloopStore != nil {
+data)
+} else {
+data)
+}
+}
+
+// storeGet retrieves an escrow by ID
+func storeGet(escrowID string) (*EscrowData, bool) {
+if pgMojaloopStore != nil {
+ pgMojaloopStore.Get(escrowID)
+}
+return memStore.Get(escrowID)
+}
+
+// storeGetByProviderID retrieves an escrow by provider escrow ID
+func storeGetByProviderID(providerEscrowID string) (*EscrowData, bool) {
+if pgMojaloopStore != nil {
+Search by transfer_id which is the provider escrow ID in mojaloop
+ pgMojaloopStore.FindByTransferID(providerEscrowID)
+}
+return memStore.GetByProviderID(providerEscrowID)
+}
+
+// storeFindByTransferID finds an escrow by Mojaloop transfer ID
+func storeFindByTransferID(transferID string) (*EscrowData, bool) {
+if pgMojaloopStore != nil {
+ pgMojaloopStore.FindByTransferID(transferID)
+}
+memStore.mu.RLock()
+defer memStore.mu.RUnlock()
+for _, data := range memStore.escrows {
+data.TransferID == transferID {
+ data, true
+ nil, false
+}
 
 // ILP functions
 func generateILPPacket(amount float64, currency string) string {
@@ -306,7 +349,7 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 		RefundedAmount:   0,
 	}
 
-	store.Set(req.EscrowID, escrowData)
+	storeSet(req.EscrowID, escrowData)
 
 	log.Printf("Escrow %s created successfully", req.EscrowID)
 
@@ -337,7 +380,7 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	escrowData, exists := store.GetByProviderID(req.ProviderEscrowID)
+	escrowData, exists := storeGetByProviderID(req.ProviderEscrowID)
 	if !exists {
 		respondError(w, http.StatusNotFound, "escrow not found")
 		return
@@ -375,7 +418,7 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 	escrowData.Status = "COMMITTED"
 	escrowData.HeldAmount -= releaseAmount
 	escrowData.ReleasedAmount += releaseAmount
-	store.Set(escrowData.EscrowID, escrowData)
+	storeSet(escrowData.EscrowID, escrowData)
 
 	log.Printf("Escrow %s released successfully", req.ProviderEscrowID)
 
@@ -398,7 +441,7 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	escrowData, exists := store.GetByProviderID(req.ProviderEscrowID)
+	escrowData, exists := storeGetByProviderID(req.ProviderEscrowID)
 	if !exists {
 		respondError(w, http.StatusNotFound, "escrow not found")
 		return
@@ -435,7 +478,7 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 	escrowData.Status = "ABORTED"
 	escrowData.HeldAmount -= refundAmount
 	escrowData.RefundedAmount += refundAmount
-	store.Set(escrowData.EscrowID, escrowData)
+	storeSet(escrowData.EscrowID, escrowData)
 
 	log.Printf("Escrow %s refunded successfully", req.ProviderEscrowID)
 
@@ -450,7 +493,7 @@ func (h *Handler) GetEscrowStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	providerEscrowID := vars["provider_escrow_id"]
 
-	escrowData, exists := store.GetByProviderID(providerEscrowID)
+	escrowData, exists := storeGetByProviderID(providerEscrowID)
 	if !exists {
 		respondError(w, http.StatusNotFound, "escrow not found")
 		return
@@ -548,12 +591,12 @@ func (h *Handler) handleTransferCommitted(data map[string]interface{}) {
 
 	// Update escrow status
 	escrowData.Status = "COMMITTED"
-	store.Set(escrowData.EscrowID, escrowData)
+	storeSet(escrowData.EscrowID, escrowData)
 
 	log.Printf("Transfer committed: %s (escrow: %s)", transferID, escrowData.EscrowID)
 
-	// TODO: Send notification to TypeScript backend
-	// notifyBackend(escrowData.EscrowID, "committed")
+	// Notify TypeScript backend about the committed transfer
+	go notifyBackend(escrowData.EscrowID, "committed")
 }
 
 func (h *Handler) handleTransferAborted(data map[string]interface{}) {
@@ -581,12 +624,12 @@ func (h *Handler) handleTransferAborted(data map[string]interface{}) {
 
 	// Update escrow status
 	escrowData.Status = "ABORTED"
-	store.Set(escrowData.EscrowID, escrowData)
+	storeSet(escrowData.EscrowID, escrowData)
 
 	log.Printf("Transfer aborted: %s (escrow: %s)", transferID, escrowData.EscrowID)
 
-	// TODO: Send notification to TypeScript backend
-	// notifyBackend(escrowData.EscrowID, "aborted")
+	// Notify TypeScript backend about the aborted transfer
+	go notifyBackend(escrowData.EscrowID, "aborted")
 }
 
 func (h *Handler) handleQuoteResponse(data map[string]interface{}) {

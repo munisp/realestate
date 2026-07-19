@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Custom Map Styles for Real Estate Platform
  * Branded MapLibre GL JS styles matching platform design

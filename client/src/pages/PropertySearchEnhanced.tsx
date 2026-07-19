@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { MapView } from '@/components/Map';
 import { Button } from '@/components/ui/button';

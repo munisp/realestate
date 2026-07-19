@@ -254,10 +254,10 @@ export class DataQualityService {
         },
       },
       factors: {
-        comparableCount: score.comparableCount,
-        comparableDistance: score.avgComparableDistance,
-        dataAge: score.dataAge,
-        marketVolatility: score.marketVolatility,
+        comparableSalesCount: score.comparableSalesCount,
+        comparableDistance: (score as any).avgComparableDistance,
+        dataAge: (score as any).dataAge,
+        marketVolatility: (score as any).marketVolatility,
       },
       warnings: this.generateWarnings(score),
     };
@@ -281,19 +281,19 @@ export class DataQualityService {
       warnings.push("Limited comparable properties found");
     }
 
-    if (score.comparableCount && score.comparableCount < 3) {
+    if (score.comparableSalesCount && score.comparableSalesCount < 3) {
       warnings.push("Very few comparable properties available");
     }
 
-    if (score.avgComparableDistance && score.avgComparableDistance > 5) {
+    if ((score as any).avgComparableDistance && (score as any).avgComparableDistance > 5) {
       warnings.push("Comparable properties are geographically distant");
     }
 
-    if (score.dataAge && score.dataAge > 180) {
+    if ((score as any).dataAge && (score as any).dataAge > 180) {
       warnings.push("Property data may be outdated");
     }
 
-    if (score.marketVolatility && score.marketVolatility > 15) {
+    if ((score as any).marketVolatility && (score as any).marketVolatility > 15) {
       warnings.push("High market volatility may affect accuracy");
     }
 
@@ -326,7 +326,7 @@ export class DataQualityService {
         AVG(COALESCE(cs.marketStabilityScore, 0)) as marketQuality,
         AVG(cs.overallConfidence) as overallQuality,
         COUNT(*) as totalProperties,
-        SUM(CASE WHEN cs.comparableCount > 0 THEN 1 ELSE 0 END) as propertiesWithComparables,
+        SUM(CASE WHEN cs.comparableSalesCount > 0 THEN 1 ELSE 0 END) as propertiesWithComparables,
         SUM(CASE WHEN cs.satelliteConfidenceScore IS NOT NULL THEN 1 ELSE 0 END) as propertiesWithSatellite,
         SUM(CASE WHEN cs.marketStabilityScore IS NOT NULL THEN 1 ELSE 0 END) as propertiesWithMarketData
       FROM hybridValuations hv
