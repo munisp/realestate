@@ -169,3 +169,10 @@ scrape_configs:
         regex: '(.*):10250'
         replacement: '${1}:9100'
         target_label: __address__
+
+  # Main Node.js application
+  - job_name: 'realestate-app'
+    static_configs:
+      - targets: ['app:3000']
+    metrics_path: /metrics
+    scrape_interval: 15s

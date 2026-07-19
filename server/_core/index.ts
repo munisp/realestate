@@ -4,6 +4,8 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import { requestLogger } from "./logger";
+import { monitoring } from "./monitoring";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -44,6 +46,8 @@ async function startServer() {
   app.use(applySecurityHeaders);
   app.use(applyCORS);
   app.use(sanitizeRequest);
+  // ── Structured request logging ───────────────────────────────────────────
+  app.use(requestLogger);
 
   // ── Health / readiness probes (before rate limiting so k8s probes pass) ──
   registerHealthEndpoints(app);
@@ -70,6 +74,13 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+
+  // ── Sentry / Monitoring (must be after routes, before error handler) ──────
+  monitoring.initialize();
+  if (monitoring.requestHandler) {
+    app.use(monitoring.requestHandler());
+  }
+
   // tRPC API
   app.use(
     "/api/trpc",
@@ -120,8 +131,29 @@ async function startServer() {
     console.log(`Server running on http://localhost:${port}/`);
   });
 
+  // ── Global error handler (must be last middleware) ──────────────────────
+  app.use(globalErrorHandler);
+
   // ── Graceful shutdown ────────────────────────────────────────────────────
   registerGracefulShutdown(server);
+}
+
+// ── Global Express error handler ─────────────────────────────────────────────
+// Must be registered after all routes. Catches any unhandled errors thrown
+// inside route handlers and returns a clean JSON response.
+function globalErrorHandler(
+  err: Error & { status?: number; statusCode?: number },
+  _req: import("express").Request,
+  res: import("express").Response,
+  _next: import("express").NextFunction
+): void {
+  const status = err.status ?? err.statusCode ?? 500;
+  const message =
+    process.env.NODE_ENV === "production" && status === 500
+      ? "Internal server error"
+      : err.message ?? "Internal server error";
+  console.error("[Error]", err);
+  res.status(status).json({ error: message });
 }
 
 startServer().catch(console.error);

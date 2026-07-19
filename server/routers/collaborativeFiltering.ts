@@ -3,7 +3,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { favorites, properties, users, recommendationFeedback } from "../../drizzle/schema";
-import { eq, and, inArray, sql, ne } from "drizzle-orm";
+import { eq, and, inArray, notInArray, sql, ne } from "drizzle-orm";
 
 /**
  * Collaborative Filtering Router
@@ -139,7 +139,9 @@ export const collaborativeFilteringRouter = router({
         .where(
           and(
             inArray(favorites.userId, similarUserIds),
-            sql`${favorites.propertyId} NOT IN (${likedPropertyIds.join(",")})`
+            likedPropertyIds.length > 0
+              ? notInArray(favorites.propertyId, likedPropertyIds)
+              : undefined
           )
         )
         .groupBy(properties.id)

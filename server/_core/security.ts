@@ -259,6 +259,32 @@ export function registerHealthEndpoints(app: Application): void {
  * Register SIGTERM / SIGINT handlers for graceful shutdown.
  * Pass the HTTP server so it can stop accepting new connections.
  */
+
+  // Prometheus-compatible /metrics endpoint (process metrics)
+  app.get("/metrics", (_req: Request, res: Response) => {
+    const mem = process.memoryUsage();
+    const uptime = process.uptime();
+    const metrics = [
+      `# HELP process_uptime_seconds Process uptime in seconds`,
+      `# TYPE process_uptime_seconds gauge`,
+      `process_uptime_seconds ${uptime.toFixed(3)}`,
+      `# HELP process_heap_used_bytes Heap memory used`,
+      `# TYPE process_heap_used_bytes gauge`,
+      `process_heap_used_bytes ${mem.heapUsed}`,
+      `# HELP process_heap_total_bytes Total heap memory`,
+      `# TYPE process_heap_total_bytes gauge`,
+      `process_heap_total_bytes ${mem.heapTotal}`,
+      `# HELP process_rss_bytes Resident set size`,
+      `# TYPE process_rss_bytes gauge`,
+      `process_rss_bytes ${mem.rss}`,
+      `# HELP process_external_bytes External memory`,
+      `# TYPE process_external_bytes gauge`,
+      `process_external_bytes ${mem.external}`,
+    ].join("\n");
+    res.setHeader("Content-Type", "text/plain; version=0.0.4");
+    res.status(200).send(metrics + "\n");
+  });
+
 export function registerGracefulShutdown(
   server: import("http").Server
 ): void {

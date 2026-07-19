@@ -1,0 +1,73 @@
+version: 2
+
+updates:
+  # ── npm (Node.js / TypeScript) ────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Africa/Lagos
+    open-pull-requests-limit: 10
+    groups:
+      # Group minor/patch updates to reduce noise
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+      - javascript
+    ignore:
+      # Ignore major version bumps for core frameworks (manual review required)
+      - dependency-name: react
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@trpc/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: drizzle-orm
+        update-types: ["version-update:semver-major"]
+
+  # ── Go (services/go) ─────────────────────────────────────────────────────
+  - package-ecosystem: gomod
+    directory: /services/go
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Africa/Lagos
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - go
+
+  # ── Python (services/python) ─────────────────────────────────────────────
+  - package-ecosystem: pip
+    directory: /services/python/fraud-detection
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - python
+
+  - package-ecosystem: pip
+    directory: /services/python/ml-valuation
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - python
+
+  # ── GitHub Actions ────────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
