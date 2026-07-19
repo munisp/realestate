@@ -1,0 +1,83 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: dapr-config
+  namespace: default
+spec:
+  # Distributed tracing configuration
+  tracing:
+    samplingRate: "1"
+    zipkin:
+      endpointAddress: "http://jaeger-collector:9411/api/v2/spans"
+  
+  # Metrics configuration
+  metric:
+    enabled: true
+  
+  # Middleware configuration
+  httpPipeline:
+    handlers:
+      - name: oauth2
+        type: middleware.http.oauth2
+      - name: ratelimit
+        type: middleware.http.ratelimit
+      - name: uppercase
+        type: middleware.http.uppercase
+  
+  # Access control configuration
+  accessControl:
+    defaultAction: allow
+    trustDomain: "public"
+    policies:
+      - appId: property-service
+        defaultAction: allow
+        trustDomain: "public"
+        namespace: "default"
+        operations:
+          - name: /api/v1/properties
+            httpVerb: ['GET', 'POST', 'PUT', 'DELETE']
+            action: allow
+      
+      - appId: user-service
+        defaultAction: allow
+        trustDomain: "public"
+        namespace: "default"
+        operations:
+          - name: /api/v1/users
+            httpVerb: ['GET', 'POST', 'PUT', 'DELETE']
+            action: allow
+      
+      - appId: transaction-service
+        defaultAction: allow
+        trustDomain: "public"
+        namespace: "default"
+        operations:
+          - name: /api/v1/transactions
+            httpVerb: ['GET', 'POST', 'PUT']
+            action: allow
+  
+  # mTLS configuration
+  mtls:
+    enabled: true
+    workloadCertTTL: "24h"
+    allowedClockSkew: "15m"
+  
+  # Secrets configuration
+  secrets:
+    scopes:
+      - storeName: kubernetes
+        defaultAccess: allow
+        allowedSecrets: ["db-password", "api-key", "jwt-secret"]
+  
+  # Features
+  features:
+    - name: ServiceInvocation
+      enabled: true
+    - name: PubSub
+      enabled: true
+    - name: Bindings
+      enabled: true
+    - name: State
+      enabled: true
+    - name: Secrets
+      enabled: true

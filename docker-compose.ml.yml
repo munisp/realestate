@@ -1,0 +1,224 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # GNN Valuation Service (Graph Neural Networks)
+  # ============================================================================
+  gnn-service:
+    build:
+      context: ./ml-services/gnn-valuation-service
+      dockerfile: Dockerfile
+    container_name: gnn-valuation-service
+    ports:
+      - "5003:5003"
+    environment:
+      - SERVICE_NAME=gnn-valuation-service
+      - SERVICE_PORT=5003
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - MODEL_PATH=/models/gnn_model.pt
+      - DEVICE=cpu  # Change to 'cuda' if GPU available
+      - LOG_LEVEL=info
+    volumes:
+      - ./ml-models/gnn:/models
+      - ./data/training:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ml-network
+
+  # ============================================================================
+  # Computer Vision Service (Aerial + Street View Analysis)
+  # ============================================================================
+  cv-service:
+    build:
+      context: ./ml-services/cv-service
+      dockerfile: Dockerfile
+    container_name: cv-service
+    ports:
+      - "5004:5004"
+    environment:
+      - SERVICE_NAME=cv-service
+      - SERVICE_PORT=5004
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - USE_OSM=${USE_OSM:-false}
+      - REDIS_URL=redis://redis:6379
+      - MODEL_PATH=/models/resnet_model.pt
+      - DEVICE=cpu
+      - IMAGE_CACHE_TTL=2592000  # 30 days
+      - LOG_LEVEL=info
+    volumes:
+      - ./ml-models/cv:/models
+      - ./data/images:/images
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ml-network
+
+  # ============================================================================
+  # Alternative Data Service (POI, Economic Indicators)
+  # ============================================================================
+  altdata-service:
+    build:
+      context: ./ml-services/altdata-service
+      dockerfile: Dockerfile
+    container_name: altdata-service
+    ports:
+      - "5005:5005"
+    environment:
+      - SERVICE_NAME=altdata-service
+      - SERVICE_PORT=5005
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - POI_CACHE_TTL=604800  # 7 days
+      - LOG_LEVEL=info
+    volumes:
+      - ./data/poi:/data/poi
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ml-network
+
+  # ============================================================================
+  # Ensemble Service (XGBoost, LightGBM, CatBoost, Neural Network)
+  # ============================================================================
+  ensemble-service:
+    build:
+      context: ./ml-services/ensemble-service
+      dockerfile: Dockerfile
+    container_name: ensemble-service
+    ports:
+      - "5006:5006"
+    environment:
+      - SERVICE_NAME=ensemble-service
+      - SERVICE_PORT=5006
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - MODEL_PATH=/models
+      - DEVICE=cpu
+      - LOG_LEVEL=info
+    volumes:
+      - ./ml-models/ensemble:/models
+      - ./data/training:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ml-network
+
+  # ============================================================================
+  # Bias Correction Service (Fairness Monitoring)
+  # ============================================================================
+  bias-service:
+    build:
+      context: ./ml-services/bias-service
+      dockerfile: Dockerfile
+    container_name: bias-service
+    ports:
+      - "5007:5007"
+    environment:
+      - SERVICE_NAME=bias-service
+      - SERVICE_PORT=5007
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - MODEL_PATH=/models/bias_calibration.pkl
+      - LOG_LEVEL=info
+    volumes:
+      - ./ml-models/bias:/models
+      - ./data/training:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ml-network
+
+  # ============================================================================
+  # Redis Cache (Shared across all services)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ml-redis
+    ports:
+      - "6380:6379"  # Use 6380 to avoid conflict with main Redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ml-redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ml-network
+
+  # ============================================================================
+  # MLflow Tracking Server (Model Versioning)
+  # ============================================================================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.2
+    container_name: mlflow-server
+    ports:
+      - "5001:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow/mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - mlflow-data:/mlflow
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ml-network
+
+networks:
+  ml-network:
+    driver: bridge
+
+volumes:
+  ml-redis-data:
+    driver: local
+  mlflow-data:
+    driver: local

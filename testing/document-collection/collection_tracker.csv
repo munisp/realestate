@@ -1,0 +1,3 @@
+Sample ID,Document Type,Collection Date,Participant Name,Participant Phone,Consent Signed,Image Quality,Face Extracted,Ground Truth Created,Added to Dataset,Compensation Paid,Notes
+passport_NG_sample01,passport,2025-11-17,John Doe,+234-XXX-XXX-XXXX,Yes,High,Yes,Yes,Yes,Yes,Excellent quality
+nin_NG_sample02,nin,2025-11-17,Jane Smith,+234-XXX-XXX-XXXX,Yes,Medium,Yes,Yes,Yes,Yes,Slight wear on card

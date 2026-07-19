@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  martin:
+    image: ghcr.io/maplibre/martin:latest
+    container_name: realestate-martin
+    ports:
+      - "3000:3000"
+    environment:
+      # PostgreSQL connection string
+      - DATABASE_URL=postgresql://postgres:postgis_dev_password@postgis:5432/realestate_spatial
+      # Martin configuration
+      - MARTIN_KEEP_ALIVE=75
+      - MARTIN_WORKER_PROCESSES=4
+      - MARTIN_MAX_FEATURE_COUNT=10000
+      - MARTIN_CACHE_SIZE_MB=512
+    volumes:
+      - ./config/martin-config.yaml:/config/martin-config.yaml:ro
+    command: 
+      - "--config"
+      - "/config/martin-config.yaml"
+    depends_on:
+      - postgis
+    networks:
+      - realestate-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgis:
+    image: postgis/postgis:15-3.3
+    container_name: realestate-postgis
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: realestate_spatial
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgis_dev_password
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ./scripts/postgis-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - realestate-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx reverse proxy for tile caching
+  nginx-tile-cache:
+    image: nginx:alpine
+    container_name: realestate-tile-cache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./config/nginx-tile-cache.conf:/etc/nginx/nginx.conf:ro
+      - tile_cache:/var/cache/nginx
+    depends_on:
+      - martin
+    networks:
+      - realestate-network
+    restart: unless-stopped
+
+networks:
+  realestate-network:
+    driver: bridge
+
+volumes:
+  postgis_data:
+    driver: local
+  tile_cache:
+    driver: local

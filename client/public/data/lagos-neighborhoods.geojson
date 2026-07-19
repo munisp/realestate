@@ -1,0 +1,529 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "victoria-island",
+        "name": "Victoria Island",
+        "shortName": "VI",
+        "zone": "island",
+        "tier": "luxury",
+        "medianPrice": 250000000,
+        "pricePerSqm": 500000,
+        "propertyCount": 1250,
+        "population": 85000,
+        "avgCommuteToVI": 0,
+        "avgCommuteToIkeja": 35,
+        "walkScore": 75,
+        "description": "Premier business and residential district with luxury apartments, hotels, and corporate headquarters",
+        "amenities": ["Shopping Malls", "International Schools", "Hospitals", "Beaches", "Nightlife"],
+        "schools": [
+          { "name": "Corona Schools", "rating": 4.5 },
+          { "name": "Greensprings School", "rating": 4.7 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4000, 6.4200],
+          [3.4400, 6.4200],
+          [3.4400, 6.4500],
+          [3.4000, 6.4500],
+          [3.4000, 6.4200]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ikoyi",
+        "name": "Ikoyi",
+        "shortName": "Ikoyi",
+        "zone": "island",
+        "tier": "luxury",
+        "medianPrice": 280000000,
+        "pricePerSqm": 550000,
+        "propertyCount": 980,
+        "population": 45000,
+        "avgCommuteToVI": 10,
+        "avgCommuteToIkeja": 40,
+        "walkScore": 70,
+        "description": "Upscale residential area with embassies, golf courses, and waterfront properties",
+        "amenities": ["Golf Courses", "Yacht Clubs", "Fine Dining", "Parks", "Embassies"],
+        "schools": [
+          { "name": "Grange School", "rating": 4.8 },
+          { "name": "Dowen College", "rating": 4.6 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4200, 6.4400],
+          [3.4500, 6.4400],
+          [3.4500, 6.4700],
+          [3.4200, 6.4700],
+          [3.4200, 6.4400]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "lekki-phase-1",
+        "name": "Lekki Phase 1",
+        "shortName": "Lekki 1",
+        "zone": "island",
+        "tier": "luxury",
+        "medianPrice": 180000000,
+        "pricePerSqm": 400000,
+        "propertyCount": 2100,
+        "population": 120000,
+        "avgCommuteToVI": 25,
+        "avgCommuteToIkeja": 50,
+        "walkScore": 65,
+        "description": "Gated estates and modern developments popular with expats and young professionals",
+        "amenities": ["Gated Estates", "Beach Access", "Shopping", "Restaurants", "Gyms"],
+        "schools": [
+          { "name": "British International School", "rating": 4.6 },
+          { "name": "Meadow Hall", "rating": 4.5 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4600, 6.4300],
+          [3.5000, 6.4300],
+          [3.5000, 6.4600],
+          [3.4600, 6.4600],
+          [3.4600, 6.4300]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "lekki-phase-2",
+        "name": "Lekki Phase 2",
+        "shortName": "Lekki 2",
+        "zone": "island",
+        "tier": "mid-range",
+        "medianPrice": 120000000,
+        "pricePerSqm": 300000,
+        "propertyCount": 1800,
+        "population": 95000,
+        "avgCommuteToVI": 30,
+        "avgCommuteToIkeja": 55,
+        "walkScore": 60,
+        "description": "Newer residential developments with modern amenities and growing infrastructure",
+        "amenities": ["Modern Estates", "Shopping Centers", "Recreation", "Schools"],
+        "schools": [
+          { "name": "Chrisland Schools", "rating": 4.3 },
+          { "name": "Caleb International", "rating": 4.2 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.5100, 6.4200],
+          [3.5500, 6.4200],
+          [3.5500, 6.4500],
+          [3.5100, 6.4500],
+          [3.5100, 6.4200]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "banana-island",
+        "name": "Banana Island",
+        "shortName": "Banana Island",
+        "zone": "island",
+        "tier": "luxury",
+        "medianPrice": 500000000,
+        "pricePerSqm": 800000,
+        "propertyCount": 250,
+        "population": 5000,
+        "avgCommuteToVI": 5,
+        "avgCommuteToIkeja": 35,
+        "walkScore": 50,
+        "description": "Ultra-luxury private island with exclusive waterfront mansions and penthouses",
+        "amenities": ["Private Security", "Waterfront", "Luxury Homes", "Marina", "Exclusive Access"],
+        "schools": []
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4300, 6.4100],
+          [3.4400, 6.4100],
+          [3.4400, 6.4200],
+          [3.4300, 6.4200],
+          [3.4300, 6.4100]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "lagos-island",
+        "name": "Lagos Island",
+        "shortName": "L.I.",
+        "zone": "island",
+        "tier": "mid-range",
+        "medianPrice": 95000000,
+        "pricePerSqm": 250000,
+        "propertyCount": 3500,
+        "population": 250000,
+        "avgCommuteToVI": 15,
+        "avgCommuteToIkeja": 30,
+        "walkScore": 85,
+        "description": "Historic CBD with mixed commercial and residential properties, vibrant street life",
+        "amenities": ["Markets", "Banking", "Government Offices", "Historic Sites", "Transport Hubs"],
+        "schools": [
+          { "name": "CMS Grammar School", "rating": 4.0 },
+          { "name": "King's College", "rating": 4.4 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3800, 6.4400],
+          [3.4100, 6.4400],
+          [3.4100, 6.4700],
+          [3.3800, 6.4700],
+          [3.3800, 6.4400]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ikeja",
+        "name": "Ikeja",
+        "shortName": "Ikeja",
+        "zone": "mainland",
+        "tier": "mid-range",
+        "medianPrice": 85000000,
+        "pricePerSqm": 220000,
+        "propertyCount": 4200,
+        "population": 320000,
+        "avgCommuteToVI": 35,
+        "avgCommuteToIkeja": 0,
+        "walkScore": 80,
+        "description": "State capital with GRA, commercial districts, and the international airport",
+        "amenities": ["Airport", "Shopping Malls", "Government", "Hotels", "Business District"],
+        "schools": [
+          { "name": "Vivian Fowler Memorial", "rating": 4.5 },
+          { "name": "Loyola Jesuit College", "rating": 4.7 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3200, 6.5800],
+          [3.3800, 6.5800],
+          [3.3800, 6.6200],
+          [3.3200, 6.6200],
+          [3.3200, 6.5800]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "surulere",
+        "name": "Surulere",
+        "shortName": "Surulere",
+        "zone": "mainland",
+        "tier": "mid-range",
+        "medianPrice": 65000000,
+        "pricePerSqm": 180000,
+        "propertyCount": 5800,
+        "population": 450000,
+        "avgCommuteToVI": 40,
+        "avgCommuteToIkeja": 25,
+        "walkScore": 75,
+        "description": "Established middle-class residential area with good infrastructure and amenities",
+        "amenities": ["Sports Facilities", "Markets", "Schools", "Healthcare", "Entertainment"],
+        "schools": [
+          { "name": "St. Gregory's College", "rating": 4.3 },
+          { "name": "Methodist Girls High School", "rating": 4.2 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3400, 6.4900],
+          [3.3800, 6.4900],
+          [3.3800, 6.5200],
+          [3.3400, 6.5200],
+          [3.3400, 6.4900]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "yaba",
+        "name": "Yaba",
+        "shortName": "Yaba",
+        "zone": "mainland",
+        "tier": "mid-range",
+        "medianPrice": 55000000,
+        "pricePerSqm": 160000,
+        "propertyCount": 3200,
+        "population": 280000,
+        "avgCommuteToVI": 30,
+        "avgCommuteToIkeja": 20,
+        "walkScore": 85,
+        "description": "Tech hub and university area with vibrant startup ecosystem and student housing",
+        "amenities": ["Universities", "Tech Hubs", "Hospitals", "Markets", "Transport"],
+        "schools": [
+          { "name": "University of Lagos", "rating": 4.6 },
+          { "name": "Yaba College of Technology", "rating": 4.3 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3700, 6.5000],
+          [3.3900, 6.5000],
+          [3.3900, 6.5200],
+          [3.3700, 6.5200],
+          [3.3700, 6.5000]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "maryland",
+        "name": "Maryland",
+        "shortName": "Maryland",
+        "zone": "mainland",
+        "tier": "mid-range",
+        "medianPrice": 70000000,
+        "pricePerSqm": 190000,
+        "propertyCount": 2900,
+        "population": 180000,
+        "avgCommuteToVI": 35,
+        "avgCommuteToIkeja": 15,
+        "walkScore": 70,
+        "description": "Commercial and residential hub with shopping malls and good road access",
+        "amenities": ["Shopping Malls", "Restaurants", "Banks", "Hotels", "Transport"],
+        "schools": [
+          { "name": "Greenwood House School", "rating": 4.4 },
+          { "name": "Lagoon School", "rating": 4.5 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3500, 6.5500],
+          [3.3700, 6.5500],
+          [3.3700, 6.5700],
+          [3.3500, 6.5700],
+          [3.3500, 6.5500]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "gbagada",
+        "name": "Gbagada",
+        "shortName": "Gbagada",
+        "zone": "mainland",
+        "tier": "mid-range",
+        "medianPrice": 60000000,
+        "pricePerSqm": 170000,
+        "propertyCount": 3400,
+        "population": 220000,
+        "avgCommuteToVI": 40,
+        "avgCommuteToIkeja": 25,
+        "walkScore": 65,
+        "description": "Residential estates with good infrastructure and growing commercial activity",
+        "amenities": ["Estates", "Markets", "Schools", "Healthcare", "Recreation"],
+        "schools": [
+          { "name": "Lifeforte International School", "rating": 4.3 },
+          { "name": "Greenwood House", "rating": 4.2 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3700, 6.5300],
+          [3.3900, 6.5300],
+          [3.3900, 6.5500],
+          [3.3700, 6.5500],
+          [3.3700, 6.5300]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "magodo",
+        "name": "Magodo",
+        "shortName": "Magodo",
+        "zone": "mainland",
+        "tier": "mid-range",
+        "medianPrice": 75000000,
+        "pricePerSqm": 200000,
+        "propertyCount": 2600,
+        "population": 150000,
+        "avgCommuteToVI": 45,
+        "avgCommuteToIkeja": 20,
+        "walkScore": 55,
+        "description": "Gated communities and planned estates with modern amenities",
+        "amenities": ["Gated Estates", "Security", "Schools", "Recreation", "Shopping"],
+        "schools": [
+          { "name": "Greensprings School Magodo", "rating": 4.6 },
+          { "name": "Dansol High School", "rating": 4.3 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3600, 6.5700],
+          [3.3900, 6.5700],
+          [3.3900, 6.5900],
+          [3.3600, 6.5900],
+          [3.3600, 6.5700]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ajah",
+        "name": "Ajah",
+        "shortName": "Ajah",
+        "zone": "island",
+        "tier": "emerging",
+        "medianPrice": 45000000,
+        "pricePerSqm": 120000,
+        "propertyCount": 4500,
+        "population": 280000,
+        "avgCommuteToVI": 50,
+        "avgCommuteToIkeja": 70,
+        "walkScore": 50,
+        "description": "Rapidly developing area with affordable housing and new estates",
+        "amenities": ["New Estates", "Markets", "Schools", "Beach Access", "Growing Infrastructure"],
+        "schools": [
+          { "name": "Lekki British School", "rating": 4.1 },
+          { "name": "Corona Schools Ajah", "rating": 4.2 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.5600, 6.4100],
+          [3.6000, 6.4100],
+          [3.6000, 6.4400],
+          [3.5600, 6.4400],
+          [3.5600, 6.4100]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "sangotedo",
+        "name": "Sangotedo",
+        "shortName": "Sangotedo",
+        "zone": "island",
+        "tier": "emerging",
+        "medianPrice": 38000000,
+        "pricePerSqm": 100000,
+        "propertyCount": 3800,
+        "population": 200000,
+        "avgCommuteToVI": 55,
+        "avgCommuteToIkeja": 75,
+        "walkScore": 45,
+        "description": "Emerging area along Lekki-Epe corridor with new developments",
+        "amenities": ["New Developments", "Markets", "Transport", "Beach Proximity"],
+        "schools": [
+          { "name": "Lekki Peninsula Model School", "rating": 4.0 },
+          { "name": "Greenwood House Sangotedo", "rating": 4.1 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.6100, 6.4000],
+          [3.6500, 6.4000],
+          [3.6500, 6.4300],
+          [3.6100, 6.4300],
+          [3.6100, 6.4000]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ikorodu",
+        "name": "Ikorodu",
+        "shortName": "Ikorodu",
+        "zone": "mainland",
+        "tier": "emerging",
+        "medianPrice": 32000000,
+        "pricePerSqm": 90000,
+        "propertyCount": 5200,
+        "population": 380000,
+        "avgCommuteToVI": 70,
+        "avgCommuteToIkeja": 50,
+        "walkScore": 60,
+        "description": "Suburban area with affordable family homes and growing infrastructure",
+        "amenities": ["Affordable Housing", "Markets", "Schools", "Transport", "Recreation"],
+        "schools": [
+          { "name": "Caleb International Ikorodu", "rating": 4.0 },
+          { "name": "Greensprings Ikorodu", "rating": 4.2 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4800, 6.5900],
+          [3.5200, 6.5900],
+          [3.5200, 6.6200],
+          [3.4800, 6.6200],
+          [3.4800, 6.5900]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "badagry",
+        "name": "Badagry",
+        "shortName": "Badagry",
+        "zone": "mainland",
+        "tier": "emerging",
+        "medianPrice": 28000000,
+        "pricePerSqm": 75000,
+        "propertyCount": 2100,
+        "population": 150000,
+        "avgCommuteToVI": 90,
+        "avgCommuteToIkeja": 70,
+        "walkScore": 40,
+        "description": "Coastal area with tourism potential and historic significance",
+        "amenities": ["Beach Access", "Historic Sites", "Tourism", "Markets", "Fishing"],
+        "schools": [
+          { "name": "Badagry Grammar School", "rating": 3.8 }
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [2.8800, 6.4100],
+          [2.9200, 6.4100],
+          [2.9200, 6.4400],
+          [2.8800, 6.4400],
+          [2.8800, 6.4100]
+        ]]
+      }
+    }
+  ]
+}

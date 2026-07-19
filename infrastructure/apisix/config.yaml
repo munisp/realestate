@@ -1,0 +1,133 @@
+apisix:
+  node_listen: 9080              # APISIX listening port
+  enable_ipv6: false
+  
+  allow_admin:                   # Admin API access control
+    - 0.0.0.0/0
+  
+  admin_key:
+    - name: "admin"
+      key: ${APISIX_ADMIN_KEY}
+      role: admin
+
+deployment:
+  role: traditional
+  role_traditional:
+    config_provider: etcd
+  
+  admin:
+    admin_key:
+      - name: "admin"
+        key: ${APISIX_ADMIN_KEY}
+        role: admin
+    
+  etcd:
+    host:                          # etcd address
+      - "http://etcd:2379"
+    prefix: "/apisix"              # apisix configurations prefix
+    timeout: 30                    # seconds
+
+nginx_config:                      # config for render the template to generate nginx.conf
+  error_log: "logs/error.log"
+  error_log_level: "warn"          # warn,error
+  worker_processes: auto
+  worker_rlimit_nofile: 20480
+  
+  event:
+    worker_connections: 10620
+  
+  http:
+    access_log: "logs/access.log"
+    keepalive_timeout: 60s
+    client_header_timeout: 60s
+    client_body_timeout: 60s
+    send_timeout: 10s
+    underscores_in_headers: "on"
+    real_ip_header: "X-Real-IP"
+    
+    real_ip_recursive: "off"
+    real_ip_from:
+      - 127.0.0.1
+      - 'unix:'
+
+plugins:                           # plugin list (sorted by priority)
+  - real-ip                        # priority: 23000
+  - client-control                 # priority: 22000
+  - proxy-control                  # priority: 21990
+  - request-id                     # priority: 12015
+  - zipkin                         # priority: 12011
+  - ext-plugin-pre-req             # priority: 12000
+  - fault-injection                # priority: 11000
+  - mocking                        # priority: 10900
+  - serverless-pre-function        # priority: 10000
+  - cors                           # priority: 4000
+  - ip-restriction                 # priority: 3000
+  - ua-restriction                 # priority: 2999
+  - referer-restriction            # priority: 2990
+  - csrf                           # priority: 2980
+  - uri-blocker                    # priority: 2900
+  - request-validation             # priority: 2800
+  - openid-connect                 # priority: 2599
+  - authz-casbin                   # priority: 2560
+  - authz-casdoor                  # priority: 2559
+  - wolf-rbac                      # priority: 2555
+  - ldap-auth                      # priority: 2540
+  - hmac-auth                      # priority: 2530
+  - basic-auth                     # priority: 2520
+  - jwt-auth                       # priority: 2510
+  - key-auth                       # priority: 2500
+  - consumer-restriction           # priority: 2400
+  - forward-auth                   # priority: 2002
+  - opa                            # priority: 2001
+  - authz-keycloak                 # priority: 2000
+  - proxy-cache                    # priority: 1085
+  - body-transformer               # priority: 1080
+  - proxy-mirror                   # priority: 1010
+  - proxy-rewrite                  # priority: 1008
+  - workflow                       # priority: 1006
+  - api-breaker                    # priority: 1005
+  - limit-conn                     # priority: 1003
+  - limit-count                    # priority: 1002
+  - limit-req                      # priority: 1001
+  - gzip                           # priority: 995
+  - server-info                    # priority: 990
+  - traffic-split                  # priority: 966
+  - redirect                       # priority: 900
+  - response-rewrite               # priority: 899
+  - kafka-proxy                    # priority: 508
+  - grpc-transcode                 # priority: 506
+  - grpc-web                       # priority: 505
+  - public-api                     # priority: 501
+  - prometheus                     # priority: 500
+  - datadog                        # priority: 495
+  - echo                           # priority: 412
+  - loggly                         # priority: 411
+  - http-logger                    # priority: 410
+  - splunk-hec-logging             # priority: 409
+  - skywalking-logger              # priority: 408
+  - google-cloud-logging           # priority: 407
+  - sls-logger                     # priority: 406
+  - tcp-logger                     # priority: 405
+  - kafka-logger                   # priority: 403
+  - rocketmq-logger                # priority: 402
+  - syslog                         # priority: 401
+  - udp-logger                     # priority: 400
+  - file-logger                    # priority: 399
+  - clickhouse-logger              # priority: 398
+  - tencent-cloud-cls              # priority: 397
+  - inspect                        # priority: 200
+  - example-plugin                 # priority: 0
+  - serverless-post-function       # priority: -2000
+  - ext-plugin-post-req            # priority: -3000
+
+stream_plugins:                    # sorted by priority
+  - ip-restriction                 # priority: 3000
+  - limit-conn                     # priority: 1003
+  - mqtt-proxy                     # priority: 1000
+  - syslog                         # priority: 401
+
+plugin_attr:
+  prometheus:
+    export_addr:
+      ip: "0.0.0.0"
+      port: 9091

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Portal - Analytics & Outcomes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 36px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Analytics feature block */
+        .analytics-feature {
+            padding: 24px 28px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .analytics-feature h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 14px;
+        }
+        
+        .analytics-feature p {
+            font-size: 17px;
+            color: #4A5568;
+            line-height: 1.7;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Intelligence section */
+        .intelligence-section {
+            padding: 28px 32px;
+            border: 1.5px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, transparent 100%);
+        }
+        
+        .intelligence-section h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 16px;
+        }
+        
+        .intelligence-section p {
+            font-size: 17px;
+            color: #4A5568;
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+        
+        .intelligence-section p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Results highlight */
+        .results-highlight {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 28px;
+            padding: 24px 28px;
+            background: linear-gradient(90deg, rgba(8, 145, 178, 0.05) 0%, transparent 100%);
+            border-left: 3px solid #0891B2;
+        }
+        
+        .result-metric {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .result-metric .big-number {
+            font-size: 56px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        
+        .result-metric .label {
+            font-size: 15px;
+            color: #1A2332;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .result-description {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .result-description p {
+            font-size: 17px;
+            color: #4A5568;
+            line-height: 1.7;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Sales velocity analytics and data-driven pricing enable 20% faster project sellouts</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Analytics feature -->
+            <div class="analytics-feature">
+                <h3>Sales Velocity Analytics</h3>
+                <p>Detailed analytics show <span class="metric">sales velocity by unit type, floor, and price point</span>. This intelligence enables data-driven decisions about pricing and marketing focus.</p>
+            </div>
+            
+            <!-- Intelligence section -->
+            <div class="intelligence-section">
+                <h3>Data-Driven Pricing Optimization</h3>
+                <p>This intelligence enables data-driven decisions about pricing and marketing. If certain unit types are selling slowly, developers can adjust pricing or increase marketing focus. If sales are ahead of projections, developers can optimize pricing to maximize revenue.</p>
+                <p>The developer portal provides specialized tools addressing the unique challenges of managing projects with hundreds of units, tracking sales progress, and adjusting pricing based on market response.</p>
+            </div>
+            
+            <!-- Results highlight -->
+            <div class="results-highlight">
+                <div class="result-metric">
+                    <div class="big-number">20%</div>
+                    <div class="label">Faster Sellout</div>
+                </div>
+                <div class="result-description">
+                    <p>Developers report <span class="metric">20% faster sellout times</span> using our platform compared to traditional marketing approaches. Real-time analytics and platform integration drive superior results across all project types.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Developer Portal (Continued) / Slide 10B</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Fluvio is deployed via Helm chart
+# Install with:
+# helm repo add fluvio https://infinyon.github.io/charts
+# helm install fluvio fluvio/fluvio --namespace fluvio-system --create-namespace
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fluvio-system
+---
+# Topic configurations will be created via Fluvio CLI
+# See README.md for topic creation commands

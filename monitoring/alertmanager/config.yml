@@ -1,0 +1,135 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  smtp_smarthost: 'smtp.sendgrid.net:587'
+  smtp_from: 'alerts@realestate.com'
+  smtp_auth_username: 'apikey'
+  smtp_auth_password: '${SENDGRID_API_KEY}'
+
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing tree
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  
+  routes:
+    # Critical alerts go to PagerDuty and Slack
+    - match:
+        severity: critical
+      receiver: 'pagerduty-critical'
+      continue: true
+    
+    - match:
+        severity: critical
+      receiver: 'slack-critical'
+      group_wait: 10s
+    
+    # Warning alerts go to Slack only
+    - match:
+        severity: warning
+      receiver: 'slack-warnings'
+      group_wait: 30s
+      repeat_interval: 4h
+    
+    # Database alerts
+    - match:
+        category: database
+      receiver: 'database-team'
+      group_wait: 10s
+    
+    # Infrastructure alerts
+    - match:
+        category: infrastructure
+      receiver: 'infrastructure-team'
+      group_wait: 10s
+    
+    # Business metrics
+    - match:
+        category: business
+      receiver: 'business-team'
+      repeat_interval: 24h
+
+# Inhibition rules
+inhibit_rules:
+  # Inhibit warning if critical alert for same service
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']
+  
+  # Inhibit service alerts if entire cluster is down
+  - source_match:
+      alertname: 'ClusterDown'
+    target_match_re:
+      alertname: '.*ServiceDown'
+
+# Receivers
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'devops@realestate.com'
+        headers:
+          Subject: '[Alert] {{ .GroupLabels.alertname }}'
+        html: '{{ template "email.html" . }}'
+
+  - name: 'pagerduty-critical'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+        details:
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+          resolved: '{{ template "pagerduty.default.instances" .Alerts.Resolved }}'
+          num_firing: '{{ .Alerts.Firing | len }}'
+          num_resolved: '{{ .Alerts.Resolved | len }}'
+
+  - name: 'slack-critical'
+    slack_configs:
+      - channel: '#alerts-critical'
+        title: ':fire: Critical Alert'
+        text: '{{ template "slack.critical.text" . }}'
+        color: 'danger'
+        send_resolved: true
+
+  - name: 'slack-warnings'
+    slack_configs:
+      - channel: '#alerts-warnings'
+        title: ':warning: Warning Alert'
+        text: '{{ template "slack.warning.text" . }}'
+        color: 'warning'
+        send_resolved: true
+
+  - name: 'database-team'
+    email_configs:
+      - to: 'database-team@realestate.com'
+        headers:
+          Subject: '[Database Alert] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#database-alerts'
+        text: '{{ template "slack.database.text" . }}'
+
+  - name: 'infrastructure-team'
+    email_configs:
+      - to: 'infrastructure@realestate.com'
+        headers:
+          Subject: '[Infrastructure Alert] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#infrastructure-alerts'
+        text: '{{ template "slack.infrastructure.text" . }}'
+
+  - name: 'business-team'
+    email_configs:
+      - to: 'business@realestate.com'
+        headers:
+          Subject: '[Business Metric] {{ .GroupLabels.alertname }}'
+    slack_configs:
+      - channel: '#business-metrics'
+        text: '{{ template "slack.business.text" . }}'
+        color: 'good'

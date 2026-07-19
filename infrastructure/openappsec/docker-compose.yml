@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  openappsec:
+    image: ghcr.io/openappsec/agent:latest
+    container_name: openappsec-waf
+    restart: always
+    privileged: true
+    environment:
+      - AGENT_TOKEN=${OPENAPPSEC_TOKEN}
+      - AGENT_MODE=standalone
+      - LOG_LEVEL=info
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - ./policy.yaml:/etc/cp/conf/policy.yaml:ro
+      - ./local-policy.yaml:/etc/cp/conf/local-policy.yaml:ro
+      - openappsec-data:/var/log/nano_agent
+      - openappsec-conf:/etc/cp/conf
+    networks:
+      - security-network
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  openappsec-management:
+    image: ghcr.io/openappsec/management:latest
+    container_name: openappsec-management
+    restart: always
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=openappsec
+      - POSTGRES_USER=openappsec
+      - POSTGRES_PASSWORD=${OPENAPPSEC_DB_PASSWORD:-openappsec_password}
+    ports:
+      - "8443:8443"
+    volumes:
+      - openappsec-mgmt-data:/var/lib/openappsec
+    networks:
+      - security-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: openappsec-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: openappsec
+      POSTGRES_USER: openappsec
+      POSTGRES_PASSWORD: ${OPENAPPSEC_DB_PASSWORD:-openappsec_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - security-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openappsec"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: openappsec-elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - security-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: openappsec-kibana
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - security-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  security-network:
+    driver: bridge
+
+volumes:
+  openappsec-data:
+  openappsec-conf:
+  openappsec-mgmt-data:
+  postgres-data:
+  elasticsearch-data:

@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Infrastructure Metrics",
+    "tags": [
+      "infrastructure",
+      "databases"
+    ],
+    "panels": [
+      {
+        "title": "Database Connections",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends"
+          }
+        ]
+      },
+      {
+        "title": "ClickHouse Query Duration",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "clickhouse_query_duration_seconds"
+          }
+        ]
+      },
+      {
+        "title": "OpenSearch Cluster Health",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "opensearch_cluster_health_status"
+          }
+        ]
+      },
+      {
+        "title": "Redis Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes"
+          }
+        ]
+      },
+      {
+        "title": "Kafka Consumer Lag",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "kafka_consumergroup_lag"
+          }
+        ]
+      }
+    ]
+  }
+}

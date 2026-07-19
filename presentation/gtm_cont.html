@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go-to-Market Strategy - Continued</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1100px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Direct-to-Consumer channel - full width */
+        .gtm-channel {
+            padding: 20px 24px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .channel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2563EB;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        
+        .gtm-channel p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Strategy list */
+        .strategy-list {
+            list-style: none;
+            margin-top: 8px;
+        }
+        
+        .strategy-list li {
+            font-size: 14px;
+            color: #4A5568;
+            line-height: 1.7;
+            padding-left: 16px;
+            position: relative;
+            margin-bottom: 6px;
+        }
+        
+        .strategy-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #2563EB;
+            font-weight: 700;
+        }
+        
+        /* Efficiency section */
+        .efficiency-section {
+            padding: 24px 28px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+        }
+        
+        .efficiency-section h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 14px;
+        }
+        
+        .efficiency-section p {
+            font-size: 16px;
+            color: #4A5568;
+            line-height: 1.7;
+        }
+        
+        /* Metrics highlight */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+            padding: 18px;
+            background: linear-gradient(90deg, rgba(8, 145, 178, 0.03) 0%, transparent 100%);
+            border-left: 2px solid #0891B2;
+        }
+        
+        .metric-item {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        
+        .metric-label {
+            font-size: 13px;
+            color: #1A2332;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1.3;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Direct-to-consumer channel builds brand awareness while multi-channel efficiency delivers sustainable growth</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Channel 3: Direct-to-Consumer -->
+            <div class="gtm-channel">
+                <div class="channel-title">Direct-to-Consumer</div>
+                <p>Organic growth through <span class="metric">content marketing and SEO</span> creates sustainable acquisition:</p>
+                <ul class="strategy-list">
+                    <li>Neighborhood guides and market reports</li>
+                    <li>Property valuation tools and calculators</li>
+                    <li>Educational content on buying/selling</li>
+                    <li>SEO-optimized property listings</li>
+                    <li>Social media engagement</li>
+                </ul>
+                <p style="margin-top: 12px;">This channel builds <span class="metric">brand awareness</span> and captures buyers early in their search journey.</p>
+            </div>
+            
+            <!-- Efficiency section -->
+            <div class="efficiency-section">
+                <h3>Multi-Channel Efficiency</h3>
+                <p>These three channels work synergistically to create <span class="metric">efficient customer acquisition</span>. Agent and developer partnerships provide immediate scale with low customer acquisition costs, while direct-to-consumer builds long-term brand value and organic growth. The combination delivers both rapid user growth and sustainable unit economics.</p>
+                
+                <div class="metrics-row">
+                    <div class="metric-item">
+                        <div class="metric-value">&lt;$50</div>
+                        <div class="metric-label">Customer Acquisition Cost</div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="metric-value">$1,200</div>
+                        <div class="metric-label">Lifetime Value</div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="metric-value">24:1</div>
+                        <div class="metric-label">LTV:CAC Ratio</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Go-to-Market Strategy (cont.) / Slide 19</div>
+    </div>
+</body>
+</html>

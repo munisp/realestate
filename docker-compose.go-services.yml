@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: escrow-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  escrow-service:
+    build:
+      context: ./services/go/escrow
+      dockerfile: Dockerfile
+    container_name: escrow-service
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mojaloop-service:
+    build:
+      context: ./services/go/mojaloop
+      dockerfile: Dockerfile
+    container_name: mojaloop-payment-service
+    ports:
+      - "5010:5010"
+    environment:
+      - PORT=5010
+      - MOJALOOP_API_URL=${MOJALOOP_API_URL:-http://localhost:4001}
+      - MOJALOOP_API_KEY=${MOJALOOP_API_KEY:-}
+      - MOJALOOP_FSP_ID=${MOJALOOP_FSP_ID:-escrow_fsp}
+      - MOJALOOP_WEBHOOK_SECRET=${MOJALOOP_WEBHOOK_SECRET:-change_me_in_production}
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  tigerbeetle-service:
+    build:
+      context: ./services/go/tigerbeetle
+      dockerfile: Dockerfile
+    container_name: tigerbeetle-payment-service
+    ports:
+      - "5011:5011"
+    environment:
+      - PORT=5011
+      - TIGERBEETLE_CLUSTER_ID=${TIGERBEETLE_CLUSTER_ID:-0}
+      - TIGERBEETLE_ADDRESSES=${TIGERBEETLE_ADDRESSES:-127.0.0.1:3000}
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  payment-network:
+    driver: bridge

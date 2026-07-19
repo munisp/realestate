@@ -1,0 +1,258 @@
+// Real Estate Platform Authorization Schema
+// Defines entities, relations, and permissions
+
+entity user {}
+
+entity organization {
+    // Relations
+    relation admin @user
+    relation member @user
+    
+    // Permissions
+    permission view = admin or member
+    permission edit = admin
+    permission delete = admin
+    permission invite_member = admin
+}
+
+entity property {
+    // Relations
+    relation owner @user @organization
+    relation agent @user
+    relation viewer @user
+    relation editor @user
+    relation organization @organization
+    
+    // Permissions
+    permission view = owner or agent or viewer or editor or (organization.member and public)
+    permission edit = owner or editor or (organization.admin and organization_property)
+    permission delete = owner or (organization.admin and organization_property)
+    permission publish = owner or agent or (organization.admin and organization_property)
+    permission unpublish = owner or agent or (organization.admin and organization_property)
+    permission share = owner or agent or editor
+    permission comment = viewer or editor or agent or owner
+    
+    // Attributes
+    attribute public boolean
+    attribute organization_property boolean
+}
+
+entity listing {
+    // Relations
+    relation property @property
+    relation creator @user
+    relation approver @user
+    
+    // Permissions
+    permission view = property.view
+    permission create = property.owner or property.agent
+    permission edit = creator or property.owner or property.agent
+    permission delete = creator or property.owner
+    permission approve = approver or property.owner
+    permission reject = approver or property.owner
+}
+
+entity transaction {
+    // Relations
+    relation buyer @user
+    relation seller @user
+    relation agent @user
+    relation property @property
+    relation escrow_manager @user
+    
+    // Permissions
+    permission view = buyer or seller or agent or escrow_manager
+    permission initiate = buyer or agent
+    permission approve = seller or property.owner
+    permission cancel = buyer or seller or agent
+    permission complete = escrow_manager or (buyer and seller_approved)
+    permission view_documents = buyer or seller or agent or escrow_manager
+    
+    // Attributes
+    attribute seller_approved boolean
+}
+
+entity document {
+    // Relations
+    relation owner @user
+    relation transaction @transaction
+    relation property @property
+    relation viewer @user
+    relation editor @user
+    
+    // Permissions
+    permission view = owner or viewer or transaction.view or property.owner
+    permission edit = owner or editor
+    permission delete = owner
+    permission download = owner or viewer or transaction.view
+    permission share = owner
+}
+
+entity payment {
+    // Relations
+    relation payer @user
+    relation payee @user
+    relation transaction @transaction
+    relation processor @user
+    
+    // Permissions
+    permission view = payer or payee or processor or transaction.view
+    permission initiate = payer or transaction.buyer
+    permission process = processor
+    permission refund = processor or payee
+    permission view_details = payer or payee or processor
+}
+
+entity review {
+    // Relations
+    relation author @user
+    relation property @property
+    relation moderator @user
+    
+    // Permissions
+    permission view = property.view
+    permission create = author
+    permission edit = author
+    permission delete = author or moderator or property.owner
+    permission report = property.view
+    permission moderate = moderator
+}
+
+entity message {
+    // Relations
+    relation sender @user
+    relation recipient @user
+    relation property @property
+    relation conversation @conversation
+    
+    // Permissions
+    permission view = sender or recipient
+    permission send = sender
+    permission delete = sender or recipient
+    permission report = recipient
+}
+
+entity conversation {
+    // Relations
+    relation participant @user
+    relation property @property
+    relation moderator @user
+    
+    // Permissions
+    permission view = participant
+    permission send_message = participant
+    permission leave = participant
+    permission archive = participant
+    permission moderate = moderator
+}
+
+entity shortlet {
+    // Relations
+    relation host @user
+    relation guest @user
+    relation property @property
+    relation manager @user
+    
+    // Permissions
+    permission view = property.view
+    permission book = guest
+    permission manage = host or manager
+    permission approve_booking = host or manager
+    permission cancel_booking = host or guest or manager
+    permission review = guest and has_stayed
+    
+    // Attributes
+    attribute has_stayed boolean
+}
+
+entity builder_project {
+    // Relations
+    relation builder @user @organization
+    relation investor @user
+    relation manager @user
+    relation viewer @user
+    
+    // Permissions
+    permission view = builder or investor or manager or viewer or public_project
+    permission edit = builder or (organization.admin and builder_organization)
+    permission delete = builder or (organization.admin and builder_organization)
+    permission add_investor = builder or manager
+    permission remove_investor = builder or manager
+    permission update_progress = builder or manager
+    permission view_financials = builder or investor or manager
+    
+    // Attributes
+    attribute public_project boolean
+    attribute builder_organization boolean
+}
+
+entity report {
+    // Relations
+    relation creator @user
+    relation subject @property @user @review
+    relation moderator @user
+    relation admin @user
+    
+    // Permissions
+    permission view = creator or moderator or admin
+    permission create = creator
+    permission resolve = moderator or admin
+    permission dismiss = moderator or admin
+    permission escalate = moderator
+}
+
+entity notification {
+    // Relations
+    relation recipient @user
+    relation sender @user
+    
+    // Permissions
+    permission view = recipient
+    permission mark_read = recipient
+    permission delete = recipient
+}
+
+entity subscription {
+    // Relations
+    relation subscriber @user
+    relation admin @user
+    
+    // Permissions
+    permission view = subscriber or admin
+    permission upgrade = subscriber
+    permission downgrade = subscriber
+    permission cancel = subscriber
+    permission manage = admin
+}
+
+// Admin roles
+entity admin_role {
+    // Relations
+    relation user @user
+    relation super_admin @user
+    
+    // Permissions
+    permission view_all_properties = user or super_admin
+    permission view_all_users = user or super_admin
+    permission view_all_transactions = user or super_admin
+    permission moderate_content = user or super_admin
+    permission manage_users = super_admin
+    permission manage_system = super_admin
+    permission view_analytics = user or super_admin
+    permission export_data = user or super_admin
+}
+
+// Verification
+entity verification {
+    // Relations
+    relation applicant @user @organization
+    relation verifier @user
+    relation admin @user
+    
+    // Permissions
+    permission view = applicant or verifier or admin
+    permission submit = applicant
+    permission approve = verifier or admin
+    permission reject = verifier or admin
+    permission request_changes = verifier or admin
+}

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocr-verification-service
+  labels:
+    app: ocr-verification
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ocr-verification
+  template:
+    metadata:
+      labels:
+        app: ocr-verification
+    spec:
+      containers:
+      - name: ocr-verification
+        image: realestate/ocr-verification:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: ocr-secrets
+              key: database-url
+        - name: ONFIDO_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ocr-secrets
+              key: onfido-api-key
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocr-verification-service
+spec:
+  selector:
+    app: ocr-verification
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: ClusterIP

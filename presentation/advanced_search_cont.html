@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Search - Efficiency Benefits</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 36px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Efficiency highlight - hero element */
+        .efficiency-highlight {
+            padding: 32px 40px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+            text-align: center;
+        }
+        
+        .efficiency-highlight .big-number {
+            font-size: 64px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        
+        .efficiency-highlight .label {
+            font-size: 20px;
+            color: #1A2332;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .efficiency-highlight .description {
+            font-size: 16px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Benefits grid */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        
+        .benefit-block {
+            padding: 20px 24px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .benefit-block h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 12px;
+        }
+        
+        .benefit-block p {
+            font-size: 16px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        /* Impact section */
+        .impact-section {
+            padding: 24px 32px;
+            border: 1.5px solid #2563EB;
+            background: linear-gradient(90deg, rgba(8, 145, 178, 0.03) 0%, transparent 100%);
+        }
+        
+        .impact-section h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 12px;
+        }
+        
+        .impact-section p {
+            font-size: 16px;
+            color: #4A5568;
+            line-height: 1.7;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Advanced search delivers 3X faster property discovery with saved searches and real-time notifications</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Efficiency metric hero -->
+            <div class="efficiency-highlight">
+                <div class="big-number">3X</div>
+                <div class="label">Faster Property Discovery</div>
+                <div class="description">Buyers find suitable properties in <span class="metric">4 weeks</span> on average, compared to <span class="metric">12 weeks</span> using traditional search tools</div>
+            </div>
+            
+            <!-- Benefits grid -->
+            <div class="benefits-grid">
+                <div class="benefit-block">
+                    <h3>Saved Searches & Notifications</h3>
+                    <p>Saved searches with notifications ensure buyers are alerted <span class="metric">within minutes</span> when properties matching their criteria are listed. In competitive markets, this speed advantage is often the difference between securing a property and missing out.</p>
+                </div>
+                
+                <div class="benefit-block">
+                    <h3>Visual Exploration</h3>
+                    <p>The map view displays all matching properties with clustering for dense areas, making it easy to explore neighborhoods visually and understand location context at a glance.</p>
+                </div>
+            </div>
+            
+            <!-- Impact section -->
+            <div class="impact-section">
+                <h3>Measurable Impact</h3>
+                <p>This <span class="metric">3X improvement</span> in efficiency translates directly to reduced stress, better outcomes, and higher satisfaction for buyers navigating the property search process. The competitive advantage of instant notifications in hot markets ensures buyers never miss opportunities, while comprehensive filtering eliminates time wasted viewing unsuitable properties.</p>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Advanced Search (Continued) / Slide 06B</div>
+    </div>
+</body>
+</html>

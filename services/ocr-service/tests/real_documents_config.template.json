@@ -1,0 +1,45 @@
+{
+  "documents": [
+    {
+      "file_path": "/path/to/nigerian_passport_001.jpg",
+      "document_type": "nigerian_passport",
+      "expected_data": {
+        "passport_number": "A12345678",
+        "surname": "OKONKWO",
+        "given_names": "CHINUA ACHEBE",
+        "date_of_birth": "1990-05-15",
+        "date_of_issue": "2020-01-10",
+        "date_of_expiry": "2030-01-09",
+        "place_of_birth": "LAGOS",
+        "nationality": "NIGERIAN",
+        "sex": "M"
+      }
+    },
+    {
+      "file_path": "/path/to/nin_card_001.jpg",
+      "document_type": "nin_card",
+      "expected_data": {
+        "nin": "12345678901",
+        "surname": "ADEYEMI",
+        "firstname": "FOLAKE",
+        "middlename": "BLESSING",
+        "date_of_birth": "1995-03-20",
+        "gender": "F"
+      }
+    },
+    {
+      "file_path": "/path/to/international_passport_001.jpg",
+      "document_type": "international_passport",
+      "expected_data": {
+        "passport_number": "N1234567",
+        "surname": "SMITH",
+        "given_names": "JOHN DAVID",
+        "nationality": "USA",
+        "date_of_birth": "1985-07-12",
+        "date_of_issue": "2019-06-01",
+        "date_of_expiry": "2029-05-31",
+        "sex": "M"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+# FastAPI and web framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Geospatial libraries
+apache-sedona==1.5.1
+geopandas==0.14.2
+shapely==2.0.2
+pyproj==3.6.1
+h3==3.7.6
+rtree==1.1.0
+
+# Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.25
+geoalchemy2==0.14.3
+
+# Redis
+redis==5.0.1
+hiredis==2.3.2
+
+# Kafka
+kafka-python==2.0.2
+
+# Data processing
+pandas==2.1.4
+numpy==1.26.3
+
+# HTTP client
+httpx==0.26.0
+
+# Utilities
+python-dotenv==1.0.0
+python-multipart==0.0.6

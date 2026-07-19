@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Architecture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 40px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 20px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        /* Security pillars grid */
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        
+        .security-pillar {
+            padding: 14px 16px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .pillar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 8px;
+        }
+        
+        .security-feature {
+            margin-bottom: 6px;
+        }
+        
+        .security-feature h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2563EB;
+            margin-bottom: 4px;
+        }
+        
+        .security-feature p {
+            font-size: 14px;
+            color: #4A5568;
+            line-height: 1.5;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Compliance section */
+        .compliance-section {
+            margin-top: 8px;
+            padding: 18px 22px;
+            border: 1.5px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, transparent 100%);
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 18px;
+            align-items: center;
+        }
+        
+        .compliance-text h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 6px;
+        }
+        
+        .compliance-text p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        .compliance-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .compliance-metric {
+            text-align: center;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.05) 0%, transparent 100%);
+            border-left: 2px solid #0891B2;
+        }
+        
+        .compliance-metric .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        
+        .compliance-metric .label {
+            font-size: 12px;
+            color: #1A2332;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Multi-layered security architecture with encryption, RBAC, and continuous monitoring ensures data protection</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Security pillars -->
+            <div class="security-grid">
+                <!-- Pillar 1: Encryption & Authentication -->
+                <div class="security-pillar">
+                    <div class="pillar-title">Encryption & Authentication</div>
+                    
+                    <div class="security-feature">
+                        <h4>Data Encryption</h4>
+                        <p><span class="metric">AES-256</span> encryption at rest, <span class="metric">TLS 1.3</span> in transit for all communications</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>JWT Authentication</h4>
+                        <p>Secure token-based authentication with automatic expiration and refresh</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>Biometric Security</h4>
+                        <p>Face ID and Touch ID support for mobile applications</p>
+                    </div>
+                </div>
+                
+                <!-- Pillar 2: Access Control & Network -->
+                <div class="security-pillar">
+                    <div class="pillar-title">Access Control & Network</div>
+                    
+                    <div class="security-feature">
+                        <h4>Role-Based Access Control</h4>
+                        <p>Granular permissions ensuring users access only authorized resources</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>Network Isolation</h4>
+                        <p>Microservices deployed in isolated network segments with strict firewall rules</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>Secrets Management</h4>
+                        <p>Centralized vault for API keys and credentials with automatic rotation</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>Rate Limiting</h4>
+                        <p>Protection against brute force and DDoS attacks</p>
+                    </div>
+                </div>
+                
+                <!-- Pillar 3: Monitoring & Compliance -->
+                <div class="security-pillar">
+                    <div class="pillar-title">Monitoring & Compliance</div>
+                    
+                    <div class="security-feature">
+                        <h4>Continuous Scanning</h4>
+                        <p>Automated vulnerability scanning of containers and dependencies</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>Security Monitoring</h4>
+                        <p>Real-time detection of suspicious activity and intrusion attempts</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>GDPR Compliance</h4>
+                        <p>Full compliance with data privacy regulations including right to deletion</p>
+                    </div>
+                    
+                    <div class="security-feature">
+                        <h4>CCPA Compliance</h4>
+                        <p>California Consumer Privacy Act compliance for U.S. users</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Compliance section -->
+            <div class="compliance-section">
+                <div class="compliance-text">
+                    <h3>Defense-in-Depth Strategy</h3>
+                    <p>Our security architecture implements multiple layers of protection. If one layer is compromised, additional safeguards prevent unauthorized access. Continuous monitoring and automated scanning ensure <span class="metric">zero critical vulnerabilities</span> in production.</p>
+                </div>
+                
+                <div class="compliance-metrics">
+                    <div class="compliance-metric">
+                        <div class="value">Zero</div>
+                        <div class="label">Critical Vulnerabilities</div>
+                    </div>
+                    
+                    <div class="compliance-metric">
+                        <div class="value">24/7</div>
+                        <div class="label">Security Monitoring</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Security Architecture / Slide 12</div>
+    </div>
+</body>
+</html>

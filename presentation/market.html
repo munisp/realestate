@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Opportunity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 36px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        /* Market overview - 2 columns */
+        .market-overview {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+        
+        .market-block {
+            padding: 32px 36px;
+            border-left: 3px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .market-block h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 16px;
+        }
+        
+        .market-block p {
+            font-size: 17px;
+            color: #4A5568;
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+        
+        .market-size {
+            font-size: 56px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin: 20px 0;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Segments list */
+        .segments-list {
+            list-style: none;
+            margin-top: 16px;
+        }
+        
+        .segments-list li {
+            font-size: 16px;
+            color: #4A5568;
+            line-height: 2;
+            padding-left: 22px;
+            position: relative;
+        }
+        
+        .segments-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #2563EB;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Real estate technology market growing at 15% CAGR presents massive opportunity</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Market overview - 2 columns -->
+            <div class="market-overview">
+                <div class="market-block">
+                    <h3>Global PropTech Market</h3>
+                    <p>The global property technology market is valued at:</p>
+                    <div class="market-size">$18B</div>
+                    <p>Growing at <span class="metric">15% CAGR</span>, driven by digital transformation in real estate, increasing adoption of AI and data analytics, and demand for streamlined transaction processes across residential and commercial segments.</p>
+                </div>
+                
+                <div class="market-block">
+                    <h3>Addressable Market Segments</h3>
+                    <p>Our platform addresses <span class="metric">$10B+ in addressable segments</span> across the PropTech ecosystem:</p>
+                    <ul class="segments-list">
+                        <li>Transaction management platforms</li>
+                        <li>CRM and lead management systems</li>
+                        <li>Advanced search and discovery tools</li>
+                        <li>Real-time analytics and market intelligence</li>
+                        <li>Developer project management solutions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Market Opportunity / Slide 16</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,317 @@
+{
+  "dashboard": {
+    "title": "SLO/SLI Dashboard - Payment Services",
+    "tags": ["slo", "sli", "error-budget"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0},
+        "type": "stat",
+        "title": "Escrow Availability SLO",
+        "targets": [
+          {
+            "expr": "sum(rate(escrow_http_requests_total{status=~\"2..\"}[5m])) / sum(rate(escrow_http_requests_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "text": {
+            "titleSize": 16,
+            "valueSize": 40
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 99.9, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 0},
+        "type": "stat",
+        "title": "Mojaloop Transfer Success Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(mojaloop_transfers_committed_total[5m])) / sum(rate(mojaloop_transfers_created_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 0},
+        "type": "stat",
+        "title": "TigerBeetle Availability SLO",
+        "targets": [
+          {
+            "expr": "sum(rate(tigerbeetle_http_requests_total{status=~\"2..\"}[5m])) / sum(rate(tigerbeetle_http_requests_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 99.99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+        "type": "gauge",
+        "title": "Escrow Error Budget Remaining (30d)",
+        "targets": [
+          {
+            "expr": "(1 - ((1 - (sum(rate(escrow_http_requests_total{status=~\"2..\"}[30d])) / sum(rate(escrow_http_requests_total[30d])))) / 0.001)) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 20, "color": "orange"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+        "type": "gauge",
+        "title": "TigerBeetle Error Budget Remaining (30d)",
+        "targets": [
+          {
+            "expr": "(1 - ((1 - (sum(rate(tigerbeetle_http_requests_total{status=~\"2..\"}[30d])) / sum(rate(tigerbeetle_http_requests_total[30d])))) / 0.0001)) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 20, "color": "orange"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 14},
+        "type": "graph",
+        "title": "Error Budget Burn Rate (All Services)",
+        "targets": [
+          {
+            "expr": "(1 - (sum(rate(escrow_http_requests_total{status=~\"2..\"}[1h])) / sum(rate(escrow_http_requests_total[1h])))) / 0.001",
+            "legendFormat": "Escrow (1h)",
+            "refId": "A"
+          },
+          {
+            "expr": "(1 - (sum(rate(mojaloop_http_requests_total{status=~\"2..\"}[1h])) / sum(rate(mojaloop_http_requests_total[1h])))) / 0.005",
+            "legendFormat": "Mojaloop (1h)",
+            "refId": "B"
+          },
+          {
+            "expr": "(1 - (sum(rate(tigerbeetle_http_requests_total{status=~\"2..\"}[1h])) / sum(rate(tigerbeetle_http_requests_total[1h])))) / 0.0001",
+            "legendFormat": "TigerBeetle (1h)",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Burn Rate (x)"},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [14.4],
+                "type": "gt"
+              },
+              "operator": {
+                "type": "and"
+              },
+              "query": {
+                "params": ["A", "5m", "now"]
+              },
+              "reducer": {
+                "params": [],
+                "type": "avg"
+              },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "1m",
+          "handler": 1,
+          "name": "High Error Budget Burn Rate",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+        "type": "graph",
+        "title": "Escrow P95 Latency vs SLO",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(escrow_http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P95 Latency",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Latency"},
+          {"format": "short"}
+        ],
+        "seriesOverrides": [
+          {
+            "alias": "SLO Threshold",
+            "color": "#C4162A",
+            "fill": 0,
+            "linewidth": 2,
+            "dashes": true
+          }
+        ],
+        "thresholds": [
+          {
+            "value": 0.5,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+        "type": "graph",
+        "title": "TigerBeetle P99 Latency vs SLO",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(tigerbeetle_ledger_operation_duration_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P99 Latency",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ms", "label": "Latency"},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {
+            "value": 10,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 30},
+        "type": "table",
+        "title": "SLO Compliance Summary",
+        "targets": [
+          {
+            "expr": "sum(rate(escrow_http_requests_total{status=~\"2..\"}[30d])) / sum(rate(escrow_http_requests_total[30d])) * 100",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(mojaloop_transfers_committed_total[24h])) / sum(rate(mojaloop_transfers_created_total[24h])) * 100",
+            "format": "table",
+            "instant": true,
+            "refId": "B"
+          },
+          {
+            "expr": "sum(rate(tigerbeetle_http_requests_total{status=~\"2..\"}[30d])) / sum(rate(tigerbeetle_http_requests_total[30d])) * 100",
+            "format": "table",
+            "instant": true,
+            "refId": "C"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Real Estate Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            overflow: hidden;
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Blueprint grid background */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.15;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Corner marks - blueprint style */
+        .corner-mark {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 2px solid #2563EB;
+        }
+        
+        .corner-mark.top-left {
+            top: 40px;
+            left: 40px;
+            border-right: none;
+            border-bottom: none;
+        }
+        
+        .corner-mark.top-right {
+            top: 40px;
+            right: 40px;
+            border-left: none;
+            border-bottom: none;
+        }
+        
+        .corner-mark.bottom-left {
+            bottom: 40px;
+            left: 40px;
+            border-right: none;
+            border-top: none;
+        }
+        
+        .corner-mark.bottom-right {
+            bottom: 40px;
+            right: 40px;
+            border-left: none;
+            border-top: none;
+        }
+        
+        /* Technical annotation lines */
+        .tech-line {
+            position: absolute;
+            height: 1px;
+            background: #2563EB;
+        }
+        
+        .tech-line.horizontal {
+            width: 200px;
+            top: 50%;
+            left: 40px;
+        }
+        
+        .tech-line.horizontal.right {
+            left: auto;
+            right: 40px;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 900px;
+        }
+        
+        .main-title {
+            font-size: 56px;
+            font-weight: 700;
+            color: #1A2332;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            line-height: 1.1;
+        }
+        
+        .subtitle {
+            font-size: 28px;
+            font-weight: 400;
+            color: #4A5568;
+            margin-bottom: 60px;
+            line-height: 1.4;
+        }
+        
+        .accent-line {
+            width: 120px;
+            height: 3px;
+            background: #2563EB;
+            margin: 0 auto 40px;
+        }
+        
+        .footer-text {
+            font-size: 18px;
+            font-weight: 300;
+            color: #0891B2;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        
+        /* Blueprint measurement marks */
+        .measurement {
+            position: absolute;
+            font-size: 10px;
+            color: #2563EB;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+        
+        .measurement.top {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .measurement.bottom {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner marks -->
+        <div class="corner-mark top-left"></div>
+        <div class="corner-mark top-right"></div>
+        <div class="corner-mark bottom-left"></div>
+        <div class="corner-mark bottom-right"></div>
+        
+        <!-- Technical measurement annotations -->
+        <div class="measurement top">1280 × 720</div>
+        <div class="measurement bottom">ARCHITECTURAL BLUEPRINT SERIES</div>
+        
+        <!-- Main content -->
+        <div class="content">
+            <h1 class="main-title">Enterprise Real Estate Platform</h1>
+            <div class="accent-line"></div>
+            <h2 class="subtitle">Transforming Real Estate Through Technology</h2>
+            <p class="footer-text">Next-Generation Property Discovery, Valuation & Transaction Management</p>
+        </div>
+    </div>
+</body>
+</html>

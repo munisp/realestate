@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - logging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./monitoring/promtail/promtail-config.yaml:/etc/promtail/config.yaml
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - logging-network
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # Optional: Fluent Bit for lightweight log forwarding
+  fluent-bit:
+    image: fluent/fluent-bit:latest
+    container_name: fluent-bit
+    volumes:
+      - ./monitoring/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./monitoring/fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - logging-network
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  # Grafana (if not already running from monitoring stack)
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana-logging
+  #   ports:
+  #     - "3002:3000"
+  #   volumes:
+  #     - grafana-logging-data:/var/lib/grafana
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=admin
+  #     - GF_SECURITY_ADMIN_PASSWORD=admin
+  #     - GF_USERS_ALLOW_SIGN_UP=false
+  #   networks:
+  #     - logging-network
+  #   depends_on:
+  #     - loki
+  #   restart: unless-stopped
+
+volumes:
+  loki-data:
+    driver: local
+  grafana-logging-data:
+    driver: local
+
+networks:
+  logging-network:
+    driver: bridge
+  payment-network:
+    external: true

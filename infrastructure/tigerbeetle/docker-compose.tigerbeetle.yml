@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # TigerBeetle Cluster - 3 replicas for high availability
+  tigerbeetle-0:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    container_name: tigerbeetle-0
+    command: start --addresses=0.0.0.0:3000,tigerbeetle-1:3001,tigerbeetle-2:3002 --replica=0 --cluster=0 /data/0_0.tigerbeetle
+    ports:
+      - "3000:3000"
+    volumes:
+      - tigerbeetle-data-0:/data
+    networks:
+      - tigerbeetle-network
+    restart: unless-stopped
+
+  tigerbeetle-1:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    container_name: tigerbeetle-1
+    command: start --addresses=tigerbeetle-0:3000,0.0.0.0:3001,tigerbeetle-2:3002 --replica=1 --cluster=0 /data/0_1.tigerbeetle
+    ports:
+      - "3001:3001"
+    volumes:
+      - tigerbeetle-data-1:/data
+    networks:
+      - tigerbeetle-network
+    restart: unless-stopped
+
+  tigerbeetle-2:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    container_name: tigerbeetle-2
+    command: start --addresses=tigerbeetle-0:3000,tigerbeetle-1:3001,0.0.0.0:3002 --replica=2 --cluster=0 /data/0_2.tigerbeetle
+    ports:
+      - "3002:3002"
+    volumes:
+      - tigerbeetle-data-2:/data
+    networks:
+      - tigerbeetle-network
+    restart: unless-stopped
+
+  # TigerBeetle Service - Go microservice wrapper
+  tigerbeetle-service:
+    build:
+      context: ../../services/tigerbeetle-service
+      dockerfile: Dockerfile
+    container_name: tigerbeetle-service
+    environment:
+      - PORT=8085
+      - TIGERBEETLE_ADDRESSES=tigerbeetle-0:3000,tigerbeetle-1:3001,tigerbeetle-2:3002
+      - TIGERBEETLE_CLUSTER_ID=0
+    ports:
+      - "8085:8085"
+    depends_on:
+      - tigerbeetle-0
+      - tigerbeetle-1
+      - tigerbeetle-2
+    networks:
+      - tigerbeetle-network
+    restart: unless-stopped
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: tigerbeetle-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9093:9090"
+    networks:
+      - tigerbeetle-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: tigerbeetle-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?GRAFANA_PASSWORD must be set}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3002:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - tigerbeetle-network
+
+volumes:
+  tigerbeetle-data-0:
+  tigerbeetle-data-1:
+  tigerbeetle-data-2:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  tigerbeetle-network:
+    name: tigerbeetle-network
+    driver: bridge

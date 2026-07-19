@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go-to-Market Strategy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 36px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1100px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* GTM channels - 2 columns for first part */
+        .gtm-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+        }
+        
+        .gtm-channel {
+            padding: 28px 32px;
+            border-left: 3px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        
+        .channel-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2563EB;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        
+        .gtm-channel p {
+            font-size: 16px;
+            color: #4A5568;
+            line-height: 1.7;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Strategy list */
+        .strategy-list {
+            list-style: none;
+            margin-top: 4px;
+        }
+        
+        .strategy-list li {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.8;
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .strategy-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #2563EB;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        /* Transition section */
+        .transition-section {
+            padding: 24px 28px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+            text-align: center;
+        }
+        
+        .transition-section p {
+            font-size: 18px;
+            color: #1A2332;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Agent partnerships and developer relationships provide efficient customer acquisition channels</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- GTM channels - 2 columns -->
+            <div class="gtm-grid">
+                <!-- Channel 1: Agent Partnerships -->
+                <div class="gtm-channel">
+                    <div class="channel-title">Agent Partnerships</div>
+                    <p>Real estate agents are <span class="metric">natural evangelists</span> for the platform. Our partnership program includes:</p>
+                    <ul class="strategy-list">
+                        <li>Comprehensive training on platform features</li>
+                        <li>Dedicated success managers for support</li>
+                        <li>Attractive commission structures for referrals</li>
+                        <li>Co-marketing programs and materials</li>
+                        <li>Early access to new features</li>
+                    </ul>
+                    <p style="margin-top: 12px;">Agents bring their existing client networks, providing <span class="metric">immediate access</span> to qualified buyers and sellers.</p>
+                </div>
+                
+                <!-- Channel 2: Developer Relationships -->
+                <div class="gtm-channel">
+                    <div class="channel-title">Developer Relationships</div>
+                    <p>Property developers seek <span class="metric">efficient sales channels</span>. Our developer program follows a proven expansion path:</p>
+                    <ul class="strategy-list">
+                        <li>Pilot projects with single developments</li>
+                        <li>Demonstrate measurable sellout improvements</li>
+                        <li>Expand to developer's full portfolio</li>
+                        <li>White-label options for large developers</li>
+                        <li>Integrated marketing and analytics</li>
+                    </ul>
+                    <p style="margin-top: 12px;">Developers bring <span class="metric">exclusive inventory</span> and credibility that attracts buyers to the platform.</p>
+                </div>
+            </div>
+            
+            <!-- Transition section -->
+            <div class="transition-section">
+                <p>These two partnership channels—<span class="metric">agents and developers</span>—provide immediate scale and credibility. Combined with our direct-to-consumer strategy, they create a comprehensive multi-channel acquisition approach with exceptional unit economics.</p>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Go-to-Market Strategy Part 1 / Slide 18</div>
+    </div>
+</body>
+</html>

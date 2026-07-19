@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  pgbouncer:
+    image: edoburu/pgbouncer:1.21.0
+    container_name: pgbouncer
+    restart: always
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=25
+      - MIN_POOL_SIZE=10
+      - RESERVE_POOL_SIZE=5
+      - RESERVE_POOL_TIMEOUT=3
+      - MAX_DB_CONNECTIONS=100
+      - MAX_USER_CONNECTIONS=100
+      - SERVER_LIFETIME=3600
+      - SERVER_IDLE_TIMEOUT=600
+      - QUERY_TIMEOUT=0
+      - QUERY_WAIT_TIMEOUT=120
+      - CLIENT_IDLE_TIMEOUT=0
+      - CLIENT_LOGIN_TIMEOUT=60
+      - AUTODB_IDLE_TIMEOUT=3600
+      - DNS_MAX_TTL=15
+      - DNS_NXDOMAIN_TTL=15
+      - LOG_CONNECTIONS=1
+      - LOG_DISCONNECTIONS=1
+      - LOG_POOLER_ERRORS=1
+      - STATS_PERIOD=60
+      - VERBOSE=0
+    ports:
+      - "6432:5432"
+    networks:
+      - database-network
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    healthcheck:
+      test: ["CMD-SHELL", "psql -h localhost -p 5432 -U pgbouncer pgbouncer -c 'SHOW POOLS;' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  pgbouncer-exporter:
+    image: prometheuscommunity/pgbouncer-exporter:latest
+    container_name: pgbouncer-exporter
+    restart: always
+    environment:
+      - PGBOUNCER_EXPORTER_HOST=pgbouncer
+      - PGBOUNCER_EXPORTER_PORT=5432
+      - PGBOUNCER_EXPORTER_DATABASE=pgbouncer
+      - PGBOUNCER_EXPORTER_USER=pgbouncer
+      - PGBOUNCER_EXPORTER_PASSWORD=${PGBOUNCER_PASSWORD}
+    ports:
+      - "9127:9127"
+    networks:
+      - database-network
+    depends_on:
+      - pgbouncer
+
+networks:
+  database-network:
+    driver: bridge

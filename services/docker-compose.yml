@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Go Services
+  payment-service:
+    build: ./go/payment-service
+    ports:
+      - "8081:8081"
+      - "50051:50051"
+    environment:
+      - SERVICE_NAME=payment-service
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-service:
+    build: ./go/notification-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVICE_NAME=notification-service
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  image-service:
+    build: ./go/image-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SERVICE_NAME=image-service
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Python Services
+  ml-valuation:
+    build:
+      context: ./python/ml-valuation
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - SERVICE_NAME=ml-valuation
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ocr-service:
+    build:
+      context: ./python/ocr-service
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - SERVICE_NAME=ocr-service
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  fraud-detection:
+    build:
+      context: ./python/fraud-detection
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - SERVICE_NAME=fraud-detection
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    name: realestate-services

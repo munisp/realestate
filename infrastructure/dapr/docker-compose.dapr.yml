@@ -1,0 +1,191 @@
+version: '3.8'
+
+services:
+  # Dapr Placement Service
+  dapr-placement:
+    image: "daprio/dapr:1.12.0"
+    command: ["./placement", "-port", "50006", "-log-level", "debug"]
+    container_name: dapr-placement
+    ports:
+      - "50006:50006"
+    networks:
+      - dapr-network
+
+  # Jaeger - Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: dapr-jaeger
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"    # Zipkin compatible endpoint
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - dapr-network
+
+  # Zipkin - Alternative tracing backend
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: dapr-zipkin
+    ports:
+      - "9412:9411"
+    networks:
+      - dapr-network
+
+  # Redis - State store and pub/sub
+  redis:
+    image: redis:7-alpine
+    container_name: dapr-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - dapr-network
+
+  # Dapr Dashboard
+  dapr-dashboard:
+    image: "daprio/dashboard:latest"
+    container_name: dapr-dashboard
+    command: ["--docker-compose=true"]
+    ports:
+      - "8080:8080"
+    networks:
+      - dapr-network
+    depends_on:
+      - dapr-placement
+
+  # Property Service with Dapr sidecar
+  property-service-dapr:
+    image: "daprio/daprd:1.12.0"
+    container_name: property-service-dapr
+    command: [
+      "./daprd",
+      "-app-id", "property-service",
+      "-app-port", "8080",
+      "-dapr-http-port", "3500",
+      "-dapr-grpc-port", "50001",
+      "-placement-host-address", "dapr-placement:50006",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml",
+      "-log-level", "debug"
+    ]
+    volumes:
+      - ./components.yaml:/components/components.yaml
+      - ./config.yaml:/config/config.yaml
+    depends_on:
+      - dapr-placement
+      - redis
+      - jaeger
+    network_mode: "service:property-service"
+
+  # User Service with Dapr sidecar
+  user-service-dapr:
+    image: "daprio/daprd:1.12.0"
+    container_name: user-service-dapr
+    command: [
+      "./daprd",
+      "-app-id", "user-service",
+      "-app-port", "8082",
+      "-dapr-http-port", "3500",
+      "-dapr-grpc-port", "50001",
+      "-placement-host-address", "dapr-placement:50006",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml",
+      "-log-level", "debug"
+    ]
+    volumes:
+      - ./components.yaml:/components/components.yaml
+      - ./config.yaml:/config/config.yaml
+    depends_on:
+      - dapr-placement
+      - redis
+      - jaeger
+    network_mode: "service:user-service"
+
+  # Transaction Service with Dapr sidecar
+  transaction-service-dapr:
+    image: "daprio/daprd:1.12.0"
+    container_name: transaction-service-dapr
+    command: [
+      "./daprd",
+      "-app-id", "transaction-service",
+      "-app-port", "8083",
+      "-dapr-http-port", "3500",
+      "-dapr-grpc-port", "50001",
+      "-placement-host-address", "dapr-placement:50006",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml",
+      "-log-level", "debug"
+    ]
+    volumes:
+      - ./components.yaml:/components/components.yaml
+      - ./config.yaml:/config/config.yaml
+    depends_on:
+      - dapr-placement
+      - redis
+      - jaeger
+    network_mode: "service:transaction-service"
+
+  # Valuation Service with Dapr sidecar
+  valuation-service-dapr:
+    image: "daprio/daprd:1.12.0"
+    container_name: valuation-service-dapr
+    command: [
+      "./daprd",
+      "-app-id", "valuation-service",
+      "-app-port", "8081",
+      "-dapr-http-port", "3500",
+      "-dapr-grpc-port", "50001",
+      "-placement-host-address", "dapr-placement:50006",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml",
+      "-log-level", "debug"
+    ]
+    volumes:
+      - ./components.yaml:/components/components.yaml
+      - ./config.yaml:/config/config.yaml
+    depends_on:
+      - dapr-placement
+      - redis
+      - jaeger
+    network_mode: "service:valuation-service"
+
+  # Geospatial Service with Dapr sidecar
+  geospatial-service-dapr:
+    image: "daprio/daprd:1.12.0"
+    container_name: geospatial-service-dapr
+    command: [
+      "./daprd",
+      "-app-id", "geospatial-service",
+      "-app-port", "8084",
+      "-dapr-http-port", "3500",
+      "-dapr-grpc-port", "50001",
+      "-placement-host-address", "dapr-placement:50006",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml",
+      "-log-level", "debug"
+    ]
+    volumes:
+      - ./components.yaml:/components/components.yaml
+      - ./config.yaml:/config/config.yaml
+    depends_on:
+      - dapr-placement
+      - redis
+      - jaeger
+    network_mode: "service:geospatial-service"
+
+volumes:
+  redis-data:
+
+networks:
+  dapr-network:
+    name: dapr-network
+    driver: bridge

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  collaborative-filtering:
+    build:
+      context: .
+      dockerfile: Dockerfile.cf
+    container_name: cf-service
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MODEL_PATH=/data/cf_model.pkl
+      - MIN_INTERACTIONS=3
+      - N_COMPONENTS=50
+      - SIMILARITY_THRESHOLD=0.3
+    volumes:
+      - cf-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - realestate-network
+
+  computer-vision:
+    build:
+      context: .
+      dockerfile: Dockerfile.cv
+    container_name: cv-service
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - CV_MODEL_PATH=/data/cv_models
+    volumes:
+      - cv-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - realestate-network
+
+volumes:
+  cf-data:
+    driver: local
+  cv-data:
+    driver: local
+
+networks:
+  realestate-network:
+    driver: bridge

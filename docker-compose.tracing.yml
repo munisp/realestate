@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "5775:5775/udp"      # Zipkin compact thrift
+      - "6831:6831/udp"      # Jaeger compact thrift
+      - "6832:6832/udp"      # Jaeger binary thrift
+      - "5778:5778"          # Serve configs
+      - "16686:16686"        # Jaeger UI
+      - "14250:14250"        # gRPC
+      - "14268:14268"        # HTTP collector
+      - "14269:14269"        # Admin port
+      - "9411:9411"          # Zipkin compatible endpoint
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_EPHEMERAL=false
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
+      - QUERY_BASE_PATH=/jaeger
+    volumes:
+      - jaeger-badger-data:/badger
+    networks:
+      - tracing-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:14269/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Jaeger Agent (for UDP collection)
+  jaeger-agent:
+    image: jaegertracing/jaeger-agent:latest
+    container_name: jaeger-agent
+    command:
+      - "--reporter.grpc.host-port=jaeger:14250"
+      - "--reporter.type=grpc"
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+    networks:
+      - tracing-network
+    depends_on:
+      - jaeger
+    restart: unless-stopped
+
+  # Optional: OpenTelemetry Collector (for advanced routing)
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./monitoring/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics
+      - "8889:8889"   # Prometheus exporter
+      - "13133:13133" # Health check
+    networks:
+      - tracing-network
+    depends_on:
+      - jaeger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  jaeger-badger-data:
+    driver: local
+
+networks:
+  tracing-network:
+    driver: bridge
+  payment-network:
+    external: true

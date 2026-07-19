@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Real Estate Technology Gap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid - subtle */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header section */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 50px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+            margin-top: 16px;
+        }
+        
+        /* Content section */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 32px;
+        }
+        
+        .problem-block {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 24px;
+            padding: 24px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .problem-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+        }
+        
+        .problem-content h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        
+        .problem-content p {
+            font-size: 16px;
+            font-weight: 400;
+            color: #4A5568;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .stat-highlight {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner marks */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+        }
+        
+        .corner-mark.top-right {
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark top-right"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Traditional real estate systems cost the industry $12B annually in inefficiencies</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="problem-block">
+                <div class="problem-number">01</div>
+                <div class="problem-content">
+                    <h3>Fragmented Technology Ecosystem</h3>
+                    <p>The real estate industry remains one of the least digitized sectors despite representing over <span class="stat-highlight">$3.5 trillion</span> in annual transactions. Legacy systems force agents to juggle <span class="stat-highlight">multiple disconnected tools</span>, with the average agent using <span class="stat-highlight">seven different platforms daily</span>. Property data exists in silos across MLS systems, CRM platforms, and transaction management tools, creating friction at every step.</p>
+                </div>
+            </div>
+            
+            <div class="problem-block">
+                <div class="problem-number">02</div>
+                <div class="problem-content">
+                    <h3">Inefficient Property Discovery</h3>
+                    <p>Buyers waste an average of <span class="stat-highlight">12 weeks searching for properties</span> due to poor search capabilities and outdated listings. Manual processes delay transactions by <span class="stat-highlight">15-20 days</span> compared to digitally-enabled workflows. The lack of real-time analytics means pricing decisions rely on outdated comparable sales data, leading to suboptimal outcomes for both buyers and sellers.</p>
+                </div>
+            </div>
+            
+            <div class="problem-block">
+                <div class="problem-number">03</div>
+                <div class="problem-content">
+                    <h3>Massive Opportunity Cost</h3>
+                    <p>This fragmentation creates opportunity cost measured in <span class="stat-highlight">billions of dollars</span>. Inefficient workflows, delayed transactions, and suboptimal pricing decisions compound across millions of annual transactions. Our platform addresses these challenges through <span class="stat-highlight">unified architecture, intelligent automation, and real-time data processing</span>.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Problem Analysis / Slide 02</div>
+    </div>
+</body>
+</html>

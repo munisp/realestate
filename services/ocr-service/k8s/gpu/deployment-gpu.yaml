@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocr-service-gpu
+  namespace: realestate
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ocr-service-gpu
+  template:
+    metadata:
+      labels:
+        app: ocr-service-gpu
+    spec:
+      nodeSelector:
+        accelerator: nvidia-tesla-t4  # Or nvidia-a100 for better performance
+      containers:
+      - name: ocr-service
+        image: realestate/ocr-service:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        - name: DEEPSEEK_OCR_BATCH_SIZE
+          value: "8"
+        - name: PADDLE_OCR_USE_GPU
+          value: "true"
+        - name: MODEL_CACHE_DIR
+          value: "/models"
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "16Gi"
+            cpu: "8"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: model-cache
+          mountPath: /models
+        - name: shm
+          mountPath: /dev/shm
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: ocr-model-cache
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ocr-model-cache
+  namespace: realestate
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: fast-ssd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocr-service-gpu
+  namespace: realestate
+spec:
+  selector:
+    app: ocr-service-gpu
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ocr-service-gpu-hpa
+  namespace: realestate
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ocr-service-gpu
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Pods
+    pods:
+      metric:
+        name: gpu_utilization
+      target:
+        type: AverageValue
+        averageValue: "75"

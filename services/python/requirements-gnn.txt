@@ -1,0 +1,25 @@
+# Python GNN Service Requirements
+# Graph Neural Network dependencies for property valuation
+
+# Web Framework
+flask==3.0.0
+flask-cors==4.0.0
+gunicorn==21.2.0
+
+# Machine Learning & GNN
+torch==2.1.0
+torch-geometric==2.4.0
+numpy==1.24.3
+scikit-learn==1.3.2
+
+# Data Processing
+pandas==2.1.3
+
+# Caching & Performance
+redis==5.0.1
+
+# HTTP Requests
+requests==2.31.0
+
+# Utilities
+python-dotenv==1.0.0

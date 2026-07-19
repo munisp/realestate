@@ -1,0 +1,276 @@
+# Service Level Objectives (SLOs) and Service Level Indicators (SLIs)
+# for Real Estate Platform Payment Services
+
+services:
+  escrow-service:
+    name: "Escrow Service"
+    description: "Core escrow management service"
+    
+    slos:
+      availability:
+        target: 99.9  # 99.9% uptime
+        window: 30d   # 30-day rolling window
+        error_budget: 0.1  # 0.1% error budget (43.2 minutes/month)
+        
+        sli:
+          type: availability
+          good_events: |
+            sum(rate(escrow_http_requests_total{status=~"2.."}[5m]))
+          total_events: |
+            sum(rate(escrow_http_requests_total[5m]))
+          formula: good_events / total_events
+        
+        alerts:
+          - name: ErrorBudgetBurnRateFast
+            expr: |
+              (
+                1 - (
+                  sum(rate(escrow_http_requests_total{status=~"2.."}[1h]))
+                  /
+                  sum(rate(escrow_http_requests_total[1h]))
+                )
+              ) > (14.4 * 0.001)
+            severity: critical
+            description: "Error budget burning too fast (>14.4x)"
+          
+          - name: ErrorBudgetBurnRateSlow
+            expr: |
+              (
+                1 - (
+                  sum(rate(escrow_http_requests_total{status=~"2.."}[6h]))
+                  /
+                  sum(rate(escrow_http_requests_total[6h]))
+                )
+              ) > (6 * 0.001)
+            severity: warning
+            description: "Error budget burning slowly (>6x)"
+      
+      latency:
+        target: 95  # 95% of requests < 500ms
+        window: 30d
+        error_budget: 5  # 5% can exceed 500ms
+        
+        sli:
+          type: latency
+          threshold: 0.5  # 500ms
+          good_events: |
+            histogram_quantile(0.95, 
+              sum(rate(escrow_http_request_duration_seconds_bucket[5m])) by (le)
+            ) < 0.5
+          formula: percentage of requests under threshold
+        
+        alerts:
+          - name: HighLatencyBudgetBurn
+            expr: |
+              histogram_quantile(0.95,
+                sum(rate(escrow_http_request_duration_seconds_bucket[5m])) by (le)
+              ) > 0.5
+            for: 10m
+            severity: warning
+            description: "P95 latency exceeds 500ms"
+      
+      throughput:
+        target: 1000  # 1000 requests per second minimum
+        window: 5m
+        
+        sli:
+          type: throughput
+          good_events: |
+            sum(rate(escrow_http_requests_total[5m])) >= 1000
+          formula: current_rps >= target_rps
+        
+        alerts:
+          - name: LowThroughput
+            expr: |
+              sum(rate(escrow_http_requests_total[5m])) < 1000
+            for: 15m
+            severity: warning
+            description: "Throughput below 1000 req/s"
+
+  mojaloop-service:
+    name: "Mojaloop Payment Service"
+    description: "Mobile money and cross-border payment integration"
+    
+    slos:
+      availability:
+        target: 99.5  # 99.5% uptime
+        window: 30d
+        error_budget: 0.5  # 0.5% error budget (3.6 hours/month)
+        
+        sli:
+          type: availability
+          good_events: |
+            sum(rate(mojaloop_http_requests_total{status=~"2.."}[5m]))
+          total_events: |
+            sum(rate(mojaloop_http_requests_total[5m]))
+          formula: good_events / total_events
+      
+      transfer_success_rate:
+        target: 99  # 99% of transfers succeed
+        window: 24h
+        error_budget: 1  # 1% can fail
+        
+        sli:
+          type: success_rate
+          good_events: |
+            sum(rate(mojaloop_transfers_committed_total[5m]))
+          total_events: |
+            sum(rate(mojaloop_transfers_created_total[5m]))
+          formula: committed / created
+        
+        alerts:
+          - name: HighTransferFailureRate
+            expr: |
+              (
+                sum(rate(mojaloop_transfers_committed_total[5m]))
+                /
+                sum(rate(mojaloop_transfers_created_total[5m]))
+              ) < 0.99
+            for: 10m
+            severity: critical
+            description: "Transfer success rate below 99%"
+      
+      webhook_processing:
+        target: 95  # 95% processed within 2 seconds
+        window: 1h
+        error_budget: 5
+        
+        sli:
+          type: latency
+          threshold: 2.0  # 2 seconds
+          good_events: |
+            histogram_quantile(0.95,
+              sum(rate(mojaloop_webhook_processing_duration_seconds_bucket[5m])) by (le)
+            ) < 2.0
+          formula: percentage under threshold
+
+  tigerbeetle-service:
+    name: "TigerBeetle Ledger Service"
+    description: "High-performance double-entry ledger"
+    
+    slos:
+      availability:
+        target: 99.99  # 99.99% uptime (4 nines)
+        window: 30d
+        error_budget: 0.01  # 0.01% error budget (4.32 minutes/month)
+        
+        sli:
+          type: availability
+          good_events: |
+            sum(rate(tigerbeetle_http_requests_total{status=~"2.."}[5m]))
+          total_events: |
+            sum(rate(tigerbeetle_http_requests_total[5m]))
+          formula: good_events / total_events
+        
+        alerts:
+          - name: CriticalAvailabilityBreach
+            expr: |
+              (
+                1 - (
+                  sum(rate(tigerbeetle_http_requests_total{status=~"2.."}[5m]))
+                  /
+                  sum(rate(tigerbeetle_http_requests_total[5m]))
+                )
+              ) > 0.0001
+            for: 5m
+            severity: critical
+            description: "Availability below 99.99%"
+      
+      latency:
+        target: 99  # 99% of requests < 10ms
+        window: 5m
+        error_budget: 1
+        
+        sli:
+          type: latency
+          threshold: 0.01  # 10ms
+          good_events: |
+            histogram_quantile(0.99,
+              sum(rate(tigerbeetle_ledger_operation_duration_seconds_bucket[5m])) by (le)
+            ) < 0.01
+          formula: percentage under threshold
+        
+        alerts:
+          - name: HighLedgerLatency
+            expr: |
+              histogram_quantile(0.99,
+                sum(rate(tigerbeetle_ledger_operation_duration_seconds_bucket[5m])) by (le)
+              ) > 0.01
+            for: 5m
+            severity: critical
+            description: "P99 ledger latency exceeds 10ms"
+      
+      cluster_health:
+        target: 100  # All nodes must be healthy
+        window: 5m
+        error_budget: 0
+        
+        sli:
+          type: health
+          good_events: |
+            tigerbeetle_cluster_nodes_healthy >= 3
+          formula: healthy_nodes >= min_required_nodes
+        
+        alerts:
+          - name: ClusterDegraded
+            expr: |
+              tigerbeetle_cluster_nodes_healthy < 3
+            for: 2m
+            severity: critical
+            description: "TigerBeetle cluster has less than 3 healthy nodes"
+
+# Error Budget Calculation Queries
+error_budget_queries:
+  escrow_availability_budget_remaining:
+    query: |
+      1 - (
+        (1 - (sum(rate(escrow_http_requests_total{status=~"2.."}[30d])) / sum(rate(escrow_http_requests_total[30d]))))
+        /
+        0.001  # 0.1% error budget
+      )
+    description: "Remaining error budget for Escrow availability (0-1)"
+  
+  escrow_availability_budget_consumed:
+    query: |
+      (1 - (sum(rate(escrow_http_requests_total{status=~"2.."}[30d])) / sum(rate(escrow_http_requests_total[30d]))))
+      /
+      0.001  # 0.1% error budget
+    description: "Consumed error budget for Escrow availability (0-1)"
+  
+  mojaloop_transfer_budget_remaining:
+    query: |
+      1 - (
+        (1 - (sum(rate(mojaloop_transfers_committed_total[24h])) / sum(rate(mojaloop_transfers_created_total[24h]))))
+        /
+        0.01  # 1% error budget
+      )
+    description: "Remaining error budget for Mojaloop transfers (0-1)"
+  
+  tigerbeetle_availability_budget_remaining:
+    query: |
+      1 - (
+        (1 - (sum(rate(tigerbeetle_http_requests_total{status=~"2.."}[30d])) / sum(rate(tigerbeetle_http_requests_total[30d]))))
+        /
+        0.0001  # 0.01% error budget
+      )
+    description: "Remaining error budget for TigerBeetle availability (0-1)"
+
+# Burn Rate Windows
+burn_rate_windows:
+  fast:
+    short: 1h
+    long: 5m
+    factor: 14.4
+    severity: critical
+  
+  slow:
+    short: 6h
+    long: 30m
+    factor: 6
+    severity: warning
+  
+  very_slow:
+    short: 24h
+    long: 2h
+    factor: 3
+    severity: info

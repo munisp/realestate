@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  tigerbeetle-1:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    container_name: tigerbeetle-node-1
+    command: start --addresses=0.0.0.0:3000 --cache-grid=1GB /data/cluster_0_replica_0.tigerbeetle
+    ports:
+      - "3000:3000"
+    volumes:
+      - tigerbeetle-data-1:/data
+    networks:
+      - tigerbeetle-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tigerbeetle-2:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    container_name: tigerbeetle-node-2
+    command: start --addresses=0.0.0.0:3000 --cache-grid=1GB /data/cluster_0_replica_1.tigerbeetle
+    ports:
+      - "3001:3000"
+    volumes:
+      - tigerbeetle-data-2:/data
+    networks:
+      - tigerbeetle-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tigerbeetle-3:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    container_name: tigerbeetle-node-3
+    command: start --addresses=0.0.0.0:3000 --cache-grid=1GB /data/cluster_0_replica_2.tigerbeetle
+    ports:
+      - "3002:3000"
+    volumes:
+      - tigerbeetle-data-3:/data
+    networks:
+      - tigerbeetle-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # TigerBeetle initialization container
+  tigerbeetle-init:
+    image: ghcr.io/tigerbeetle/tigerbeetle:latest
+    container_name: tigerbeetle-init
+    command: >
+      sh -c "
+        tigerbeetle format --cluster=0 --replica=0 --replica-count=3 /data/cluster_0_replica_0.tigerbeetle &&
+        tigerbeetle format --cluster=0 --replica=1 --replica-count=3 /data/cluster_0_replica_1.tigerbeetle &&
+        tigerbeetle format --cluster=0 --replica=2 --replica-count=3 /data/cluster_0_replica_2.tigerbeetle
+      "
+    volumes:
+      - tigerbeetle-data-1:/data
+      - tigerbeetle-data-2:/data
+      - tigerbeetle-data-3:/data
+    networks:
+      - tigerbeetle-network
+    depends_on:
+      - tigerbeetle-1
+      - tigerbeetle-2
+      - tigerbeetle-3
+
+volumes:
+  tigerbeetle-data-1:
+    driver: local
+  tigerbeetle-data-2:
+    driver: local
+  tigerbeetle-data-3:
+    driver: local
+
+networks:
+  tigerbeetle-network:
+    driver: bridge

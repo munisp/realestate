@@ -1,0 +1,86 @@
+{
+  "expo": {
+    "name": "RealEstate Platform",
+    "slug": "realestate-platform",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.realestate.platform",
+      "associatedDomains": [
+        "applinks:realestate.manus.space",
+        "applinks:www.realestate.manus.space"
+      ],
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to take photos of properties.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photo library to select property images.",
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to show nearby properties."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.realestate.platform",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "realestate.manus.space",
+              "pathPrefix": "/property"
+            },
+            {
+              "scheme": "https",
+              "host": "realestate.manus.space",
+              "pathPrefix": "/search"
+            },
+            {
+              "scheme": "https",
+              "host": "realestate.manus.space",
+              "pathPrefix": "/agent"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "realestate",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
+  }
+}

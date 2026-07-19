@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: realestate-config
+data:
+  postgres.host: "postgres-service"
+  redis.host: "redis-service"
+  kafka.brokers: "kafka-service:9092"
+  mlflow.uri: "http://mlflow-service:5000"
+  ray.head: "ray-head:10001"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+stringData:
+  username: "postgres"
+  password: "CHANGE_ME_IN_PRODUCTION"
+  connection-string: "postgresql+asyncpg://postgres:CHANGE_ME_IN_PRODUCTION@postgres-service:5432/realestate"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-secret
+type: Opaque
+stringData:
+  password: "CHANGE_ME_IN_PRODUCTION"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-secret
+type: Opaque
+stringData:
+  sasl-username: "kafka"
+  sasl-password: "CHANGE_ME_IN_PRODUCTION"

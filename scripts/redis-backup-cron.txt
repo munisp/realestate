@@ -1,0 +1,30 @@
+# Redis Backup Cron Configuration
+# Add these lines to your crontab using: crontab -e
+
+# Daily backup at 2 AM
+0 2 * * * /home/ubuntu/realestate-platform/scripts/redis-backup.sh >> /var/log/redis-backup.log 2>&1
+
+# Hourly backup (for high-frequency changes)
+# 0 * * * * /home/ubuntu/realestate-platform/scripts/redis-backup.sh >> /var/log/redis-backup.log 2>&1
+
+# Weekly backup on Sunday at 3 AM (for long-term retention)
+# 0 3 * * 0 /home/ubuntu/realestate-platform/scripts/redis-backup.sh >> /var/log/redis-backup-weekly.log 2>&1
+
+# Environment variables (set these before running cron)
+# export REDIS_CONTAINER=escrow-redis
+# export BACKUP_DIR=/backups/redis
+# export S3_BUCKET=realestate-platform-backups
+# export S3_PREFIX=redis
+# export RETENTION_DAYS=30
+# export AWS_ACCESS_KEY_ID=your_access_key
+# export AWS_SECRET_ACCESS_KEY=your_secret_key
+# export AWS_DEFAULT_REGION=us-east-1
+
+# To install this cron job:
+# 1. Edit crontab: crontab -e
+# 2. Add the desired schedule line above
+# 3. Save and exit
+# 4. Verify with: crontab -l
+
+# To view backup logs:
+# tail -f /var/log/redis-backup.log

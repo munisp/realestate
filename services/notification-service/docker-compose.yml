@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  notification-service:
+    build: .
+    ports:
+      - "8002:8002"
+    networks:
+      - notification-network
+  redis:
+    image: redis:7-alpine
+    networks:
+      - notification-network
+networks:
+  notification-network:

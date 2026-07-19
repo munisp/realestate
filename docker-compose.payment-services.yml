@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  mojaloop-service:
+    build:
+      context: ./services/python
+      dockerfile: Dockerfile.mojaloop
+    container_name: mojaloop-payment-service
+    ports:
+      - "5010:5010"
+    environment:
+      - MOJALOOP_API_URL=${MOJALOOP_API_URL:-http://localhost:4001}
+      - MOJALOOP_API_KEY=${MOJALOOP_API_KEY:-}
+      - MOJALOOP_FSP_ID=${MOJALOOP_FSP_ID:-escrow_fsp}
+      - MOJALOOP_WEBHOOK_SECRET=${MOJALOOP_WEBHOOK_SECRET:-change_me_in_production}
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  tigerbeetle-service:
+    build:
+      context: ./services/python
+      dockerfile: Dockerfile.tigerbeetle
+    container_name: tigerbeetle-payment-service
+    ports:
+      - "5011:5011"
+    environment:
+      - TIGERBEETLE_CLUSTER_ID=${TIGERBEETLE_CLUSTER_ID:-0}
+      - TIGERBEETLE_ADDRESSES=${TIGERBEETLE_ADDRESSES:-127.0.0.1:3000}
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  flutterwave-service:
+    build:
+      context: ./services/python
+      dockerfile: Dockerfile.flutterwave
+    container_name: flutterwave-payment-service
+    ports:
+      - "5012:5012"
+    environment:
+      - FLUTTERWAVE_SECRET_KEY=${FLUTTERWAVE_SECRET_KEY:-}
+      - FLUTTERWAVE_PUBLIC_KEY=${FLUTTERWAVE_PUBLIC_KEY:-}
+      - FLUTTERWAVE_ENCRYPTION_KEY=${FLUTTERWAVE_ENCRYPTION_KEY:-}
+      - FLUTTERWAVE_API_URL=${FLUTTERWAVE_API_URL:-https://api.flutterwave.com/v3}
+      - FLUTTERWAVE_WEBHOOK_SECRET=${FLUTTERWAVE_WEBHOOK_SECRET:-change_me_in_production}
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  paystack-service:
+    build:
+      context: ./services/python
+      dockerfile: Dockerfile.paystack
+    container_name: paystack-payment-service
+    ports:
+      - "5013:5013"
+    environment:
+      - PAYSTACK_SECRET_KEY=${PAYSTACK_SECRET_KEY:-}
+      - PAYSTACK_PUBLIC_KEY=${PAYSTACK_PUBLIC_KEY:-}
+      - PAYSTACK_API_URL=${PAYSTACK_API_URL:-https://api.paystack.co}
+      - PAYSTACK_WEBHOOK_SECRET=${PAYSTACK_WEBHOOK_SECRET:-change_me_in_production}
+    restart: unless-stopped
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5013/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  payment-network:
+    driver: bridge

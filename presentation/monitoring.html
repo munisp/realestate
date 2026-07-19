@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring & Observability</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 36px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Monitoring stack - 3 columns */
+        .monitoring-stack {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .stack-item {
+            padding: 20px 22px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .stack-item h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 12px;
+        }
+        
+        .stack-item p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Additional capabilities - 2 columns */
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .capability-item {
+            padding: 20px 24px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .capability-item h3 {
+            font-size: 19px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 10px;
+        }
+        
+        .capability-item p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        /* Response metrics highlight */
+        .response-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 24px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+            margin-top: 8px;
+        }
+        
+        .response-item {
+            text-align: center;
+        }
+        
+        .response-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        
+        .response-label {
+            font-size: 14px;
+            color: #1A2332;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1.3;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">200+ metrics tracked in real-time enable proactive issue detection and 99.9% uptime</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Monitoring stack - 3 columns -->
+            <div class="monitoring-stack">
+                <div class="stack-item">
+                    <h3>Prometheus Metrics</h3>
+                    <p>Comprehensive monitoring tracking <span class="metric">200+ metrics</span> across all microservices: request rates, error rates, latency percentiles, resource utilization, database performance, and custom business metrics.</p>
+                </div>
+                
+                <div class="stack-item">
+                    <h3>Grafana Dashboards</h3>
+                    <p>Custom dashboards provide <span class="metric">real-time visibility</span> into system health with service-specific views, infrastructure monitoring, and business KPI tracking for all stakeholders.</p>
+                </div>
+                
+                <div class="stack-item">
+                    <h3>Smart Alerting</h3>
+                    <p>Multi-channel alerting via <span class="metric">Slack, Email, and PagerDuty</span> with intelligent routing based on severity, automatic escalation, and alert grouping to prevent notification fatigue.</p>
+                </div>
+            </div>
+            
+            <!-- Additional capabilities - 2 columns -->
+            <div class="capabilities-grid">
+                <div class="capability-item">
+                    <h3>Distributed Tracing</h3>
+                    <p>Request tracing across all microservices enables rapid diagnosis of performance bottlenecks and failure points. Complete visibility into request flow from frontend to database with <span class="metric">millisecond-level precision</span>.</p>
+                </div>
+                
+                <div class="capability-item">
+                    <h3>Structured Logging</h3>
+                    <p>Centralized log aggregation with structured JSON logging enables powerful querying and analysis. All logs are searchable, filterable, and correlated with traces for <span class="metric">comprehensive debugging</span>.</p>
+                </div>
+            </div>
+            
+            <!-- Response metrics -->
+            <div class="response-metrics">
+                <div class="response-item">
+                    <div class="response-value">&lt;2min</div>
+                    <div class="response-label">Issue Detection Time</div>
+                </div>
+                
+                <div class="response-item">
+                    <div class="response-value">&lt;15min</div>
+                    <div class="response-label">Average Resolution Time</div>
+                </div>
+                
+                <div class="response-item">
+                    <div class="response-value">99.9%</div>
+                    <div class="response-label">Platform Uptime</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Monitoring & Observability / Slide 12</div>
+    </div>
+</body>
+</html>

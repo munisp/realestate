@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Search - Part 1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 36px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content layout */
+        .content {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 40px;
+            flex: 1;
+        }
+        
+        /* Feature blocks */
+        .feature-section {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        
+        .feature-block {
+            padding: 18px 22px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .feature-block h3 {
+            font-size: 19px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 10px;
+        }
+        
+        .feature-block p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .feature-list li {
+            font-size: 14px;
+            color: #4A5568;
+            line-height: 1.7;
+            padding-left: 18px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #2563EB;
+            font-weight: 700;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Right column highlight */
+        .highlight-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .filter-highlight {
+            padding: 32px 28px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .filter-highlight .big-number {
+            font-size: 56px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        
+        .filter-highlight .label {
+            font-size: 18px;
+            color: #1A2332;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .filter-highlight .description {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        /* Transition note */
+        .transition-note {
+            padding: 20px 24px;
+            background: linear-gradient(90deg, rgba(8, 145, 178, 0.05) 0%, transparent 100%);
+            border-left: 3px solid #0891B2;
+            text-align: center;
+        }
+        
+        .transition-note p {
+            font-size: 14px;
+            color: #0891B2;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Geospatial search with 30+ filters reduces property discovery time from 12 weeks to 4 weeks</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Left column - Features -->
+            <div class="feature-section">
+                <div class="feature-block">
+                    <h3>Comprehensive Filter System</h3>
+                    <p>Traditional property search relies on basic filters like price range, bedrooms, and bathrooms. Our advanced search provides <span class="metric">30+ filters</span> including:</p>
+                    <ul class="feature-list">
+                        <li>School districts and ratings</li>
+                        <li>Commute time calculations</li>
+                        <li>Walkability and transit scores</li>
+                        <li>Crime statistics and safety data</li>
+                        <li>Specific amenities and features</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-block">
+                    <h3>Natural Language Processing</h3>
+                    <p>Queries like <span class="metric">"3-bedroom homes near good schools under $500K"</span> are understood and executed accurately, eliminating the need for complex filter combinations.</p>
+                </div>
+                
+                <div class="feature-block">
+                    <h3>Geospatial Intelligence</h3>
+                    <p>Advanced location-based search enables:</p>
+                    <ul class="feature-list">
+                        <li>Radius-based queries ("within 5 miles of my office")</li>
+                        <li>Custom polygon drawing for precise area definition</li>
+                        <li>Map view with intelligent property clustering</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Right column - Highlight -->
+            <div class="highlight-section">
+                <div class="filter-highlight">
+                    <div class="big-number">30+</div>
+                    <div class="label">Advanced Filters</div>
+                    <div class="description">Comprehensive search capabilities including school districts, commute times, walkability scores, crime statistics, and amenities enable precise property discovery</div>
+                </div>
+                
+                <div class="transition-note">
+                    <p>CONTINUED: Efficiency improvements and user benefits →</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Advanced Search - Part 1 / Slide 06</div>
+    </div>
+</body>
+</html>

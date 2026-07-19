@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 45px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 24px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content layout */
+        .content {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 580px 1fr;
+            gap: 24px;
+            flex: 1;
+        }
+        
+        /* Left column - dashboard image */
+        .dashboard-showcase {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, transparent 100%);
+        }
+        
+        .dashboard-showcase img {
+            width: 100%;
+            height: 260px;
+            object-fit: contain;
+        }
+        
+        .dashboard-label {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        /* Right column - analytics capabilities */
+        .analytics-section {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        
+        .analytics-item {
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            gap: 10px;
+            padding: 10px 14px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .analytics-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1.4;
+        }
+        
+        .analytics-content h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 4px;
+        }
+        
+        .analytics-content p {
+            font-size: 14px;
+            color: #4A5568;
+            line-height: 1.5;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Processing metrics */
+        .processing-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 10px;
+            padding: 16px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+        }
+        
+        .metric-item {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            font-size: 13px;
+            color: #1A2332;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">Real-time dashboards process 1 billion events daily to deliver actionable market insights</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Left: Dashboard showcase -->
+            <div class="dashboard-showcase">
+                <img src="/home/ubuntu/upload/search_images/2ikTsFjENwau.webp" alt="Real Estate Portfolio Analytics Dashboard">
+                <div class="dashboard-label">Real-Time Analytics Dashboard</div>
+            </div>
+            
+            <!-- Right: Analytics capabilities -->
+            <div class="analytics-section">
+                <div class="analytics-item">
+                    <div class="analytics-number">01</div>
+                    <div class="analytics-content">
+                        <h4>Market Price Trends</h4>
+                        <p>Track pricing movements across neighborhoods, property types, and market segments with <span class="metric">real-time trend analysis</span></p>
+                    </div>
+                </div>
+                
+                <div class="analytics-item">
+                    <div class="analytics-number">02</div>
+                    <div class="analytics-content">
+                        <h4>User Behavior Insights</h4>
+                        <p>Understand search patterns, viewing preferences, and engagement metrics to optimize listings and marketing strategies</p>
+                    </div>
+                </div>
+                
+                <div class="analytics-item">
+                    <div class="analytics-number">03</div>
+                    <div class="analytics-content">
+                        <h4>Conversion Funnel Analysis</h4>
+                        <p>Track user journey from search to transaction with <span class="metric">18% conversion improvement</span> through data-driven optimization</p>
+                    </div>
+                </div>
+                
+                <div class="analytics-item">
+                    <div class="analytics-number">04</div>
+                    <div class="analytics-content">
+                        <h4>Real-Time Updates</h4>
+                        <p>All metrics refresh continuously as new data arrives, enabling immediate response to market changes</p>
+                    </div>
+                </div>
+                
+                <div class="analytics-item">
+                    <div class="analytics-number">05</div>
+                    <div class="analytics-content">
+                        <h4>Decision Support</h4>
+                        <p>Actionable insights for buyers, sellers, agents, and developers based on <span class="metric">comprehensive data analysis</span></p>
+                    </div>
+                </div>
+                
+                <div class="processing-metrics">
+                    <div class="metric-item">
+                        <div class="metric-value">1B+</div>
+                        <div class="metric-label">Daily Events Processed</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">+18%</div>
+                        <div class="metric-label">Conversion Improvement</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Real-Time Analytics / Slide 11</div>
+    </div>
+</body>
+</html>

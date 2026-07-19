@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whatsapp-service
+  labels:
+    app: whatsapp-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: whatsapp-service
+  template:
+    metadata:
+      labels:
+        app: whatsapp-service
+    spec:
+      containers:
+      - name: whatsapp-service
+        image: whatsapp-service:latest
+        ports:
+        - containerPort: 3007
+        env:
+        - name: WHATSAPP_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: whatsapp-secrets
+              key: access_token
+        - name: WHATSAPP_PHONE_NUMBER_ID
+          valueFrom:
+            secretKeyRef:
+              name: whatsapp-secrets
+              key: phone_number_id
+        - name: WEBHOOK_VERIFY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: whatsapp-secrets
+              key: webhook_verify_token
+        - name: KAFKA_BROKERS
+          value: "kafka:9092"
+        - name: REDIS_URL
+          value: "redis://redis:6379"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whatsapp-service
+spec:
+  selector:
+    app: whatsapp-service
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3007
+  type: ClusterIP

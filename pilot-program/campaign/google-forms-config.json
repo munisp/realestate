@@ -1,0 +1,186 @@
+{
+  "info": {
+    "title": "Shortlet Platform Pilot Program Application",
+    "description": "Join our exclusive pilot program for Lagos shortlet hosts. Zero commission for 3 months + free professional photography!"
+  },
+  "settings": {
+    "quizSettings": null,
+    "requireLogin": false,
+    "collectEmail": true,
+    "confirmationMessage": "Thank you for applying! We'll review your application and get back to you within 3-5 business days.",
+    "allowResponseEdits": true,
+    "showProgressBar": true
+  },
+  "items": [
+    {
+      "title": "Full Name",
+      "type": "TEXT",
+      "required": true
+    },
+    {
+      "title": "Email Address",
+      "type": "TEXT",
+      "required": true,
+      "validation": {
+        "type": "EMAIL"
+      }
+    },
+    {
+      "title": "Phone Number (WhatsApp preferred)",
+      "type": "TEXT",
+      "required": true
+    },
+    {
+      "title": "Property Location",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "Lekki",
+        "Victoria Island",
+        "Ikoyi",
+        "Other Lagos"
+      ]
+    },
+    {
+      "title": "How many shortlet properties do you manage?",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "1",
+        "2-3",
+        "4-5",
+        "6-10",
+        "10+"
+      ]
+    },
+    {
+      "title": "Property Type(s)",
+      "type": "CHECKBOX",
+      "required": true,
+      "choices": [
+        "Studio",
+        "1-bedroom",
+        "2-bedroom",
+        "3-bedroom",
+        "4+ bedroom",
+        "Penthouse",
+        "Entire house"
+      ]
+    },
+    {
+      "title": "Current Listing Platforms",
+      "type": "CHECKBOX",
+      "required": true,
+      "choices": [
+        "Airbnb",
+        "Booking.com",
+        "BuyLetLive",
+        "Instagram",
+        "WhatsApp",
+        "Own website",
+        "Other"
+      ]
+    },
+    {
+      "title": "Average Monthly Bookings",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "0-5",
+        "6-10",
+        "11-20",
+        "21-30",
+        "30+"
+      ]
+    },
+    {
+      "title": "Average Nightly Rate",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "\u20a615k-\u20a625k",
+        "\u20a626k-\u20a640k",
+        "\u20a641k-\u20a660k",
+        "\u20a661k-\u20a6100k",
+        "\u20a6100k+"
+      ]
+    },
+    {
+      "title": "Hosting Experience",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "Less than 6 months",
+        "6-12 months",
+        "1-2 years",
+        "2-5 years",
+        "5+ years"
+      ]
+    },
+    {
+      "title": "What's your biggest challenge with current platforms?",
+      "type": "PARAGRAPH_TEXT",
+      "required": true
+    },
+    {
+      "title": "Most Important Features",
+      "type": "CHECKBOX",
+      "required": true,
+      "choices": [
+        "Fast payouts",
+        "Low commission",
+        "Calendar sync",
+        "Guest verification",
+        "Automated messaging",
+        "Dynamic pricing",
+        "Analytics",
+        "Customer support"
+      ]
+    },
+    {
+      "title": "Can you commit to minimum 5 bookings during the 3-month pilot?",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "Yes",
+        "No",
+        "Maybe"
+      ]
+    },
+    {
+      "title": "Onboarding Session Availability",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "Yes (online)",
+        "Yes (in-person in Lagos)",
+        "No"
+      ]
+    },
+    {
+      "title": "How did you hear about this pilot program?",
+      "type": "MULTIPLE_CHOICE",
+      "required": true,
+      "choices": [
+        "LinkedIn",
+        "Twitter",
+        "Instagram",
+        "Facebook",
+        "WhatsApp",
+        "Email",
+        "Friend referral",
+        "Other"
+      ]
+    },
+    {
+      "title": "Referral Code (Optional)",
+      "type": "TEXT",
+      "required": false
+    },
+    {
+      "title": "Additional Comments or Questions",
+      "type": "PARAGRAPH_TEXT",
+      "required": false
+    }
+  ]
+}

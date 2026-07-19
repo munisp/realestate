@@ -1,0 +1,229 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "corona-schools-gbagada",
+        "name": "Corona Schools Gbagada",
+        "type": "primary_secondary",
+        "category": "international",
+        "rating": 4.8,
+        "tuition": "₦2.5M - ₦4M/year",
+        "curriculum": "British, Nigerian",
+        "grades": "Nursery - Secondary",
+        "students": 800,
+        "established": 1991,
+        "phone": "+234 1 773 7266",
+        "website": "https://coronaschools.edu.ng",
+        "description": "One of Nigeria's leading private schools with excellent academic standards"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3750, 6.5350],
+          [3.3850, 6.5350],
+          [3.3850, 6.5250],
+          [3.3750, 6.5250],
+          [3.3750, 6.5350]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "greensprings-school",
+        "name": "Greensprings School",
+        "type": "primary_secondary",
+        "category": "international",
+        "rating": 4.7,
+        "tuition": "₦3M - ₦5M/year",
+        "curriculum": "British, IB",
+        "grades": "Nursery - A-Levels",
+        "students": 600,
+        "established": 1985,
+        "phone": "+234 1 270 1594",
+        "website": "https://greenspringsschool.com",
+        "description": "Premier international school offering British and IB curriculum"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3680, 6.4520],
+          [3.3780, 6.4520],
+          [3.3780, 6.4420],
+          [3.3680, 6.4420],
+          [3.3680, 6.4520]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "british-international-school",
+        "name": "British International School Lagos",
+        "type": "primary_secondary",
+        "category": "international",
+        "rating": 4.9,
+        "tuition": "₦4M - ₦6M/year",
+        "curriculum": "British National Curriculum",
+        "grades": "Nursery - A-Levels",
+        "students": 500,
+        "established": 2001,
+        "phone": "+234 1 291 5175",
+        "website": "https://www.bislagos.org",
+        "description": "Top-tier British curriculum school with outstanding facilities"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4650, 6.4450],
+          [3.4750, 6.4450],
+          [3.4750, 6.4350],
+          [3.4650, 6.4350],
+          [3.4650, 6.4450]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "american-international-school",
+        "name": "American International School Lagos",
+        "type": "primary_secondary",
+        "category": "international",
+        "rating": 4.6,
+        "tuition": "₦4.5M - ₦7M/year",
+        "curriculum": "American",
+        "grades": "Pre-K - Grade 12",
+        "students": 400,
+        "established": 1964,
+        "phone": "+234 1 774 2839",
+        "website": "https://www.aislagos.org",
+        "description": "Oldest American curriculum school in Lagos"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4200, 6.4300],
+          [3.4300, 6.4300],
+          [3.4300, 6.4200],
+          [3.4200, 6.4200],
+          [3.4200, 6.4300]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "grange-school",
+        "name": "The Grange School Ikeja",
+        "type": "primary_secondary",
+        "category": "private",
+        "rating": 4.5,
+        "tuition": "₦1.8M - ₦3M/year",
+        "curriculum": "British, Nigerian",
+        "grades": "Nursery - Secondary",
+        "students": 700,
+        "established": 1958,
+        "phone": "+234 1 497 3600",
+        "website": "https://www.grangeikejaschool.com",
+        "description": "Established school with strong academic tradition"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.3400, 6.6000],
+          [3.3500, 6.6000],
+          [3.3500, 6.5900],
+          [3.3400, 6.5900],
+          [3.3400, 6.6000]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "atlantic-hall",
+        "name": "Atlantic Hall",
+        "type": "secondary",
+        "category": "boarding",
+        "rating": 4.7,
+        "tuition": "₦5M - ₦7M/year",
+        "curriculum": "British, Nigerian",
+        "grades": "JSS1 - SS3",
+        "students": 300,
+        "established": 1989,
+        "phone": "+234 1 773 8036",
+        "website": "https://www.atlantichall.com",
+        "description": "Premier boarding school with excellent facilities"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.7100, 6.4800],
+          [3.7200, 6.4800],
+          [3.7200, 6.4700],
+          [3.7100, 6.4700],
+          [3.7100, 6.4800]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "chrisland-schools-vgc",
+        "name": "Chrisland Schools VGC",
+        "type": "primary_secondary",
+        "category": "private",
+        "rating": 4.4,
+        "tuition": "₦1.5M - ₦2.5M/year",
+        "curriculum": "Nigerian, British",
+        "grades": "Nursery - Secondary",
+        "students": 1000,
+        "established": 1977,
+        "phone": "+234 1 740 4535",
+        "website": "https://www.chrislandschools.com",
+        "description": "Large school network with modern facilities"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4800, 6.4600],
+          [3.4900, 6.4600],
+          [3.4900, 6.4500],
+          [3.4800, 6.4500],
+          [3.4800, 6.4600]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "lagos-preparatory-school",
+        "name": "Lagos Preparatory School",
+        "type": "primary",
+        "category": "private",
+        "rating": 4.6,
+        "tuition": "₦2M - ₦3.5M/year",
+        "curriculum": "British",
+        "grades": "Nursery - Year 6",
+        "students": 350,
+        "established": 1999,
+        "phone": "+234 1 270 0661",
+        "website": "https://www.lagosprepschool.com",
+        "description": "Focused primary education with British curriculum"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [3.4300, 6.4550],
+          [3.4400, 6.4550],
+          [3.4400, 6.4450],
+          [3.4300, 6.4450],
+          [3.4300, 6.4550]
+        ]]
+      }
+    }
+  ]
+}

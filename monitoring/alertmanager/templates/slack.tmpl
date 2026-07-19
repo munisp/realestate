@@ -1,0 +1,56 @@
+{{ define "slack.critical.text" }}
+*Alert:* {{ .GroupLabels.alertname }}
+*Severity:* {{ .CommonLabels.severity }}
+*Environment:* {{ .CommonLabels.environment | default "production" }}
+
+{{ range .Alerts }}
+*Service:* {{ .Labels.service | default .Labels.job }}
+*Summary:* {{ .Annotations.summary }}
+*Description:* {{ .Annotations.description }}
+*Started:* {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+{{ if .Labels.instance }}*Instance:* {{ .Labels.instance }}{{ end }}
+{{ end }}
+
+*Runbook:* https://runbooks.realestate.com/{{ .GroupLabels.alertname }}
+{{ end }}
+
+{{ define "slack.warning.text" }}
+*Alert:* {{ .GroupLabels.alertname }}
+*Severity:* Warning
+
+{{ range .Alerts }}
+*Service:* {{ .Labels.service | default .Labels.job }}
+*Summary:* {{ .Annotations.summary }}
+{{ end }}
+{{ end }}
+
+{{ define "slack.database.text" }}
+:database: *Database Alert*
+
+*Alert:* {{ .GroupLabels.alertname }}
+{{ range .Alerts }}
+*Database:* {{ .Labels.database | default "unknown" }}
+*Summary:* {{ .Annotations.summary }}
+*Description:* {{ .Annotations.description }}
+{{ end }}
+{{ end }}
+
+{{ define "slack.infrastructure.text" }}
+:gear: *Infrastructure Alert*
+
+*Alert:* {{ .GroupLabels.alertname }}
+{{ range .Alerts }}
+*Component:* {{ .Labels.component | default "unknown" }}
+*Summary:* {{ .Annotations.summary }}
+{{ end }}
+{{ end }}
+
+{{ define "slack.business.text" }}
+:chart_with_upwards_trend: *Business Metric Alert*
+
+*Metric:* {{ .GroupLabels.alertname }}
+{{ range .Alerts }}
+*Summary:* {{ .Annotations.summary }}
+*Current Value:* {{ .Annotations.value }}
+{{ end }}
+{{ end }}

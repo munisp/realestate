@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package payment;
+
+// Payment Service
+service PaymentService {
+  // Process a payment transaction
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+  
+  // Get payment status
+  rpc GetPaymentStatus(PaymentStatusRequest) returns (PaymentStatusResponse);
+  
+  // Refund a payment
+  rpc RefundPayment(RefundRequest) returns (RefundResponse);
+  
+  // List user payments
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+}
+
+// Payment Request
+message PaymentRequest {
+  string user_id = 1;
+  double amount = 2;
+  string currency = 3;
+  string payment_method = 4; // card, bank_transfer, mobile_money
+  string property_id = 5;
+  string description = 6;
+  map<string, string> metadata = 7;
+}
+
+// Payment Response
+message PaymentResponse {
+  bool success = 1;
+  string transaction_id = 2;
+  string payment_id = 3;
+  string status = 4; // pending, completed, failed
+  string message = 5;
+  string payment_url = 6; // For redirect-based payments
+}
+
+// Payment Status Request
+message PaymentStatusRequest {
+  string payment_id = 1;
+}
+
+// Payment Status Response
+message PaymentStatusResponse {
+  string payment_id = 1;
+  string status = 2;
+  double amount = 3;
+  string currency = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+// Refund Request
+message RefundRequest {
+  string payment_id = 1;
+  double amount = 2; // Partial or full refund
+  string reason = 3;
+}
+
+// Refund Response
+message RefundResponse {
+  bool success = 1;
+  string refund_id = 2;
+  string status = 3;
+  string message = 4;
+}
+
+// List Payments Request
+message ListPaymentsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string status = 4; // Filter by status
+}
+
+// List Payments Response
+message ListPaymentsResponse {
+  repeated Payment payments = 1;
+  int32 total = 2;
+}
+
+// Payment
+message Payment {
+  string payment_id = 1;
+  string user_id = 2;
+  double amount = 3;
+  string currency = 4;
+  string status = 5;
+  string property_id = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}

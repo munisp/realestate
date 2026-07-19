@@ -1,0 +1,129 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: property-service
+  labels:
+    app: property-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: property-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: property-service
+  labels:
+    app: property-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: property-service
+  template:
+    metadata:
+      labels:
+        app: property-service
+    spec:
+      containers:
+      - name: property-service
+        image: realestate/property-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PROPERTY_SERVER_PORT
+          value: ":8080"
+        - name: PROPERTY_SERVER_MODE
+          value: "release"
+        - name: PROPERTY_DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: realestate-config
+              key: postgres.host
+        - name: PROPERTY_DATABASE_PORT
+          value: "5432"
+        - name: PROPERTY_DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: PROPERTY_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: PROPERTY_DATABASE_DBNAME
+          value: "realestate"
+        - name: PROPERTY_DATABASE_SSLMODE
+          value: "require"
+        - name: PROPERTY_REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: realestate-config
+              key: redis.host
+        - name: PROPERTY_REDIS_PORT
+          value: "6379"
+        - name: PROPERTY_KAFKA_BROKERS
+          valueFrom:
+            configMapKeyRef:
+              name: realestate-config
+              key: kafka.brokers
+        - name: PROPERTY_KAFKA_TOPIC
+          value: "property-events"
+        - name: PROPERTY_KAFKA_GROUPID
+          value: "property-service"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: property-service-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: property-service
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

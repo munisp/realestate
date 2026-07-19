@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: realestate-production
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+  ENABLE_METRICS: "true"
+  ENABLE_TRACING: "true"
+  CACHE_TTL: "3600"
+  MAX_UPLOAD_SIZE: "10485760"
+  RATE_LIMIT_REQUESTS: "100"
+  RATE_LIMIT_WINDOW: "60"
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_CONNECTIONS: "100"
+  REDIS_MAX_CONNECTIONS: "50"
+  KAFKA_CONSUMER_GROUP: "realestate-production"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: realestate-production
+data:
+  API_URL: "https://api.realestate.com"
+  WS_URL: "wss://api.realestate.com"
+  SENTRY_DSN: ""
+  GOOGLE_ANALYTICS_ID: ""
+  STRIPE_PUBLISHABLE_KEY: ""

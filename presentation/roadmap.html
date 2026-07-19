@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovation Roadmap - AI & Blockchain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 40px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 20px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1100px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        
+        /* Roadmap features - 2 columns for the two main innovations */
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .roadmap-item {
+            padding: 18px 22px;
+            border-left: 3px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .roadmap-item h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #2563EB;
+            margin-bottom: 6px;
+        }
+        
+        .roadmap-item p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        .impact-highlight {
+            margin-top: 8px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.08) 0%, transparent 100%);
+            border-left: 2px solid #0891B2;
+        }
+        
+        .impact-highlight .impact-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0891B2;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+        
+        .impact-highlight .impact-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2563EB;
+            line-height: 1.2;
+        }
+        
+        /* Data leverage section */
+        .data-leverage {
+            padding: 18px 22px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .data-leverage h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 10px;
+        }
+        
+        .data-leverage p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">AI and blockchain innovations will deliver 3X conversion improvements and eliminate fraud</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Roadmap features grid - 2 major innovations -->
+            <div class="roadmap-grid">
+                <!-- AI Property Recommendations -->
+                <div class="roadmap-item">
+                    <h3>AI Property Recommendations</h3>
+                    <p>Machine learning models will analyze user behavior, search patterns, and preferences to suggest properties users are likely to love. The system learns from millions of interactions across our platform to understand what makes a perfect match between buyer and property.</p>
+                    
+                    <p>Unlike simple keyword matching, our AI considers <span class="metric">dozens of implicit signals</span>: time spent viewing similar properties, neighborhood preferences revealed through search behavior, price sensitivity patterns, and feature priorities that users may not explicitly articulate.</p>
+                    
+                    <div class="impact-highlight">
+                        <div class="impact-label">Expected Impact</div>
+                        <div class="impact-value">3X Higher Conversion Rates</div>
+                    </div>
+                </div>
+                
+                <!-- Blockchain Transaction Verification -->
+                <div class="roadmap-item">
+                    <h3>Blockchain Transaction Verification</h3>
+                    <p>Immutable distributed ledger for property ownership records and complete transaction history. Every transfer, lien, and encumbrance is permanently recorded in a tamper-proof blockchain, creating an authoritative source of truth for property ownership.</p>
+                    
+                    <p>This eliminates title fraud risk and streamlines verification processes that currently take weeks. Smart contracts automate escrow and transfer processes, reducing closing times while ensuring all conditions are met before funds and ownership transfer.</p>
+                    
+                    <div class="impact-highlight">
+                        <div class="impact-label">Industry-Wide Impact</div>
+                        <div class="impact-value">$1 Billion in Fraud Prevention Annually</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data leverage section -->
+            <div class="data-leverage">
+                <h3>Leveraging Our Comprehensive Dataset</h3>
+                <p>Both innovations are powered by the <span class="metric">massive dataset</span> our platform has accumulated: millions of property listings, billions of user interactions, complete transaction histories, and market trends across geographies. This data advantage creates a <span class="metric">defensible moat</span> that competitors cannot easily replicate. The more users engage with our platform, the smarter our AI becomes and the more complete our blockchain records grow, creating a powerful network effect that strengthens over time.</p>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Innovation Roadmap Part 1 / Slide 15</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovation Roadmap - Continued</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .slide-container {
+            width: 1280px;
+            min-height: 720px;
+            background: #FFFFFF;
+            position: relative;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Blueprint grid */
+        .blueprint-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                linear-gradient(#2563EB 1px, transparent 1px),
+                linear-gradient(90deg, #2563EB 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1A2332;
+            line-height: 1.3;
+            max-width: 1000px;
+            margin-bottom: 16px;
+        }
+        
+        .title-accent {
+            width: 80px;
+            height: 3px;
+            background: #2563EB;
+        }
+        
+        /* Content */
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Roadmap features */
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .roadmap-item {
+            padding: 20px 24px;
+            border-left: 2px solid #2563EB;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
+        }
+        
+        .roadmap-item h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 10px;
+        }
+        
+        .roadmap-item p {
+            font-size: 15px;
+            color: #4A5568;
+            line-height: 1.6;
+        }
+        
+        .metric {
+            font-weight: 600;
+            color: #0891B2;
+        }
+        
+        /* Strategic impact section */
+        .strategic-impact {
+            padding: 28px 32px;
+            border: 2px solid #2563EB;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+        }
+        
+        .strategic-impact h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1A2332;
+            margin-bottom: 16px;
+        }
+        
+        .strategic-impact p {
+            font-size: 17px;
+            color: #4A5568;
+            line-height: 1.8;
+        }
+        
+        /* Technical annotation */
+        .tech-annotation {
+            position: absolute;
+            bottom: 30px;
+            right: 80px;
+            font-size: 11px;
+            color: #2563EB;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+        
+        /* Corner mark */
+        .corner-mark {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 1.5px solid #2563EB;
+            opacity: 0.4;
+            top: 30px;
+            right: 30px;
+            border-left: none;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Blueprint grid background -->
+        <div class="blueprint-grid"></div>
+        
+        <!-- Corner mark -->
+        <div class="corner-mark"></div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1 class="page-title">VR tours, predictive pricing, and instant mortgage pre-approval expand market reach</h1>
+            <div class="title-accent"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Roadmap features grid - continuation -->
+            <div class="roadmap-grid">
+                <div class="roadmap-item">
+                    <h3>Virtual Reality Property Tours</h3>
+                    <p>Fully immersive VR experiences allowing buyers to walk through properties remotely. Particularly valuable for international buyers and relocations, expanding market reach beyond geographic constraints.</p>
+                </div>
+                
+                <div class="roadmap-item">
+                    <h3>Predictive Pricing Models</h3>
+                    <p>AI-powered valuation models incorporating <span class="metric">hundreds of data points</span> to predict optimal listing prices and future appreciation potential with unprecedented accuracy.</p>
+                </div>
+                
+                <div class="roadmap-item">
+                    <h3>Instant Mortgage Pre-Approval</h3>
+                    <p>Integrated lending partnerships enabling buyers to receive <span class="metric">instant pre-approval</span> directly within the platform, eliminating weeks from the traditional financing process and increasing transaction velocity.</p>
+                </div>
+            </div>
+            
+            <!-- Strategic impact -->
+            <div class="strategic-impact">
+                <h3>Strategic Impact</h3>
+                <p>These innovations create <span class="metric">defensible competitive advantages</span> through network effects and data moats. Each feature leverages our comprehensive dataset and integrated platform architecture in ways standalone point solutions cannot replicate. The roadmap expands our addressable market into adjacent segments including mortgage lending, title insurance, and property management while deepening engagement with existing users.</p>
+            </div>
+        </div>
+        
+        <!-- Technical annotation -->
+        <div class="tech-annotation">Innovation Roadmap (cont.) / Slide 16</div>
+    </div>
+</body>
+</html>

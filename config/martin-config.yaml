@@ -1,0 +1,141 @@
+# Martin Tile Server Configuration
+# Generates vector tiles from PostGIS database
+
+# PostgreSQL connection
+postgres:
+  # Connection string (overridden by DATABASE_URL env var)
+  connection_string: "postgresql://postgres:postgis_dev_password@postgis:5432/realestate_spatial"
+  
+  # Pool settings
+  pool_size: 20
+  max_feature_count: 10000
+
+# Vector tile sources
+sources:
+  # Property points layer
+  properties:
+    schema: spatial
+    table: properties_spatial
+    srid: 4326
+    geometry_column: geom
+    id_column: property_id
+    minzoom: 0
+    maxzoom: 22
+    bounds: [-180, -85.0511, 180, 85.0511]
+    
+    # Properties to include in tiles
+    properties:
+      - property_id
+      - title
+      - price
+      - bedrooms
+      - bathrooms
+      - square_feet
+      - property_type
+      - status
+      - city
+      - state
+      - country
+      - h3_index
+      - listing_date
+    
+    # Tile buffer (pixels)
+    buffer: 64
+    
+    # Clip geometries to tile bounds
+    clip_geom: true
+    
+    # Extent (tile coordinate space)
+    extent: 4096
+
+  # Property clusters (aggregated by H3 hexagons)
+  property_clusters:
+    schema: spatial
+    table: property_clusters_h3
+    srid: 4326
+    geometry_column: geom
+    id_column: h3_index
+    minzoom: 0
+    maxzoom: 14
+    
+    properties:
+      - h3_index
+      - resolution
+      - property_count
+      - avg_price
+      - min_price
+      - max_price
+      - city
+    
+    buffer: 0
+    clip_geom: true
+    extent: 4096
+
+  # Neighborhood boundaries (Lagos)
+  neighborhoods:
+    schema: spatial
+    table: neighborhood_boundaries
+    srid: 4326
+    geometry_column: geom
+    id_column: id
+    minzoom: 8
+    maxzoom: 22
+    
+    properties:
+      - id
+      - name
+      - tier
+      - zone
+      - median_price
+      - property_count
+      - walkability_score
+    
+    buffer: 8
+    clip_geom: true
+    extent: 4096
+
+# Function-based sources (dynamic queries)
+function_sources:
+  # Heatmap data (point density)
+  property_heatmap:
+    schema: spatial
+    function: get_property_heatmap
+    minzoom: 0
+    maxzoom: 14
+
+# Server settings
+listen_addresses: "0.0.0.0:3000"
+worker_processes: 4
+keep_alive: 75
+
+# Tile cache settings
+cache:
+  # Cache tiles in memory
+  size_mb: 512
+  
+  # Cache TTL (seconds)
+  ttl: 3600
+
+# CORS settings
+cors:
+  allowed_origins:
+    - "*"
+  allowed_headers:
+    - "Content-Type"
+    - "Authorization"
+
+# Sprite and font settings (for MapLibre GL JS)
+sprites:
+  # Path to sprite directory (optional)
+  # directory: /sprites
+
+fonts:
+  # Path to font directory (optional)
+  # directory: /fonts
+
+# TileJSON metadata
+metadata:
+  name: "Real Estate Platform Tiles"
+  description: "Vector tiles for property listings, clusters, and neighborhoods"
+  version: "1.0.0"
+  attribution: "© Real Estate Platform"

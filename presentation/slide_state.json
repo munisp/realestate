@@ -1,0 +1,236 @@
+{
+  "project_info": {
+    "title": "Transforming Real Estate Through Technology",
+    "created": 1763395941.0653825,
+    "last_updated": 1763396803.8133087,
+    "total_slides": 28
+  },
+  "slides": {
+    "title": "edited",
+    "problem": "edited",
+    "architecture": "edited",
+    "infrastructure": "edited",
+    "ai_valuation": "edited",
+    "advanced_search": "edited",
+    "advanced_search_cont": "edited",
+    "mobile_ar": "edited",
+    "transaction": "edited",
+    "crm": "edited",
+    "developer": "edited",
+    "developer_cont": "edited",
+    "analytics": "edited",
+    "security": "edited",
+    "monitoring": "edited",
+    "deployment": "edited",
+    "impact": "edited",
+    "impact_cont": "edited",
+    "roadmap": "edited",
+    "roadmap_cont": "edited",
+    "market": "edited",
+    "market_cont": "edited",
+    "competitive": "edited",
+    "competitive_cont": "edited",
+    "gtm": "edited",
+    "gtm_cont": "edited",
+    "cta": "edited",
+    "contact": "edited"
+  },
+  "outline": [
+    {
+      "id": "title",
+      "title": "Transforming Real Estate Through Technology",
+      "summary": "Title slide introducing the Enterprise Real Estate Platform with subtitle emphasizing next-generation property discovery, valuation, and transaction management capabilities.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "problem",
+      "title": "Traditional real estate systems cost the industry $12B annually in inefficiencies",
+      "summary": "Outlines the fragmentation problem in real estate technology - agents juggling 7+ platforms, 12-week property search times, 15-20 day transaction delays, and billions in opportunity cost from disconnected systems.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "architecture",
+      "title": "Eight specialized microservices process 10,000+ concurrent users with sub-500ms response times",
+      "summary": "Details the platform's microservices architecture with technical specifications: Property Service (1M+ listings), Search Service (<100ms queries), CRM, Developer, Analytics (billions of events), Notification (99.9% delivery), and horizontal scaling capabilities.",
+      "image_plan": "/home/ubuntu/upload/search_images/nRWvwtQEQ2fh.png; /home/ubuntu/upload/search_images/cjVRYaCkT91d.png - The slide discusses the platform's microservices architecture. Images 4 and 6 are clear diagrams illustrating microservices, API gateways, and service orchestration, which directly supports the technical content. Image 5 is a less clear diagram.",
+      "slide_template_key": ""
+    },
+    {
+      "id": "infrastructure",
+      "title": "High-availability infrastructure with automated failover protects business continuity",
+      "summary": "Describes the three-node cluster infrastructure: PostgreSQL (50K TPS), ClickHouse (1B rows/sec), OpenSearch (10K docs/sec), Redis (1ms cache), Kafka (1M msg/sec), encryption standards, backup procedures, and 99.9% uptime guarantee.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "ai_valuation",
+      "title": "Machine learning models analyze 50+ factors to predict property values within 5% of final sale price",
+      "summary": "Explains AI-powered instant valuations achieving 95% accuracy, trained on 10M transactions, processing 100K daily requests, replacing 3-5 day manual appraisals with instant results at near-zero cost.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "advanced_search",
+      "title": "Geospatial search with 30+ filters reduces property discovery time from 12 weeks to 4 weeks",
+      "summary": "First part focusing on the comprehensive filter system and search capabilities. Details the 30+ filters including school districts, commute time, walkability scores, crime statistics, and amenities. Explains natural language processing that understands queries like '3-bedroom homes near good schools under $500K'. Covers geospatial intelligence features including radius-based queries, custom polygon drawing, and map view with intelligent clustering.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "advanced_search_cont",
+      "title": "Advanced search delivers 3X faster property discovery with saved searches and real-time notifications",
+      "summary": "Continuation focusing on efficiency improvements and user benefits. Highlights the 3X improvement metric (4 weeks vs 12 weeks for property discovery). Details saved searches with instant notifications (within minutes of new listings). Explains visual exploration through map view and the competitive advantage of speed in hot markets. Quantifies the measurable impact: reduced stress, better outcomes, and higher satisfaction from the efficiency improvements.",
+      "slide_template_key": "",
+      "image_plan": ""
+    },
+    {
+      "id": "mobile_ar",
+      "title": "Augmented reality features drive 40% higher engagement than photo-only listings",
+      "summary": "Highlights mobile app's AR visualization, 3D property models, biometric authentication, push notifications (85% open rate), offline mode, and mobile-first approach accounting for 60% of platform traffic.",
+      "image_plan": "/home/ubuntu/upload/search_images/LbG9iOaGM7ge.jpg; /home/ubuntu/upload/search_images/iSJg6GEnLRb9.png - The slide specifically mentions Augmented Reality (AR) visualization and a mobile app. Images 7 and 8 clearly depict AR in a real estate context (overlaying a 3D model onto a physical space via a phone and a tablet).",
+      "slide_template_key": ""
+    },
+    {
+      "id": "transaction",
+      "title": "Digital workflows and automated coordination cut average closing time from 45 to 30 days",
+      "summary": "Details transaction management system digitizing offers, document sharing, e-signatures, automated reminders, timeline visualization, real-time updates, and 33% reduction in closing time across 10K transactions.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "crm",
+      "title": "Integrated lead management and activity tracking enable agents to handle 35% more clients",
+      "summary": "Describes CRM productivity gains: automatic lead capture, intelligent assignment, deal pipeline visualization, activity tracking, automated follow-up, conversion analytics, and 40% reduction in administrative time.",
+      "image_plan": "/home/ubuntu/upload/search_images/8KTVtkYONesc.webp - The slide discusses CRM tools and agent productivity. Image 2 is a \"Real Estate Agent Dashboard\" showing metrics like closed deals, time to close, and a sales funnel, which directly relates to agent productivity and CRM.",
+      "slide_template_key": ""
+    },
+    {
+      "id": "developer",
+      "title": "Real-time inventory tracking and construction milestone management streamline project operations",
+      "summary": "First part focusing on the core project management capabilities of the developer portal. Details real-time inventory tracking showing unit status (available, reserved, under contract, sold) at a glance. Covers construction milestone management with automated status updates and timeline visualization for stakeholder transparency. Explains platform integration that makes units immediately searchable by buyers upon listing, ensuring maximum exposure and seamless connection to the main marketplace.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "developer_cont",
+      "title": "Sales velocity analytics and data-driven pricing enable 20% faster project sellouts",
+      "summary": "Continuation focusing on analytics and business outcomes. Highlights sales velocity analytics showing performance by unit type, floor, and price point. Explains how this intelligence enables data-driven decisions about pricing adjustments and marketing focus based on sales performance. Details pricing optimization strategies: adjusting prices for slow-moving units or optimizing revenue for fast-selling inventory. Quantifies the measurable impact: developers report 20% faster sellout times compared to traditional marketing approaches, with superior results across all project types.",
+      "slide_template_key": "",
+      "image_plan": ""
+    },
+    {
+      "id": "analytics",
+      "title": "Real-time dashboards process 1 billion events daily to deliver actionable market insights",
+      "summary": "Covers analytics processing 1B+ daily events: market price trends, user behavior insights, conversion funnel analysis (18% improvement), real-time updates, and data-driven decision support for all user segments.",
+      "image_plan": "/home/ubuntu/upload/search_images/2ikTsFjENwau.webp - The slide focuses on comprehensive analytics and real-time dashboards processing billions of events. Image 1 is a \"Real Estate Portfolio Dashboard\" with various charts and metrics, making it highly relevant to the topic of analytics and data-driven decisions.",
+      "slide_template_key": ""
+    },
+    {
+      "id": "security",
+      "title": "Multi-layered security architecture with encryption, RBAC, and continuous monitoring ensures data protection",
+      "summary": "Details defense-in-depth security: AES-256 encryption at rest, TLS 1.3 in transit, JWT authentication, role-based access control, biometrics, network isolation, secrets management, rate limiting, continuous scanning, zero critical vulnerabilities, GDPR/CCPA compliance.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "monitoring",
+      "title": "200+ metrics tracked in real-time enable proactive issue detection and 99.9% uptime",
+      "summary": "Describes observability infrastructure: Prometheus + Grafana tracking 200+ metrics, custom dashboards, smart alerting (Slack/Email/PagerDuty), distributed tracing, structured logging, <2min detection time, <15min resolution time.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "deployment",
+      "title": "CI/CD pipelines deploy updates 50+ times per month with zero downtime",
+      "summary": "Explains deployment automation: continuous integration with automated testing, blue-green deployments, automated health checks and rollback, canary releases, 50+ monthly releases, rapid bug fixes, continuous improvement velocity.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "impact",
+      "title": "Platform delivers measurable improvements in efficiency and conversion rates",
+      "summary": "First part of business impact metrics focusing on efficiency improvements and productivity gains. Shows two metric categories: (1) Efficiency Improvements with 3X faster property discovery (12 weeks → 4 weeks) and 15-day faster closings (45 days → 30 days), (2) Productivity Gains with 35% increase in agent productivity and 20% faster developer sellout speed. Uses 2-column grid layout with metric blocks showing large numbers in cobalt blue, supporting descriptions in gray, and cyan highlights for key metrics. Architectural blueprint aesthetic with white background, blueprint grid, Inter typography, and technical annotations.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "impact_cont",
+      "title": "High user satisfaction and significant platform scale demonstrate market validation",
+      "summary": "Continuation of business impact metrics focusing on user satisfaction and platform scale. Shows two metric categories: (1) User Satisfaction with 4.7/5 average rating and NPS 68 demonstrating strong word-of-mouth growth, (2) Platform Scale with 100K+ registered users, 10,000 daily active users, and $500M annual transaction volume. Uses 2-column grid layout matching the first part's design with metric blocks, large numbers in cobalt blue, supporting descriptions, and cyan highlights. Maintains architectural blueprint aesthetic with white background, blueprint grid elements, Inter typography, and technical annotations for visual continuity.",
+      "slide_template_key": "",
+      "image_plan": ""
+    },
+    {
+      "id": "roadmap",
+      "title": "AI and blockchain innovations will deliver 3X conversion improvements and eliminate fraud",
+      "summary": "First part of innovation roadmap focusing on AI-powered property recommendations (3X higher conversion rates through machine learning analysis of user behavior and preferences) and blockchain transaction verification (immutable ledger eliminating title fraud, preventing $1 billion in fraud annually). Emphasizes how these technologies leverage the platform's comprehensive dataset.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "roadmap_cont",
+      "title": "VR tours, predictive pricing, and instant mortgage pre-approval expand market reach",
+      "summary": "Continuation of innovation roadmap covering VR property tours (fully immersive experiences for remote buyers, expanding geographic reach), predictive pricing models (AI-powered valuations using hundreds of data points for optimal pricing), and instant mortgage pre-approval (integrated lending partnerships eliminating weeks from financing process). Includes strategic impact section explaining how these innovations create defensible competitive advantages through network effects and data moats, expanding addressable market into mortgage lending, title insurance, and property management.",
+      "slide_template_key": "",
+      "image_plan": ""
+    },
+    {
+      "id": "market",
+      "title": "Real estate technology market growing at 15% CAGR presents massive opportunity",
+      "summary": "First part focuses on global PropTech market size and addressable segments. Left column shows $18B global PropTech market growing at 15% CAGR, driven by digital transformation, AI adoption, and demand for streamlined processes. Right column details $10B+ addressable segments including transaction management, CRM, advanced search, analytics, and developer solutions. Uses two-column layout with blueprint aesthetic, cobalt blue (#2563EB) and cyan (#0891B2) accents, Inter typography.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "market_cont",
+      "title": "U.S. market alone represents $750M revenue potential with expansion into commercial and international",
+      "summary": "Continuation focuses on revenue potential calculation and expansion opportunities. Shows U.S. residential market metrics: 6M annual transactions worth $2.5T, with 1% market capture yielding $750M revenue potential. Displays these four metrics in a horizontal grid with large numbers. Below that, highlights expansion opportunities into commercial real estate (office, retail, industrial) and international markets representing additional multi-billion dollar growth potential. Uses full-width layouts with blueprint aesthetic, emphasizing quantified opportunity and strategic expansion paths.",
+      "slide_template_key": "",
+      "image_plan": ""
+    },
+    {
+      "id": "competitive",
+      "title": "Integrated platform, superior technology, and network effects provide defensible competitive position",
+      "summary": "First part of competitive advantages focusing on the first two pillars: (1) Integrated Platform - only end-to-end integrated solution vs. fragmented point solutions (search without transactions, CRM without analytics, developer portals without buyer integration), creating 10X better user experience and eliminating integration complexity, (2) Superior Technology - modern microservices architecture with 8 specialized services in 4 languages, auto-scaling 3-20 replicas, 99.99% uptime SLA, 50+ monthly deployments enabling rapid innovation while competitors struggle with monolithic legacy systems. Uses three-column layout with advantage blocks featuring left border accents, feature lists with custom bullets, and metric highlights in cyan. Architectural blueprint aesthetic with white background, blueprint grid, Inter typography, cobalt blue (#2563EB) and cyan (#0891B2) accents.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "competitive_cont",
+      "title": "Continuation",
+      "summary": "Continuation of competitive advantages focusing on network effects and innovation velocity: (1) Network Effects & Data Moat pillar explaining the self-reinforcing flywheel (more users → more listings → richer data → better AI → attracts more users), with growing data moat becoming increasingly difficult to replicate, (2) Network Effects Flywheel section with 4-step visualization showing the cycle (Step 1: More Users Join → Step 2: More Listings Added → Step 3: Richer Data & Better AI → Step 4: Superior User Experience), (3) Innovation Velocity section highlighting 50+ monthly deployments creating widening gap as competitors plan quarterly releases. Uses single-column layout for the third advantage pillar at top, followed by full-width network effects flywheel grid (4 columns), and innovation section at bottom. Maintains architectural blueprint aesthetic with same styling as first part.",
+      "slide_template_key": "",
+      "image_plan": ""
+    },
+    {
+      "id": "gtm",
+      "title": "Agent partnerships and developer relationships provide efficient customer acquisition channels",
+      "summary": "First part of go-to-market strategy focusing on two primary acquisition channels: (1) Agent Partnerships - comprehensive training programs, dedicated success managers, attractive commission structures, co-marketing programs, and early feature access, with agents bringing existing client networks for immediate access to qualified buyers and sellers, (2) Developer Relationships - pilot programs with single developments, demonstrating measurable sellout improvements, expanding to full portfolios, white-label options for large developers, and integrated marketing and analytics, with developers bringing exclusive inventory and credibility that attracts buyers. Uses three-column layout with the first two columns showing these two channels, each featuring channel title in uppercase cobalt blue, descriptive paragraphs with cyan metric highlights, bulleted strategy lists with custom arrow bullets, and additional value proposition paragraphs. Architectural blueprint aesthetic with white background, blueprint grid, Inter typography, cobalt blue (#2563EB) and cyan (#0891B2) accents, left border accents on channel blocks.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "gtm_cont",
+      "title": "Continuation",
+      "summary": "Continuation of go-to-market strategy covering: (1) Direct-to-Consumer channel - organic growth through content marketing and SEO including neighborhood guides, market reports, property valuation tools, educational content, SEO-optimized listings, and social media engagement, building brand awareness and capturing buyers early in their search journey, (2) Multi-Channel Efficiency section explaining how the three channels work synergistically - agent and developer partnerships provide immediate scale with low CAC while direct-to-consumer builds long-term brand value and organic growth, delivering both rapid user growth and sustainable unit economics, (3) Key Metrics display showing <$50 Customer Acquisition Cost, $1,200 Lifetime Value, and 24:1 LTV:CAC Ratio in a three-column metrics grid with large cobalt blue values and uppercase labels. Uses single-column layout for direct-to-consumer channel at top (matching the channel block styling from first part), followed by full-width efficiency section with blueprint border styling, and metrics row at bottom with cyan accent background and left border. Maintains architectural blueprint aesthetic with same styling as first part.",
+      "slide_template_key": "",
+      "image_plan": ""
+    },
+    {
+      "id": "cta",
+      "title": "Experience the platform today and transform how you buy, sell, or manage properties",
+      "summary": "Call to action encouraging immediate platform adoption: free account creation, personalized demos for agents/developers, comprehensive onboarding and support, positioning as essential for thriving in digital transformation.",
+      "image_plan": "",
+      "slide_template_key": ""
+    },
+    {
+      "id": "contact",
+      "title": "Contact Information",
+      "summary": "Contact details including website, sales inquiries, support channels, careers, press contacts, and social media handles for the Enterprise Real Estate Platform.",
+      "image_plan": "",
+      "slide_template_key": ""
+    }
+  ]
+}

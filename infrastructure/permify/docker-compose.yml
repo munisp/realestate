@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  permify:
+    image: ghcr.io/permify/permify:latest
+    container_name: permify
+    restart: always
+    command: serve
+    environment:
+      - PERMIFY_SERVER_HTTP_ENABLED=true
+      - PERMIFY_SERVER_HTTP_PORT=3476
+      - PERMIFY_SERVER_GRPC_PORT=3478
+      - PERMIFY_DATABASE_ENGINE=postgres
+      - PERMIFY_DATABASE_URI=postgres://permify:${PERMIFY_DB_PASSWORD:-permify_password}@postgres:5432/permify?sslmode=disable
+      - PERMIFY_DATABASE_AUTO_MIGRATE=true
+      - PERMIFY_DATABASE_MAX_OPEN_CONNECTIONS=20
+      - PERMIFY_DATABASE_MAX_IDLE_CONNECTIONS=1
+      - PERMIFY_DATABASE_MAX_CONNECTION_LIFETIME=300s
+      - PERMIFY_DATABASE_MAX_CONNECTION_IDLE_TIME=60s
+      - PERMIFY_LOG_LEVEL=info
+      - PERMIFY_AUTHN_ENABLED=true
+      - PERMIFY_AUTHN_METHOD=oidc
+      - PERMIFY_AUTHN_OIDC_ISSUER=http://keycloak:8080/realms/realestate
+      - PERMIFY_AUTHN_OIDC_AUDIENCE=realestate-api
+      - PERMIFY_TRACER_ENABLED=true
+      - PERMIFY_TRACER_EXPORTER=otlp
+      - PERMIFY_TRACER_ENDPOINT=jaeger:4318
+      - PERMIFY_METER_ENABLED=true
+      - PERMIFY_METER_EXPORTER=otlp
+      - PERMIFY_METER_ENDPOINT=jaeger:4318
+    ports:
+      - "3476:3476"  # HTTP
+      - "3478:3478"  # gRPC
+    networks:
+      - permify-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:3478"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: permify-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: permify
+      POSTGRES_PASSWORD: ${PERMIFY_DB_PASSWORD:-permify_password}
+      POSTGRES_DB: permify
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - permify-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U permify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.51
+    container_name: permify-jaeger
+    restart: always
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    networks:
+      - permify-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: permify-redis
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - permify-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  permify-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:

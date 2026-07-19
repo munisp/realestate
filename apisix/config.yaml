@@ -1,0 +1,90 @@
+# APIsix API Gateway Configuration
+# Routes all traffic through unified gateway with rate limiting, auth, and monitoring
+
+apisix:
+  node_listen: 9080              # APIsix listening port
+  enable_admin: true
+  enable_admin_cors: true
+  enable_dev_mode: false
+  enable_reuseport: true
+  enable_ipv6: true
+  
+  admin_key:
+    - name: "admin"
+      key: ${APISIX_ADMIN_KEY}  # Set via environment variable
+      role: admin
+
+deployment:
+  role: traditional
+  role_traditional:
+    config_provider: etcd
+  
+  admin:
+    admin_listen:
+      ip: 0.0.0.0
+      port: 9180
+    
+  etcd:
+    host:
+      - "http://etcd:2379"
+    prefix: "/apisix"
+    timeout: 30
+
+nginx_config:
+  error_log: "/usr/local/apisix/logs/error.log"
+  error_log_level: "warn"
+  
+  http:
+    access_log: "/usr/local/apisix/logs/access.log"
+    keepalive_timeout: 60s
+    client_header_timeout: 60s
+    client_body_timeout: 60s
+    send_timeout: 10s
+    
+plugins:
+  - real-ip
+  - client-control
+  - proxy-cache
+  - proxy-mirror
+  - proxy-rewrite
+  - api-breaker
+  - limit-conn
+  - limit-count
+  - limit-req
+  - gzip
+  - server-info
+  - ip-restriction
+  - referer-restriction
+  - cors
+  - uri-blocker
+  - request-id
+  - fault-injection
+  - prometheus
+  - zipkin
+  - jwt-auth
+  - key-auth
+  - basic-auth
+  - authz-keycloak
+  - wolf-rbac
+  - openid-connect
+  - hmac-auth
+  - response-rewrite
+  - grpc-transcode
+  - batch-requests
+  - ext-plugin-pre-req
+  - ext-plugin-post-req
+
+stream_plugins:
+  - mqtt-proxy
+  - ip-restriction
+  - limit-conn
+
+plugin_attr:
+  prometheus:
+    export_addr:
+      ip: "0.0.0.0"
+      port: 9091
+  
+  zipkin:
+    endpoint: "http://zipkin:9411/api/v2/spans"
+    sample_ratio: 1
