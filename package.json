@@ -24,7 +24,7 @@
     "@fullcalendar/core": "^6.1.19",
     "@fullcalendar/daygrid": "^6.1.21",
     "@fullcalendar/interaction": "^6.1.21",
-    "@fullcalendar/react": "^6.1.19",
+    "@fullcalendar/react": "^7.0.1",
     "@fullcalendar/timegrid": "^6.1.21",
     "@googlemaps/js-api-loader": "^2.1.1",
     "@googlemaps/markerclusterer": "^2.6.2",
