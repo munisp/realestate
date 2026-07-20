@@ -1,0 +1,64 @@
+version: "3.9"
+services:
+  redis-master:
+    image: redis:7.2-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-master-data:/data
+    networks: [redis-net]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis-replica-1:
+    image: redis:7.2-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD} --replicaof redis-master 6379 --masterauth ${REDIS_PASSWORD}
+    depends_on: [redis-master]
+    networks: [redis-net]
+
+  redis-replica-2:
+    image: redis:7.2-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD} --replicaof redis-master 6379 --masterauth ${REDIS_PASSWORD}
+    depends_on: [redis-master]
+    networks: [redis-net]
+
+  redis-sentinel-1:
+    image: redis:7.2-alpine
+    command: redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/etc/redis/sentinel.conf
+    depends_on: [redis-master]
+    networks: [redis-net]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - POD_IP=redis-sentinel-1
+
+  redis-sentinel-2:
+    image: redis:7.2-alpine
+    command: redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/etc/redis/sentinel.conf
+    depends_on: [redis-master]
+    networks: [redis-net]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - POD_IP=redis-sentinel-2
+
+  redis-sentinel-3:
+    image: redis:7.2-alpine
+    command: redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - ./sentinel.conf:/etc/redis/sentinel.conf
+    depends_on: [redis-master]
+    networks: [redis-net]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - POD_IP=redis-sentinel-3
+
+volumes:
+  redis-master-data:
+networks:
+  redis-net:
+    driver: bridge

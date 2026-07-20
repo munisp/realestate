@@ -1,0 +1,51 @@
+# APISIX Canary Release Configuration
+# Splits traffic between stable (90%) and canary (10%) deployments
+
+# Canary route for main app
+- uri: /api/*
+  name: realestate-canary
+  plugins:
+    traffic-split:
+      rules:
+        - match:
+            - vars:
+                - ["http_x_canary", "==", "true"]
+          weighted_upstreams:
+            - upstream:
+                nodes:
+                  realestate-canary:3000: 1
+                type: roundrobin
+              weight: 100
+        - weighted_upstreams:
+            - upstream:
+                nodes:
+                  realestate-app:3000: 1
+                type: roundrobin
+              weight: 90
+            - upstream:
+                nodes:
+                  realestate-canary:3000: 1
+                type: roundrobin
+              weight: 10
+
+# A/B test route for ML models
+- uri: /api/trpc/valuation.*
+  name: valuation-ab-test
+  plugins:
+    traffic-split:
+      rules:
+        - weighted_upstreams:
+            - upstream:
+                nodes:
+                  ml-valuation-v1:8001: 1
+                type: roundrobin
+              weight: 80
+            - upstream:
+                nodes:
+                  ml-valuation-v2:8001: 1
+                type: roundrobin
+              weight: 20
+    response-rewrite:
+      headers:
+        set:
+          X-Model-Version: "auto"

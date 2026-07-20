@@ -266,6 +266,15 @@ export const appRouter = router({
           ...input,
           ownerId: ctx.user.id,
         });
+        // Seed Permify ownership relationship (non-blocking)
+        import('./\_core/permify').then(({ setupPropertyOwnership }) =>
+          setupPropertyOwnership(String(propertyId), ctx.user.id)
+        ).catch((err: Error) => console.warn('[Permify] Seeding failed', err.message));
+        // Index in OpenSearch (non-blocking)
+        import('./\_core/opensearch').then(async ({ opensearch }) => {
+          const prop = await db.getPropertyById(propertyId);
+          if (prop) await opensearch.indexProperty(prop as Record<string, unknown>);
+        }).catch((err: Error) => console.warn('[OpenSearch] Index failed', err.message));
         return { id: propertyId };
       }),
 

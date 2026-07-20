@@ -1,179 +1,82 @@
-apiVersion: v1
-kind: Policy
-metadata:
-  name: realestate-security-policy
-  namespace: default
-spec:
-  mode: prevent
-  
-  # Web Application Firewall Rules
-  waf:
+# OpenAppSec WAF Policy for Nigerian Real Estate Platform
+# Enforces OWASP Top 10 protection + custom rules
+
+name: realestate-waf-policy
+mode: prevent  # prevent | detect | inactive
+
+# OWASP Top 10 protections
+protections:
+  sql_injection:
     enabled: true
-    mode: blocking
-    
-    # OWASP Top 10 Protection
-    owasp_top10:
-      enabled: true
-      sql_injection: block
-      xss: block
-      command_injection: block
-      path_traversal: block
-      remote_file_inclusion: block
-      local_file_inclusion: block
-      xxe: block
-      ssrf: block
-      deserialization: block
-    
-    # Rate Limiting
-    rate_limiting:
-      enabled: true
-      requests_per_second: 100
-      burst: 200
-      block_duration: 300
-    
-    # Bot Protection
-    bot_protection:
-      enabled: true
-      challenge_mode: javascript
-      block_bad_bots: true
-      allow_search_engines: true
-      
-    # DDoS Protection
-    ddos_protection:
-      enabled: true
-      threshold: 1000
-      window: 60
-      action: block
-    
-    # API Security
-    api_security:
-      enabled: true
-      validate_content_type: true
-      validate_json_schema: true
-      max_request_size: 10485760  # 10MB
-      
-  # Security Headers
-  security_headers:
+    sensitivity: high
+  xss:
     enabled: true
-    headers:
-      X-Frame-Options: DENY
-      X-Content-Type-Options: nosniff
-      X-XSS-Protection: "1; mode=block"
-      Strict-Transport-Security: "max-age=31536000; includeSubDomains"
-      Content-Security-Policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
-      Referrer-Policy: "strict-origin-when-cross-origin"
-      Permissions-Policy: "geolocation=(self), microphone=(), camera=()"
-  
-  # IP Filtering
-  ip_filtering:
+    sensitivity: high
+  path_traversal:
     enabled: true
-    whitelist:
-      - 0.0.0.0/0  # Allow all by default, customize as needed
-    blacklist: []
-    
-  # Geo Blocking
-  geo_blocking:
-    enabled: false
-    allowed_countries: []
-    blocked_countries: []
-  
-  # Request Validation
-  request_validation:
+    sensitivity: high
+  command_injection:
     enabled: true
-    max_url_length: 2048
-    max_header_size: 8192
-    max_body_size: 10485760
-    allowed_methods:
-      - GET
-      - POST
-      - PUT
-      - DELETE
-      - PATCH
-      - OPTIONS
-      - HEAD
-    
-  # Response Filtering
-  response_filtering:
+    sensitivity: high
+  ldap_injection:
     enabled: true
-    hide_server_header: true
-    hide_version_info: true
-    remove_error_details: true
-  
-  # Logging
-  logging:
+  xml_injection:
     enabled: true
-    log_level: info
-    log_format: json
-    destinations:
-      - type: elasticsearch
-        endpoint: http://elasticsearch:9200
-        index: openappsec-logs
-      - type: syslog
-        endpoint: syslog://localhost:514
-      - type: file
-        path: /var/log/nano_agent/security.log
-  
-  # Threat Intelligence
-  threat_intelligence:
+  ssrf:
     enabled: true
-    update_interval: 3600
-    sources:
-      - type: openappsec_cloud
-        enabled: true
-      - type: custom
-        enabled: false
-        url: ""
-  
-  # Custom Rules
-  custom_rules:
-    - name: block-admin-bruteforce
-      enabled: true
-      condition: |
-        path == "/api/auth/login" && 
-        failed_attempts > 5 && 
-        time_window < 300
-      action: block
-      duration: 900
-      
-    - name: block-sql-keywords
-      enabled: true
-      condition: |
-        (query_string contains "union" || 
-         query_string contains "select" || 
-         query_string contains "drop" || 
-         query_string contains "insert") &&
-        query_string contains "--"
-      action: block
-      
-    - name: protect-sensitive-endpoints
-      enabled: true
-      condition: |
-        path matches "^/api/(payments|admin|users)" &&
-        !header["Authorization"]
-      action: block
-      
-    - name: rate-limit-search
-      enabled: true
-      condition: |
-        path == "/api/search" &&
-        requests_per_minute > 30
-      action: throttle
-      delay: 1000
-  
-  # Compliance
-  compliance:
-    pci_dss: true
-    gdpr: true
-    hipaa: false
-    
-  # Monitoring
-  monitoring:
+    sensitivity: medium
+  file_upload:
     enabled: true
-    metrics:
-      - requests_total
-      - requests_blocked
-      - response_time
-      - threat_score
-    export_to:
-      - prometheus
-      - elasticsearch
+    allowed_extensions: [jpg, jpeg, png, gif, webp, pdf, doc, docx]
+    max_file_size_mb: 10
+
+# Rate limiting
+rate_limiting:
+  enabled: true
+  rules:
+    - path: "/api/trpc/auth.*"
+      requests_per_minute: 20
+      burst: 5
+    - path: "/api/trpc/payment.*"
+      requests_per_minute: 10
+      burst: 2
+    - path: "/api/trpc/.*"
+      requests_per_minute: 120
+      burst: 30
+    - path: "/api/webhooks/.*"
+      requests_per_minute: 60
+      burst: 10
+
+# IP reputation
+ip_reputation:
+  enabled: true
+  block_tor_exit_nodes: false  # Allow Tor for privacy
+  block_known_bad_ips: true
+  threat_intelligence_feeds:
+    - spamhaus
+    - emerging_threats
+
+# Custom rules for Nigerian real estate platform
+custom_rules:
+  - name: block_suspicious_property_price
+    description: Block requests with obviously invalid property prices
+    condition: "request.body contains 'price' and request.body.price < 0"
+    action: block
+
+  - name: protect_payment_endpoints
+    description: Require Content-Type for payment mutations
+    condition: "request.path matches '/api/trpc/payment.*' and request.method == 'POST' and not request.headers['content-type'] contains 'application/json'"
+    action: block
+
+  - name: block_admin_brute_force
+    description: Block repeated admin login failures
+    condition: "request.path == '/api/trpc/auth.login' and session.failed_attempts > 5"
+    action: block_and_alert
+
+# Logging
+logging:
+  level: info
+  include_request_body: false  # PII protection
+  include_response_body: false
+  alert_on_block: true
+  alert_webhook: "${ALERT_WEBHOOK_URL}"

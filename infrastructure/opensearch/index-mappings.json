@@ -1,0 +1,74 @@
+{
+  "properties_v1": {
+    "mappings": {
+      "properties": {
+        "id": { "type": "keyword" },
+        "title": { "type": "text", "analyzer": "english", "fields": { "keyword": { "type": "keyword" } } },
+        "description": { "type": "text", "analyzer": "english" },
+        "city": { "type": "keyword" },
+        "state": { "type": "keyword" },
+        "address": { "type": "text" },
+        "price": { "type": "double" },
+        "bedrooms": { "type": "integer" },
+        "bathrooms": { "type": "integer" },
+        "squareFeet": { "type": "integer" },
+        "propertyType": { "type": "keyword" },
+        "status": { "type": "keyword" },
+        "location": { "type": "geo_point" },
+        "features": { "type": "text" },
+        "images": { "type": "keyword", "index": false },
+        "ownerId": { "type": "keyword" },
+        "agentId": { "type": "keyword" },
+        "gnnScore": { "type": "float" },
+        "investmentPotential": { "type": "float" },
+        "createdAt": { "type": "date" },
+        "updatedAt": { "type": "date" }
+      }
+    },
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "analysis": {
+        "analyzer": {
+          "nigerian_address": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "stop", "porter_stem"]
+          }
+        }
+      }
+    }
+  },
+  "documents_v1": {
+    "mappings": {
+      "properties": {
+        "id": { "type": "keyword" },
+        "propertyId": { "type": "keyword" },
+        "userId": { "type": "keyword" },
+        "documentType": { "type": "keyword" },
+        "content": { "type": "text", "analyzer": "english" },
+        "fileName": { "type": "text" },
+        "fileHash": { "type": "keyword" },
+        "notarized": { "type": "boolean" },
+        "createdAt": { "type": "date" }
+      }
+    }
+  },
+  "analytics_v1": {
+    "mappings": {
+      "properties": {
+        "propertyId": { "type": "keyword" },
+        "eventType": { "type": "keyword" },
+        "userId": { "type": "keyword" },
+        "timestamp": { "type": "date" },
+        "city": { "type": "keyword" },
+        "price": { "type": "double" },
+        "metadata": { "type": "object", "dynamic": true }
+      }
+    },
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1
+    }
+  }
+}

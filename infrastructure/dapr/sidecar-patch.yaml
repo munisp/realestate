@@ -1,0 +1,21 @@
+# Patch to add Dapr sidecar annotations to the main app Deployment.
+# Apply with: kubectl patch deployment realestate-app -n default --patch-file sidecar-patch.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realestate-app
+  namespace: default
+spec:
+  template:
+    metadata:
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "realestate-app"
+        dapr.io/app-port: "3000"
+        dapr.io/log-level: "info"
+        dapr.io/sidecar-cpu-request: "100m"
+        dapr.io/sidecar-memory-request: "128Mi"
+        dapr.io/sidecar-cpu-limit: "300m"
+        dapr.io/sidecar-memory-limit: "256Mi"
+        dapr.io/config: "tracing-config"
+        dapr.io/enable-api-logging: "true"

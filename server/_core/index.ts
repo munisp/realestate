@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import { logger } from "./logger";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -126,6 +127,49 @@ async function startServer() {
   // Start competitor tracking scheduler (daily price checks + weekly summaries)
   const { startCompetitorTrackingScheduler } = await import('../schedulers/competitorTrackingScheduler');
   startCompetitorTrackingScheduler();
+
+  // ── Redis connection ──────────────────────────────────────────────────────
+  try {
+    const { redis } = await import('./../_core/redis');
+    await redis.ping();
+    logger.info('[Redis] Connected successfully');
+  } catch (err) {
+    logger.warn('[Redis] Not available — caching disabled', { error: String(err) });
+  }
+
+  // ── Kafka consumer group ──────────────────────────────────────────────────
+  try {
+    const { kafkaConsumer, registerDefaultKafkaHandlers } = await import('./../_core/kafkaConsumer');
+    await registerDefaultKafkaHandlers();
+    await kafkaConsumer.start();
+  } catch (err) {
+    logger.warn('[Kafka] Consumer startup failed — events will not be consumed', { error: String(err) });
+  }
+
+  // ── Fluvio consumer ───────────────────────────────────────────────────────
+  try {
+    const { fluvioConsumer, registerDefaultFluvioHandlers } = await import('../services/fluvioConsumer');
+    await registerDefaultFluvioHandlers();
+    await fluvioConsumer.start();
+  } catch (err) {
+    logger.warn('[Fluvio] Consumer startup failed — streaming events disabled', { error: String(err) });
+  }
+
+  // ── Mojaloop webhook receiver ─────────────────────────────────────────────
+  app.post('/api/webhooks/mojaloop', (req, res) => {
+    try {
+      import('../payments/providers/MojalooProvider').then(({ handleMojaloopCallback }) => {
+        handleMojaloopCallback(req.body as Record<string, unknown>);
+        res.status(200).json({ received: true });
+      }).catch((err: Error) => {
+        logger.error('[Mojaloop] Webhook handler error', { error: String(err) });
+        res.status(500).json({ error: 'Webhook processing failed' });
+      });
+    } catch (err) {
+      logger.error('[Mojaloop] Webhook error', { error: String(err) });
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
 
   server.listen(port, () => {
     logger.info(`Server running on http://localhost:${port}/`);
