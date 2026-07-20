@@ -1,0 +1,376 @@
+[
+  {
+    "name": "\ud83c\udfaf Lead Score on Creation",
+    "description": "When a new Opportunity is created, compute lead score and set next follow-up date",
+    "trigger": {
+      "type": "DATABASE_EVENT",
+      "settings": {
+        "eventName": "opportunity.created",
+        "outputSchema": {}
+      }
+    },
+    "steps": [
+      {
+        "name": "Compute Lead Score",
+        "type": "CODE",
+        "settings": {
+          "input": {
+            "opportunity": "{{trigger.output.record}}"
+          },
+          "code": "\nasync function computeLeadScore(opportunity) {\n  const stageScores = {\n    'NEW_ENQUIRY': 10, 'QUALIFIED': 30, 'SHOWING_SCHEDULED': 50,\n    'SHOWING_COMPLETED': 65, 'OFFER_MADE': 80, 'NEGOTIATION': 85,\n    'ESCROW_INITIATED': 95, 'CLOSED_WON': 100, 'CLOSED_LOST': 0,\n  };\n  const stage = opportunity.stage || 'NEW_ENQUIRY';\n  const budget = opportunity.amount?.amountMicros ? opportunity.amount.amountMicros / 1_000_000 : 0;\n  const budgetBonus = budget >= 500_000_000 ? 15 : budget >= 100_000_000 ? 10 : budget >= 50_000_000 ? 5 : 0;\n  const score = Math.min(100, (stageScores[stage] || 10) + budgetBonus);\n  const followUpDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();\n  return { score, followUpDate, stage };\n}\nreturn await computeLeadScore(input.opportunity);\n"
+        }
+      },
+      {
+        "name": "Schedule Follow-Up Task",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "task",
+          "fields": {
+            "title": "Follow up with {{trigger.output.record.name}}",
+            "dueAt": "{{steps[0].output.followUpDate}}",
+            "status": "TODO",
+            "assignee": "{{trigger.output.record.assignee}}"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "\ud83d\udcc5 Auto Follow-Up Sequence",
+    "description": "Send follow-up reminders at 24h, 72h, and 7 days if lead is not progressed",
+    "trigger": {
+      "type": "DATABASE_EVENT",
+      "settings": {
+        "eventName": "opportunity.created"
+      }
+    },
+    "steps": [
+      {
+        "name": "Wait 24 hours",
+        "type": "DELAY",
+        "settings": {
+          "delayUnit": "HOURS",
+          "delayAmount": 24
+        }
+      },
+      {
+        "name": "Check if still in New Enquiry",
+        "type": "FILTER",
+        "settings": {
+          "filter": "{{trigger.output.record.stage}} === 'NEW_ENQUIRY'"
+        }
+      },
+      {
+        "name": "Create 24h Follow-Up Task",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "task",
+          "fields": {
+            "title": "\u23f0 24h follow-up: {{trigger.output.record.name}}",
+            "status": "TODO",
+            "assignee": "{{trigger.output.record.assignee}}"
+          }
+        }
+      },
+      {
+        "name": "Wait 72 hours total",
+        "type": "DELAY",
+        "settings": {
+          "delayUnit": "HOURS",
+          "delayAmount": 48
+        }
+      },
+      {
+        "name": "Create 72h Follow-Up Task",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "task",
+          "fields": {
+            "title": "\u26a0\ufe0f 72h follow-up: {{trigger.output.record.name}} \u2014 still unqualified",
+            "status": "TODO",
+            "assignee": "{{trigger.output.record.assignee}}"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "\ud83c\udf0d Diaspora Buyer Welcome",
+    "description": "When a diaspora lead is created, send welcome email and assign trusted agent",
+    "trigger": {
+      "type": "DATABASE_EVENT",
+      "settings": {
+        "eventName": "opportunity.created"
+      }
+    },
+    "steps": [
+      {
+        "name": "Check if Diaspora",
+        "type": "FILTER",
+        "settings": {
+          "filter": "{{trigger.output.record.isDiaspora}} === true"
+        }
+      },
+      {
+        "name": "Send Welcome Email",
+        "type": "SEND_EMAIL",
+        "settings": {
+          "email": "{{trigger.output.record.pointOfContact.emails.primaryEmail}}",
+          "subject": "Welcome to RealEstate.NG \u2014 Your Nigerian Property Journey Starts Here",
+          "body": "Dear {{trigger.output.record.pointOfContact.name.firstName}},\n\nThank you for your interest in Nigerian real estate!\n\nWe understand the unique challenges of investing from abroad. Here's what we've set up for you:\n\n\u2705 Dedicated Trusted Agent assigned to your account\n\u2705 Secure Escrow protection for all transactions\n\u2705 Virtual/AR property tours available 24/7\n\u2705 Drone aerial verification for any property\n\u2705 FX pricing in your preferred currency\n\nYour account is now active. Log in to browse verified properties:\nhttps://realestate.ng/diaspora\n\nOur team is available on WhatsApp: +234-800-REALESTATE\n\nBest regards,\nRealEstate.NG Team"
+        }
+      },
+      {
+        "name": "Create Onboarding Task",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "task",
+          "fields": {
+            "title": "\ud83c\udf0d Diaspora onboarding: {{trigger.output.record.name}} ({{trigger.output.record.diasporaCountry}})",
+            "status": "TODO"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "\ud83d\udd12 Escrow Milestone Alert",
+    "description": "When an escrow transaction milestone is completed, notify buyer and agent",
+    "trigger": {
+      "type": "DATABASE_EVENT",
+      "settings": {
+        "eventName": "escrowTransaction.updated"
+      }
+    },
+    "steps": [
+      {
+        "name": "Check milestone changed",
+        "type": "FILTER",
+        "settings": {
+          "filter": "{{trigger.output.diff.droneMilestoneVerified}} === true"
+        }
+      },
+      {
+        "name": "Notify via HTTP",
+        "type": "HTTP_REQUEST",
+        "settings": {
+          "url": "{{env.PLATFORM_API_URL}}/api/escrow/milestone-webhook",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Twenty-Webhook": "true"
+          },
+          "body": {
+            "escrowId": "{{trigger.output.record.escrowId}}",
+            "milestone": "{{trigger.output.record.currentMilestone}}",
+            "droneVerified": "{{trigger.output.record.droneMilestoneVerified}}"
+          }
+        }
+      },
+      {
+        "name": "Update Opportunity Stage",
+        "type": "UPDATE_RECORD",
+        "settings": {
+          "objectName": "opportunity",
+          "filter": {
+            "escrowId": "{{trigger.output.record.escrowId}}"
+          },
+          "fields": {
+            "stage": "ESCROW_INITIATED"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "\ud83d\udee1\ufe0f KYC Status Change Notification",
+    "description": "When agent KYC status changes, notify the agent",
+    "trigger": {
+      "type": "DATABASE_EVENT",
+      "settings": {
+        "eventName": "agentKyc.updated"
+      }
+    },
+    "steps": [
+      {
+        "name": "Check status changed to verified or rejected",
+        "type": "FILTER",
+        "settings": {
+          "filter": "['verified', 'rejected'].includes({{trigger.output.record.verificationStatus}})"
+        }
+      },
+      {
+        "name": "Notify Platform via Webhook",
+        "type": "HTTP_REQUEST",
+        "settings": {
+          "url": "{{env.PLATFORM_API_URL}}/api/kyc/status-webhook",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "agentId": "{{trigger.output.record.agentId}}",
+            "status": "{{trigger.output.record.verificationStatus}}",
+            "badgeTier": "{{trigger.output.record.badgeTier}}",
+            "trustScore": "{{trigger.output.record.trustScore}}"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "\u26a0\ufe0f Stale Lead Alert",
+    "description": "Every day, flag leads with no contact in 14+ days",
+    "trigger": {
+      "type": "CRON",
+      "settings": {
+        "schedule": "0 8 * * *"
+      }
+    },
+    "steps": [
+      {
+        "name": "Find Stale Leads",
+        "type": "SEARCH_RECORDS",
+        "settings": {
+          "objectName": "opportunity",
+          "filter": {
+            "stage": {
+              "notIn": [
+                "CLOSED_WON",
+                "CLOSED_LOST"
+              ]
+            },
+            "updatedAt": {
+              "lt": "{{now - 14 days}}"
+            }
+          },
+          "limit": 50
+        }
+      },
+      {
+        "name": "Loop through stale leads",
+        "type": "ITERATOR",
+        "settings": {
+          "collection": "{{steps[0].output.records}}"
+        }
+      },
+      {
+        "name": "Create Stale Alert Task",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "task",
+          "fields": {
+            "title": "\u26a0\ufe0f STALE LEAD (14+ days): {{iterator.current.name}}",
+            "status": "TODO",
+            "assignee": "{{iterator.current.assignee}}"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "\ud83c\udfc6 Deal Won \u2014 Commission Calculation",
+    "description": "When a deal is marked Closed Won, automatically create commission record",
+    "trigger": {
+      "type": "DATABASE_EVENT",
+      "settings": {
+        "eventName": "opportunity.updated"
+      }
+    },
+    "steps": [
+      {
+        "name": "Check if stage changed to CLOSED_WON",
+        "type": "FILTER",
+        "settings": {
+          "filter": "{{trigger.output.diff.stage}} === 'CLOSED_WON'"
+        }
+      },
+      {
+        "name": "Calculate Commission",
+        "type": "CODE",
+        "settings": {
+          "input": {
+            "opportunity": "{{trigger.output.record}}"
+          },
+          "code": "\nasync function calcCommission(opp) {\n  const salePrice = opp.amount?.amountMicros ? opp.amount.amountMicros / 1_000_000 : 0;\n  const rate = 0.03; // 3% Nigerian standard\n  const commission = salePrice * rate;\n  const vat = commission * 0.075; // 7.5% VAT\n  const net = commission - vat;\n  return { salePrice, commission, vat, net, rate: rate * 100 };\n}\nreturn await calcCommission(input.opportunity);\n"
+        }
+      },
+      {
+        "name": "Create Commission Record",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "agentCommission",
+          "fields": {
+            "name": "Commission \u2014 {{trigger.output.record.name}}",
+            "salePrice": "{{steps[1].output.salePrice}}",
+            "commissionRate": "{{steps[1].output.rate}}",
+            "commissionAmount": "{{steps[1].output.commission}}",
+            "vatAmount": "{{steps[1].output.vat}}",
+            "netCommission": "{{steps[1].output.net}}",
+            "status": "pending",
+            "transactionType": "sale"
+          }
+        }
+      },
+      {
+        "name": "Notify Agent",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "task",
+          "fields": {
+            "title": "\ud83c\udfc6 Deal Won! Commission \u20a6{{steps[1].output.commission}} pending \u2014 {{trigger.output.record.name}}",
+            "status": "TODO",
+            "assignee": "{{trigger.output.record.assignee}}"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "\ud83d\udccb Showing Completed \u2014 Request Feedback",
+    "description": "When a showing is marked completed, create a feedback task",
+    "trigger": {
+      "type": "DATABASE_EVENT",
+      "settings": {
+        "eventName": "propertyShowing.updated"
+      }
+    },
+    "steps": [
+      {
+        "name": "Check if status changed to completed",
+        "type": "FILTER",
+        "settings": {
+          "filter": "{{trigger.output.diff.status}} === 'completed'"
+        }
+      },
+      {
+        "name": "Create Feedback Task",
+        "type": "CREATE_RECORD",
+        "settings": {
+          "objectName": "task",
+          "fields": {
+            "title": "\ud83d\udccb Collect feedback from showing at {{trigger.output.record.propertyAddress}}",
+            "status": "TODO",
+            "assignee": "{{trigger.output.record.assignee}}"
+          }
+        }
+      },
+      {
+        "name": "Notify Platform",
+        "type": "HTTP_REQUEST",
+        "settings": {
+          "url": "{{env.PLATFORM_API_URL}}/api/showings/completed-webhook",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "showingId": "{{trigger.output.record.id}}",
+            "propertyId": "{{trigger.output.record.propertyId}}",
+            "status": "completed"
+          }
+        }
+      }
+    ]
+  }
+]
