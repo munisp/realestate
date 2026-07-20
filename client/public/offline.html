@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en-NG">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NaijaHomes — You're Offline</title>
+  <style>
+    :root { --primary: #1d4ed8; --bg: #f8fafc; --text: #1e293b; --muted: #64748b; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0f172a; --text: #f1f5f9; --muted: #94a3b8; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text);
+           min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .card { max-width: 420px; width: 100%; text-align: center; }
+    .icon { font-size: 4rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; }
+    p { color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary); color: #fff;
+           border: none; border-radius: 0.5rem; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;
+           cursor: pointer; text-decoration: none; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.9; }
+    .cached { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
+    .cached h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--muted); }
+    #cached-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    #cached-list li a { display: block; padding: 0.625rem 1rem; background: rgba(29,78,216,0.08);
+                        border-radius: 0.375rem; color: var(--primary); text-decoration: none; font-size: 0.875rem; }
+    #cached-list li a:hover { background: rgba(29,78,216,0.15); }
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <div class="icon" aria-hidden="true">📡</div>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. Some features may be unavailable, but you can still browse pages you've visited before.</p>
+    <button class="btn" onclick="window.location.reload()">
+      <span aria-hidden="true">↻</span> Try Again
+    </button>
+    <div class="cached" id="cached-section" hidden>
+      <h2>Recently Viewed Pages</h2>
+      <ul id="cached-list" aria-label="Cached pages available offline"></ul>
+    </div>
+  </div>
+  <script>
+    async function loadCachedPages() {
+      if (!('caches' in window)) return;
+      try {
+        const cacheNames = await caches.keys();
+        const pages = new Set();
+        for (const name of cacheNames) {
+          const cache = await caches.open(name);
+          const keys = await cache.keys();
+          keys.forEach(req => {
+            const url = new URL(req.url);
+            if (url.pathname !== '/' && url.pathname !== '/offline.html' && !url.pathname.match(/\.(js|css|png|jpg|ico|json|woff)$/)) {
+              pages.add(url.pathname);
+            }
+          });
+        }
+        if (pages.size > 0) {
+          const list = document.getElementById('cached-list');
+          const section = document.getElementById('cached-section');
+          [...pages].slice(0, 8).forEach(path => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = path;
+            a.textContent = path.replace(/\//g, ' › ').trim() || 'Home';
+            li.appendChild(a);
+            list.appendChild(li);
+          });
+          section.hidden = false;
+        }
+      } catch (e) {}
+    }
+    loadCachedPages();
+  </script>
+</body>
+</html>

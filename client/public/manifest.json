@@ -1,48 +1,46 @@
 {
-  "name": "Real Estate Platform",
-  "short_name": "RealEstate",
-  "description": "Next-generation real estate platform for Nigeria",
-  "start_url": "/",
+  "name": "NaijaHomes — Nigerian Real Estate Platform",
+  "short_name": "NaijaHomes",
+  "description": "Find, buy, rent, and invest in Nigerian real estate with AI-powered search, virtual tours, and secure escrow.",
+  "start_url": "/?source=pwa",
+  "id": "com.naijahomes.app",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#ffffff",
-  "theme_color": "#007AFF",
-  "orientation": "portrait-primary",
-  "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
+  "theme_color": "#1d4ed8",
+  "orientation": "any",
+  "lang": "en-NG",
+  "dir": "ltr",
+  "scope": "/",
   "categories": ["business", "finance", "lifestyle"],
+  "icons": [
+    { "src": "/icons/icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192m.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512m.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
   "screenshots": [
-    {
-      "src": "/screenshot-1.png",
-      "sizes": "1280x720",
-      "type": "image/png"
-    }
+    { "src": "/screenshots/home-desktop.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "NaijaHomes home screen" },
+    { "src": "/screenshots/home-mobile.png",  "sizes": "390x844",  "type": "image/png", "form_factor": "narrow", "label": "NaijaHomes mobile" }
   ],
   "shortcuts": [
-    {
-      "name": "Search Properties",
-      "short_name": "Search",
-      "description": "Search for properties",
-      "url": "/search",
-      "icons": [{ "src": "/icon-search.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "My Favorites",
-      "short_name": "Favorites",
-      "description": "View saved properties",
-      "url": "/favorites",
-      "icons": [{ "src": "/icon-heart.png", "sizes": "96x96" }]
+    { "name": "Search Properties", "short_name": "Search",     "url": "/search?source=shortcut",            "icons": [{ "src": "/icons/shortcut-search.png", "sizes": "96x96" }] },
+    { "name": "My Saved Homes",    "short_name": "Saved",      "url": "/favorites?source=shortcut",         "icons": [{ "src": "/icons/shortcut-heart.png",  "sizes": "96x96" }] },
+    { "name": "List a Property",   "short_name": "List",       "url": "/list-property?source=shortcut",     "icons": [{ "src": "/icons/shortcut-add.png",    "sizes": "96x96" }] },
+    { "name": "Mortgage Calc",     "short_name": "Calculator", "url": "/mortgage-calculator?source=shortcut","icons": [{ "src": "/icons/shortcut-calc.png",   "sizes": "96x96" }] }
+  ],
+  "share_target": {
+    "action": "/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [{ "name": "property_images", "accept": ["image/png", "image/jpeg", "image/webp"] }]
     }
-  ]
+  },
+  "protocol_handlers": [{ "protocol": "web+naijahomes", "url": "/protocol?url=%s" }],
+  "handle_links": "preferred",
+  "prefer_related_applications": false
 }
