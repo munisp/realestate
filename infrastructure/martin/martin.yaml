@@ -1,0 +1,70 @@
+# Martin tile server configuration
+# Serves PostGIS layers as Mapbox Vector Tiles (MVT)
+
+listen_addresses: "0.0.0.0:3000"
+keep_alive: 75
+worker_processes: 4
+web_ui: true
+
+postgres:
+  connection_string: ${DATABASE_URL}
+  pool_size: 20
+  default_srid: 4326
+
+# Auto-publish all tables with geometry columns
+auto_publish:
+  tables:
+    from_schemas:
+      - public
+    id_columns:
+      - id
+    clip_geom: true
+    buffer: 64
+    extent: 4096
+
+# Explicit layer definitions for fine-grained control
+tables:
+  properties_tiles:
+    schema: public
+    table: properties
+    srid: 4326
+    geometry_column: geom
+    id_column: id
+    minzoom: 4
+    maxzoom: 20
+    properties:
+      - id
+      - title
+      - price
+      - propertyType
+      - bedrooms
+      - city
+      - state
+      - status
+
+  nigerian_boundaries_tiles:
+    schema: public
+    table: nigerian_boundaries
+    srid: 4326
+    geometry_column: geom
+    id_column: id
+    minzoom: 4
+    maxzoom: 16
+    properties:
+      - name
+      - type
+      - state
+      - lga
+
+  price_heatmap_tiles:
+    schema: public
+    table: property_price_heatmap
+    srid: 4326
+    geometry_column: grid_point
+    minzoom: 8
+    maxzoom: 18
+    properties:
+      - avg_price
+      - property_count
+      - min_price
+      - max_price

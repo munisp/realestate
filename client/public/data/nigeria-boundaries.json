@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Lagos Island", "type": "lga", "state": "Lagos", "avgPriceM": 85 },
+      "geometry": { "type": "Polygon", "coordinates": [[[3.38,6.44],[3.42,6.44],[3.45,6.47],[3.42,6.50],[3.38,6.50],[3.35,6.47],[3.38,6.44]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Victoria Island", "type": "lga", "state": "Lagos", "avgPriceM": 120 },
+      "geometry": { "type": "Polygon", "coordinates": [[[3.40,6.42],[3.44,6.42],[3.46,6.44],[3.44,6.46],[3.40,6.46],[3.38,6.44],[3.40,6.42]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Lekki Phase 1", "type": "neighborhood", "state": "Lagos", "avgPriceM": 95 },
+      "geometry": { "type": "Polygon", "coordinates": [[[3.48,6.43],[3.54,6.43],[3.56,6.46],[3.54,6.49],[3.48,6.49],[3.46,6.46],[3.48,6.43]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Ikoyi", "type": "neighborhood", "state": "Lagos", "avgPriceM": 150 },
+      "geometry": { "type": "Polygon", "coordinates": [[[3.42,6.44],[3.46,6.44],[3.48,6.47],[3.46,6.50],[3.42,6.50],[3.40,6.47],[3.42,6.44]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Surulere", "type": "lga", "state": "Lagos", "avgPriceM": 35 },
+      "geometry": { "type": "Polygon", "coordinates": [[[3.34,6.49],[3.38,6.49],[3.40,6.52],[3.38,6.55],[3.34,6.55],[3.32,6.52],[3.34,6.49]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Ikeja", "type": "lga", "state": "Lagos", "avgPriceM": 45 },
+      "geometry": { "type": "Polygon", "coordinates": [[[3.32,6.57],[3.38,6.57],[3.40,6.61],[3.38,6.65],[3.32,6.65],[3.30,6.61],[3.32,6.57]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Maitama", "type": "neighborhood", "state": "FCT", "avgPriceM": 180 },
+      "geometry": { "type": "Polygon", "coordinates": [[[7.48,9.06],[7.52,9.06],[7.54,9.09],[7.52,9.12],[7.48,9.12],[7.46,9.09],[7.48,9.06]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Asokoro", "type": "neighborhood", "state": "FCT", "avgPriceM": 160 },
+      "geometry": { "type": "Polygon", "coordinates": [[[7.52,9.03],[7.56,9.03],[7.58,9.06],[7.56,9.09],[7.52,9.09],[7.50,9.06],[7.52,9.03]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Wuse 2", "type": "neighborhood", "state": "FCT", "avgPriceM": 90 },
+      "geometry": { "type": "Polygon", "coordinates": [[[7.44,9.06],[7.48,9.06],[7.50,9.09],[7.48,9.12],[7.44,9.12],[7.42,9.09],[7.44,9.06]]] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "GRA Port Harcourt", "type": "neighborhood", "state": "Rivers", "avgPriceM": 75 },
+      "geometry": { "type": "Polygon", "coordinates": [[[7.01,4.80],[7.05,4.80],[7.07,4.83],[7.05,4.86],[7.01,4.86],[6.99,4.83],[7.01,4.80]]] }
+    }
+  ]
+}

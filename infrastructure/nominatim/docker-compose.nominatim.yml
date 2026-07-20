@@ -1,0 +1,27 @@
+# Nominatim — self-hosted geocoder for Nigerian addresses
+# Uses OpenStreetMap data for Nigeria
+version: '3.8'
+services:
+  nominatim:
+    image: mediagis/nominatim:4.4
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+    environment:
+      PBF_URL: https://download.geofabrik.de/africa/nigeria-latest.osm.pbf
+      REPLICATION_URL: https://download.geofabrik.de/africa/nigeria-updates/
+      NOMINATIM_PASSWORD: ${NOMINATIM_DB_PASSWORD:-nominatim_secret}
+      IMPORT_WIKIPEDIA: "false"
+      IMPORT_TIGER_ADDRESSES: "false"
+    volumes:
+      - nominatim_data:/var/lib/postgresql/14/main
+    shm_size: 1gb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/status"]
+      interval: 60s
+      timeout: 30s
+      retries: 5
+      start_period: 300s  # Nominatim takes ~5min to import Nigeria data
+
+volumes:
+  nominatim_data:

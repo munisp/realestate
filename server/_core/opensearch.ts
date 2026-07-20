@@ -312,6 +312,97 @@ class OpenSearchClient {
       return { status: "unavailable", available: false };
     }
   }
+  /**
+   * Geo bounding box search — finds properties within a map viewport
+   */
+  async geoBoundingBoxSearch(params: {
+    bbox: { north: number; south: number; east: number; west: number };
+    minPrice?: number; maxPrice?: number; propertyType?: string;
+    size?: number; from?: number;
+  }) {
+    const filters: any[] = [
+      {
+        geo_bounding_box: {
+          location: {
+            top_left:     { lat: params.bbox.north, lon: params.bbox.west },
+            bottom_right: { lat: params.bbox.south, lon: params.bbox.east },
+          },
+        },
+      },
+    ];
+    if (params.minPrice || params.maxPrice) {
+      filters.push({ range: { price: { gte: params.minPrice, lte: params.maxPrice } } });
+    }
+    if (params.propertyType) {
+      filters.push({ term: { propertyType: params.propertyType } });
+    }
+    return this.client.search({
+      index: PROPERTIES_INDEX,
+      body: {
+        query: { bool: { filter: filters } },
+        size: params.size || 200,
+        from: params.from || 0,
+        sort: [{ price: 'asc' }],
+      },
+    });
+  }
+
+  /**
+   * Geo polygon search — finds properties within a drawn polygon
+   */
+  async geoPolygonSearch(params: {
+    points: Array<{ lat: number; lon: number }>;
+    minPrice?: number; maxPrice?: number; size?: number;
+  }) {
+    const filters: any[] = [
+      { geo_polygon: { location: { points: params.points } } },
+    ];
+    if (params.minPrice || params.maxPrice) {
+      filters.push({ range: { price: { gte: params.minPrice, lte: params.maxPrice } } });
+    }
+    return this.client.search({
+      index: PROPERTIES_INDEX,
+      body: {
+        query: { bool: { filter: filters } },
+        size: params.size || 100,
+      },
+    });
+  }
+
+  /**
+   * Geo aggregation — returns price stats aggregated by geo_tile
+   */
+  async geoPriceAggregation(params: {
+    bbox: { north: number; south: number; east: number; west: number };
+    precision?: number; // 1-12, higher = smaller tiles
+  }) {
+    return this.client.search({
+      index: PROPERTIES_INDEX,
+      body: {
+        size: 0,
+        query: {
+          geo_bounding_box: {
+            location: {
+              top_left:     { lat: params.bbox.north, lon: params.bbox.west },
+              bottom_right: { lat: params.bbox.south, lon: params.bbox.east },
+            },
+          },
+        },
+        aggs: {
+          price_grid: {
+            geotile_grid: { field: 'location', precision: params.precision || 8 },
+            aggs: {
+              avg_price: { avg: { field: 'price' } },
+              min_price: { min: { field: 'price' } },
+              max_price: { max: { field: 'price' } },
+              count:     { value_count: { field: 'id' } },
+            },
+          },
+        },
+      },
+    });
+  }
+
 }
 
 // ── Singleton Export ───────────────────────────────────────────────────────

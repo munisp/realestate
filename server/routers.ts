@@ -170,6 +170,8 @@ export const appRouter = router({
   historicalPlayback: historicalPlaybackRouter,
   spatialSearch: spatialSearchRouter,
   spatialSearchPostGIS: spatialSearchPostGISRouter,
+  geospatial: geospatialRouter,
+  geospatialAnalytics: geospatialAnalyticsRouter,
   realtime: realtimeRouter,
   gnn: gnnRouter,
   marketTrends: marketTrendsRouter,
