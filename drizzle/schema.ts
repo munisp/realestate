@@ -2784,3 +2784,99 @@ export * from './schema-gnn-alerts';
 export * from "./schema-scheduled-verifications";
 // Import and re-export system tables (audit_logs, fluvio_events, app_versions)
 export * from "./schema-system-tables";
+
+// ============================================================================
+// Identity & Trust Verification Tables
+// ============================================================================
+
+/** Stores the result of each NIN/BVN/CAC verification call to Prembly */
+export const identityVerifications = pgTable("identity_verifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  verificationType: varchar("verificationType", { length: 20 }).notNull(), // 'nin', 'bvn', 'cac', 'niesv'
+  documentNumber: varchar("documentNumber", { length: 50 }).notNull(),
+  verified: integer("verified").default(0).notNull(), // 0 = false, 1 = true
+  confidence: integer("confidence").default(0).notNull(), // 0-100
+  firstName: varchar("firstName", { length: 100 }),
+  lastName: varchar("lastName", { length: 100 }),
+  dateOfBirth: varchar("dateOfBirth", { length: 20 }),
+  phone: varchar("phone", { length: 20 }),
+  rawResponse: text("rawResponse"), // JSON of full Prembly response
+  pendingManualReview: integer("pendingManualReview").default(0),
+  errorMessage: text("errorMessage"),
+  verifiedAt: timestamp("verifiedAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt"), // Re-verify after 1 year
+});
+export type IdentityVerification = typeof identityVerifications.$inferSelect;
+export type InsertIdentityVerification = typeof identityVerifications.$inferInsert;
+
+/** Stores the verification status of each property listing */
+export const listingVerifications = pgTable("listing_verifications", {
+  id: serial("id").primaryKey(),
+  propertyId: integer("propertyId").notNull().unique(),
+  agentId: integer("agentId").notNull(),
+  badgeTier: varchar("badgeTier", { length: 20 }).default("unverified").notNull(), // 'unverified','basic','verified','premium'
+  trustScore: integer("trustScore").default(0).notNull(), // 0-100
+  // Individual check flags
+  agentVerified: integer("agentVerified").default(0).notNull(),
+  photosVerified: integer("photosVerified").default(0).notNull(),
+  priceVerified: integer("priceVerified").default(0).notNull(),
+  titleVerified: integer("titleVerified").default(0).notNull(),
+  addressVerified: integer("addressVerified").default(0).notNull(),
+  nisvRegistered: integer("nisvRegistered").default(0).notNull(),
+  // Title document details
+  titleType: varchar("titleType", { length: 50 }), // 'C of O', 'Governor\'s Consent', etc.
+  titleNumber: varchar("titleNumber", { length: 100 }),
+  issuingAuthority: varchar("issuingAuthority", { length: 255 }),
+  titleIssueDate: varchar("titleIssueDate", { length: 20 }),
+  landRegistryConfirmed: integer("landRegistryConfirmed").default(0),
+  // Encumbrances
+  encumbrances: text("encumbrances"), // JSON array
+  warningFlags: text("warningFlags"), // JSON array
+  // Verification request tracking
+  requestedAt: timestamp("requestedAt"),
+  verifiedAt: timestamp("verifiedAt"),
+  verifiedBy: integer("verifiedBy"), // Admin user ID
+  verificationLevel: varchar("verificationLevel", { length: 20 }).default("basic"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type ListingVerification = typeof listingVerifications.$inferSelect;
+export type InsertListingVerification = typeof listingVerifications.$inferInsert;
+
+/** Stores agent KYC verification status */
+export const agentVerifications = pgTable("agent_verifications", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agentId").notNull().unique(),
+  userId: integer("userId").notNull(),
+  // Verification status
+  verificationStatus: varchar("verificationStatus", { length: 20 }).default("pending").notNull(), // 'pending','in_review','verified','rejected'
+  badgeTier: varchar("badgeTier", { length: 20 }).default("basic").notNull(),
+  trustScore: integer("trustScore").default(0).notNull(),
+  // Identity checks
+  ninVerified: integer("ninVerified").default(0).notNull(),
+  bvnVerified: integer("bvnVerified").default(0).notNull(),
+  cacVerified: integer("cacVerified").default(0).notNull(),
+  nisvVerified: integer("nisvVerified").default(0).notNull(),
+  // Document references
+  ninVerificationId: integer("ninVerificationId"), // FK to identity_verifications
+  bvnVerificationId: integer("bvnVerificationId"),
+  cacVerificationId: integer("cacVerificationId"),
+  nisvNumber: varchar("nisvNumber", { length: 50 }),
+  cacNumber: varchar("cacNumber", { length: 50 }),
+  // Document uploads
+  selfieUrl: text("selfieUrl"),
+  ninDocumentUrl: text("ninDocumentUrl"),
+  // Limits
+  listingLimit: integer("listingLimit").default(5),
+  // Timestamps
+  submittedAt: timestamp("submittedAt"),
+  verifiedAt: timestamp("verifiedAt"),
+  verifiedBy: integer("verifiedBy"),
+  rejectedAt: timestamp("rejectedAt"),
+  rejectionReason: text("rejectionReason"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type AgentVerification = typeof agentVerifications.$inferSelect;
+export type InsertAgentVerification = typeof agentVerifications.$inferInsert;
