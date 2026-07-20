@@ -1,0 +1,403 @@
+---
+# OSRM Self-Hosted Routing Server — Kubernetes Deployment
+#
+# PREREQUISITES (one-time setup):
+#   1. Build the pre-processed Nigeria OSM data (see docker-compose.osrm.yml)
+#   2. Upload the processed data to an S3/MinIO bucket:
+#      aws s3 cp ./osrm-data/ s3://realestate-geo/osrm/ --recursive
+#   3. Create the init-osrm ConfigMap with your S3 credentials
+#
+# STORAGE: Uses a PersistentVolumeClaim for the pre-processed OSRM data.
+# The initContainer downloads the data from S3 on first start.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: osrm
+  labels:
+    app.kubernetes.io/part-of: realestate-geo
+
+---
+# PVC for OSRM processed data (~800MB for Nigeria)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: osrm-data-pvc
+  namespace: osrm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+  storageClassName: standard
+
+---
+# ConfigMap for OSRM configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: osrm-config
+  namespace: osrm
+data:
+  # S3 path to pre-processed OSRM data
+  S3_OSRM_PATH: "s3://realestate-geo/osrm/"
+  OSRM_ALGORITHM: "mld"
+  OSRM_MAX_TABLE_SIZE: "1000"
+  OSRM_MAX_MATCHING_SIZE: "200"
+  # Nigeria traffic speed profile adjustments
+  LAGOS_TRAFFIC_FACTOR: "3.2"
+  ABUJA_TRAFFIC_FACTOR: "2.0"
+
+---
+# OSRM Car Routing Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osrm-car
+  namespace: osrm
+  labels:
+    app: osrm-car
+    profile: car
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: osrm-car
+  template:
+    metadata:
+      labels:
+        app: osrm-car
+        profile: car
+    spec:
+      initContainers:
+        - name: download-osrm-data
+          image: amazon/aws-cli:2.15.0
+          command:
+            - sh
+            - -c
+            - |
+              if [ ! -f /data/nigeria-latest.osrm ]; then
+                echo "Downloading pre-processed OSRM data from S3..."
+                aws s3 sync ${S3_OSRM_PATH} /data/ --exclude "*.osm.pbf"
+                echo "Download complete"
+              else
+                echo "OSRM data already present, skipping download"
+              fi
+          env:
+            - name: S3_OSRM_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: osrm-config
+                  key: S3_OSRM_PATH
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: osrm-s3-secret
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: osrm-s3-secret
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              value: "us-east-1"
+          volumeMounts:
+            - name: osrm-data
+              mountPath: /data
+      containers:
+        - name: osrm-car
+          image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+          command:
+            - osrm-routed
+            - --algorithm
+            - mld
+            - --max-table-size
+            - "1000"
+            - --max-matching-size
+            - "200"
+            - --max-trip-size
+            - "100"
+            - /data/nigeria-latest.osrm
+          ports:
+            - containerPort: 5000
+              name: http
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: osrm-data
+              mountPath: /data
+              readOnly: true
+      volumes:
+        - name: osrm-data
+          persistentVolumeClaim:
+            claimName: osrm-data-pvc
+
+---
+# OSRM Car Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: osrm-car
+  namespace: osrm
+  labels:
+    app: osrm-car
+spec:
+  selector:
+    app: osrm-car
+  ports:
+    - port: 5000
+      targetPort: 5000
+      name: http
+  type: ClusterIP
+
+---
+# OSRM Walking Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osrm-walk
+  namespace: osrm
+  labels:
+    app: osrm-walk
+    profile: foot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: osrm-walk
+  template:
+    metadata:
+      labels:
+        app: osrm-walk
+        profile: foot
+    spec:
+      containers:
+        - name: osrm-walk
+          image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+          command:
+            - osrm-routed
+            - --algorithm
+            - mld
+            - --max-table-size
+            - "500"
+            - /data/nigeria-foot.osrm
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - name: osrm-data
+              mountPath: /data
+              readOnly: true
+      volumes:
+        - name: osrm-data
+          persistentVolumeClaim:
+            claimName: osrm-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osrm-walk
+  namespace: osrm
+spec:
+  selector:
+    app: osrm-walk
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: ClusterIP
+
+---
+# Horizontal Pod Autoscaler for car routing (peak usage)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: osrm-car-hpa
+  namespace: osrm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: osrm-car
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+---
+# OSRM Proxy (NGINX) — single entry point for all profiles
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osrm-proxy
+  namespace: osrm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: osrm-proxy
+  template:
+    metadata:
+      labels:
+        app: osrm-proxy
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: nginx.conf
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 15
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: osrm-nginx-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: osrm-nginx-config
+  namespace: osrm
+data:
+  nginx.conf: |
+    upstream osrm_car  { server osrm-car.osrm.svc.cluster.local:5000; }
+    upstream osrm_walk { server osrm-walk.osrm.svc.cluster.local:5000; }
+
+    server {
+      listen 80;
+      location /health { return 200 'OK'; add_header Content-Type text/plain; }
+      location /car/   { rewrite ^/car/(.*)$ /$1 break; proxy_pass http://osrm_car; add_header Cache-Control "public, max-age=300"; }
+      location /walk/  { rewrite ^/walk/(.*)$ /$1 break; proxy_pass http://osrm_walk; add_header Cache-Control "public, max-age=300"; }
+      location /       { proxy_pass http://osrm_car; }
+    }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osrm-proxy
+  namespace: osrm
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "80"
+spec:
+  selector:
+    app: osrm-proxy
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  type: ClusterIP
+
+---
+# Weekly OSM data refresh CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: osrm-data-refresh
+  namespace: osrm
+spec:
+  schedule: "0 2 * * 0"  # Every Sunday at 2am
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: osrm-refresh
+              image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+              command:
+                - sh
+                - -c
+                - |
+                  set -e
+                  echo "=== Downloading latest Nigeria OSM data ==="
+                  wget -O /data/nigeria-latest.osm.pbf \
+                    https://download.geofabrik.de/africa/nigeria-latest.osm.pbf
+
+                  echo "=== Extracting (car profile) ==="
+                  osrm-extract -p /opt/car.lua /data/nigeria-latest.osm.pbf
+
+                  echo "=== Partitioning ==="
+                  osrm-partition /data/nigeria-latest.osrm
+
+                  echo "=== Customizing ==="
+                  osrm-customize /data/nigeria-latest.osrm
+
+                  echo "=== Uploading to S3 ==="
+                  aws s3 sync /data/ ${S3_OSRM_PATH} --exclude "*.osm.pbf"
+
+                  echo "=== Done ==="
+              env:
+                - name: S3_OSRM_PATH
+                  valueFrom:
+                    configMapKeyRef:
+                      name: osrm-config
+                      key: S3_OSRM_PATH
+              resources:
+                requests:
+                  memory: "2Gi"
+                  cpu: "1000m"
+                limits:
+                  memory: "4Gi"
+                  cpu: "2000m"
+              volumeMounts:
+                - name: osrm-data
+                  mountPath: /data
+          volumes:
+            - name: osrm-data
+              persistentVolumeClaim:
+                claimName: osrm-data-pvc

@@ -1,0 +1,106 @@
+# OSRM Self-Hosted Routing Server for Nigeria
+#
+# SETUP INSTRUCTIONS (one-time, run before starting):
+#
+#   1. Download Nigeria OSM data:
+#      wget -P ./osrm-data \
+#        https://download.geofabrik.de/africa/nigeria-latest.osm.pbf
+#
+#   2. Pre-process the OSM data (takes ~10 min, ~2GB RAM):
+#      docker run -t -v $(pwd)/osrm-data:/data \
+#        ghcr.io/project-osrm/osrm-backend:v5.27.1 \
+#        osrm-extract -p /opt/car.lua /data/nigeria-latest.osm.pbf
+#
+#      docker run -t -v $(pwd)/osrm-data:/data \
+#        ghcr.io/project-osrm/osrm-backend:v5.27.1 \
+#        osrm-partition /data/nigeria-latest.osrm
+#
+#      docker run -t -v $(pwd)/osrm-data:/data \
+#        ghcr.io/project-osrm/osrm-backend:v5.27.1 \
+#        osrm-customize /data/nigeria-latest.osrm
+#
+#   3. Start the stack:
+#      docker-compose -f docker-compose.osrm.yml up -d
+
+version: '3.8'
+
+services:
+  osrm-car:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    container_name: osrm-car
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld --max-table-size 1000 --max-matching-size 200 /data/nigeria-latest.osrm
+    volumes:
+      - ./osrm-data:/data:ro
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    networks:
+      - osrm-net
+
+  osrm-motorcycle:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    container_name: osrm-motorcycle
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld --max-table-size 500 /data/nigeria-motorcycle.osrm
+    volumes:
+      - ./osrm-data:/data:ro
+    ports:
+      - "5001:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - osrm-net
+
+  osrm-walk:
+    image: ghcr.io/project-osrm/osrm-backend:v5.27.1
+    container_name: osrm-walk
+    restart: unless-stopped
+    command: osrm-routed --algorithm mld --max-table-size 500 /data/nigeria-foot.osrm
+    volumes:
+      - ./osrm-data:/data:ro
+    ports:
+      - "5002:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - osrm-net
+
+  # NGINX reverse proxy — single endpoint with /car, /motorcycle, /walk prefixes
+  osrm-proxy:
+    image: nginx:1.27-alpine
+    container_name: osrm-proxy
+    restart: unless-stopped
+    ports:
+      - "5010:80"
+    volumes:
+      - ./nginx-osrm.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - osrm-car
+      - osrm-motorcycle
+      - osrm-walk
+    networks:
+      - osrm-net
+
+networks:
+  osrm-net:
+    driver: bridge
