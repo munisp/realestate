@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Performance Monitoring and Error Tracking
  * Integrates with Sentry for production monitoring

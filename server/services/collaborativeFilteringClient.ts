@@ -4,6 +4,7 @@
  */
 
 import axios, { AxiosInstance } from 'axios';
+import { logger } from "../_core/logger";
 
 const CF_SERVICE_URL = process.env.CF_SERVICE_URL || 'http://localhost:5003';
 
@@ -68,10 +69,10 @@ class CollaborativeFilteringClient {
     try {
       await this.client.get('/health');
       this.mockMode = false;
-      console.log('[CF Service] Connected successfully');
+      logger.info('[CF Service] Connected successfully');
     } catch (error) {
       this.mockMode = true;
-      console.warn('[CF Service] Service unavailable, using mock mode');
+      logger.warn('[CF Service] Service unavailable, using mock mode');
     }
   }
 
@@ -93,7 +94,7 @@ class CollaborativeFilteringClient {
       const response = await this.client.post('/train', { interactions });
       return response.data;
     } catch (error) {
-      console.error('[CF Service] Error training model:', error);
+      logger.error('[CF Service] Error training model:', { error: String(error) });
       throw error;
     }
   }
@@ -124,7 +125,7 @@ class CollaborativeFilteringClient {
       });
       return response.data.recommendations;
     } catch (error) {
-      console.error('[CF Service] Error getting recommendations:', error);
+      logger.error('[CF Service] Error getting recommendations:', { error: String(error) });
       return [];
     }
   }
@@ -146,7 +147,7 @@ class CollaborativeFilteringClient {
       });
       return response.data.similarUsers;
     } catch (error) {
-      console.error('[CF Service] Error finding similar users:', error);
+      logger.error('[CF Service] Error finding similar users:', { error: String(error) });
       return [];
     }
   }
@@ -168,7 +169,7 @@ class CollaborativeFilteringClient {
       });
       return response.data.similarProperties;
     } catch (error) {
-      console.error('[CF Service] Error finding similar properties:', error);
+      logger.error('[CF Service] Error finding similar properties:', { error: String(error) });
       return [];
     }
   }
@@ -192,7 +193,7 @@ class CollaborativeFilteringClient {
       const response = await this.client.get('/stats');
       return response.data;
     } catch (error) {
-      console.error('[CF Service] Error getting stats:', error);
+      logger.error('[CF Service] Error getting stats:', { error: String(error) });
       return null;
     }
   }

@@ -20,6 +20,7 @@ import { eq, and, gte, lte, sql } from "drizzle-orm";
 import { renderValuationIncreaseEmail, renderValuationDecreaseEmail } from "./emailTemplateService";
 import { sendEmail } from "./emailService";
 import { shouldSendAlert, isHighPriorityAlert } from "./alertThrottling";
+import { logger } from "../_core/logger";
 // import { notifyUser } from "../_core/notification"; // TODO: Fix import
 
 // ============================================================================
@@ -34,7 +35,7 @@ export async function createMonitoring(data: InsertValuationMonitoring) {
     const [inserted] = await db.insert(valuationMonitoring).values(data).returning();
     return (inserted as any)?.id ?? null;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to create monitoring:", error);
+    logger.error("[ValuationMonitoring] Failed to create monitoring:", { error: String(error) });
     return null;
   }
 }
@@ -53,7 +54,7 @@ export async function getUserMonitoring(userId: number) {
       ));
     return monitoring;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to get monitoring:", error);
+    logger.error("[ValuationMonitoring] Failed to get monitoring:", { error: String(error) });
     return [];
   }
 }
@@ -72,7 +73,7 @@ export async function updateMonitoring(
       .where(eq(valuationMonitoring.id, id));
     return true;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to update monitoring:", error);
+    logger.error("[ValuationMonitoring] Failed to update monitoring:", { error: String(error) });
     return false;
   }
 }
@@ -88,7 +89,7 @@ export async function deleteMonitoring(id: number) {
       .where(eq(valuationMonitoring.id, id));
     return true;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to delete monitoring:", error);
+    logger.error("[ValuationMonitoring] Failed to delete monitoring:", { error: String(error) });
     return false;
   }
 }
@@ -177,7 +178,7 @@ export async function checkValuationChanges(propertyId: number) {
 
     return changes;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to check changes:", error);
+    logger.error("[ValuationMonitoring] Failed to check changes:", { error: String(error) });
     return null;
   }
 }
@@ -208,7 +209,7 @@ export async function sendValuationAlert(
       .limit(1);
 
     if (!prefs || !prefs.valuationChangeAlerts) {
-      console.log(`[ValuationMonitoring] User ${userId} has valuation alerts disabled`);
+      logger.info(`[ValuationMonitoring] User ${userId} has valuation alerts disabled`);
       return false;
     }
 
@@ -221,7 +222,7 @@ export async function sendValuationAlert(
         return false;
       }
     } else {
-      console.log(`[ValuationMonitoring] High priority alert (${Math.abs(changePercentage).toFixed(1)}% change) - bypassing throttle`);
+      logger.info(`[ValuationMonitoring] High priority alert (${Math.abs(changePercentage).toFixed(1)}% change) - bypassing throttle`);
     }
 
     // Check quiet hours
@@ -233,7 +234,7 @@ export async function sendValuationAlert(
       currentHour >= prefs.quietHoursStart &&
       currentHour < prefs.quietHoursEnd
     ) {
-      console.log(`[ValuationMonitoring] User ${userId} in quiet hours`);
+      logger.info(`[ValuationMonitoring] User ${userId} in quiet hours`);
       return false;
     }
 
@@ -340,7 +341,7 @@ export async function sendValuationAlert(
               .where(eq(valuationAlertsSent.id, alertRecord.insertId));
           }
         } catch (error) {
-          console.error("[ValuationMonitoring] Failed to send email:", error);
+          logger.error("[ValuationMonitoring] Failed to send email:", { error: String(error) });
           await db
             .update(valuationAlertsSent)
             .set({
@@ -378,7 +379,7 @@ export async function sendValuationAlert(
 
     return true;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to send alert:", error);
+    logger.error("[ValuationMonitoring] Failed to send alert:", { error: String(error) });
     return false;
   }
 }
@@ -392,7 +393,7 @@ export async function processAllMonitoring() {
   if (!db) return { processed: 0, alerts: 0 };
 
   try {
-    console.log("[ValuationMonitoring] Starting batch processing...");
+    logger.info("[ValuationMonitoring] Starting batch processing...");
 
     // Get all active monitoring
     const monitors = await db
@@ -400,7 +401,7 @@ export async function processAllMonitoring() {
       .from(valuationMonitoring)
       .where(eq(valuationMonitoring.isActive, 1));
 
-    console.log(`[ValuationMonitoring] Found ${monitors.length} active monitors`);
+    logger.info(`[ValuationMonitoring] Found ${monitors.length} active monitors`);
 
     let processed = 0;
     let alertsSent = 0;
@@ -437,11 +438,11 @@ export async function processAllMonitoring() {
       processed++;
     }
 
-    console.log(`[ValuationMonitoring] Processed ${processed} properties, sent ${alertsSent} alerts`);
+    logger.info(`[ValuationMonitoring] Processed ${processed} properties, sent ${alertsSent} alerts`);
 
     return { processed, alerts: alertsSent };
   } catch (error) {
-    console.error("[ValuationMonitoring] Batch processing failed:", error);
+    logger.error("[ValuationMonitoring] Batch processing failed:", { error: String(error) });
     return { processed: 0, alerts: 0 };
   }
 }
@@ -474,7 +475,7 @@ export async function getUserAlertPreferences(userId: number) {
 
     return prefs;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to get preferences:", error);
+    logger.error("[ValuationMonitoring] Failed to get preferences:", { error: String(error) });
     return null;
   }
 }
@@ -493,7 +494,7 @@ export async function updateUserAlertPreferences(
       .where(eq(userAlertPreferences.userId, userId));
     return true;
   } catch (error) {
-    console.error("[ValuationMonitoring] Failed to update preferences:", error);
+    logger.error("[ValuationMonitoring] Failed to update preferences:", { error: String(error) });
     return false;
   }
 }

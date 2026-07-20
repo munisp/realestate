@@ -1,3 +1,4 @@
+import { logger } from "../_core/logger";
 // @ts-nocheck
 /**
  * Mock Nigerian Government Registry API Service
@@ -125,7 +126,7 @@ class MockGovernmentRegistryService {
    * Verify C of O certificate
    */
   async verifyCertificate(certificateNumber: string): Promise<RegistryVerificationResult> {
-    console.log('[MockRegistry] Verifying certificate:', certificateNumber);
+    logger.info('[MockRegistry] Verifying certificate:', { detail: String(certificateNumber) });
 
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));

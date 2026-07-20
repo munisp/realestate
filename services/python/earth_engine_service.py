@@ -5,7 +5,6 @@ Provides satellite imagery analysis for property valuation using Sentinel-2 data
 
 import os
 import json
-import logging
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 import requests
@@ -14,8 +13,8 @@ import requests
 # For production: pip install earthengine-api
 # For development: using mock data
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("earth-engine-service")
 
 
 class EarthEngineService:

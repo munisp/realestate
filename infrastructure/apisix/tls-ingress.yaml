@@ -1,0 +1,162 @@
+---
+# cert-manager ClusterIssuer using Let's Encrypt (production)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ${ACME_EMAIL}          # Set in your deployment values
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: apisix
+---
+# cert-manager ClusterIssuer using Let's Encrypt (staging — for testing)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: ${ACME_EMAIL}
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: apisix
+---
+# TLS Certificate for the main application domain
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: realestate-tls
+  namespace: realestate
+spec:
+  secretName: realestate-tls-secret
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - ${APP_DOMAIN}               # e.g. app.your-domain.com
+    - www.${APP_DOMAIN}
+---
+# ApisixTls resource — binds the certificate to APISIX SNI routing
+apiVersion: apisix.apache.org/v2
+kind: ApisixTls
+metadata:
+  name: realestate-tls
+  namespace: realestate
+spec:
+  hosts:
+    - ${APP_DOMAIN}
+    - www.${APP_DOMAIN}
+  secret:
+    name: realestate-tls-secret
+    namespace: realestate
+---
+# ApisixRoute — main application HTTP→HTTPS redirect + TLS route
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: realestate-main
+  namespace: realestate
+spec:
+  http:
+    # HTTPS route — all traffic to the main app
+    - name: realestate-app-https
+      match:
+        hosts:
+          - ${APP_DOMAIN}
+          - www.${APP_DOMAIN}
+        paths:
+          - /*
+      backends:
+        - serviceName: realestate-app
+          servicePort: 3000
+      plugins:
+        # Enforce HTTPS
+        - name: redirect
+          enable: true
+          config:
+            http_to_https: true
+        # Security headers (HSTS, etc.)
+        - name: response-rewrite
+          enable: true
+          config:
+            headers:
+              set:
+                Strict-Transport-Security: "max-age=31536000; includeSubDomains; preload"
+                X-Content-Type-Options: "nosniff"
+                X-Frame-Options: "DENY"
+        # Rate limiting — global
+        - name: limit-req
+          enable: true
+          config:
+            rate: 100
+            burst: 200
+            key: remote_addr
+            rejected_code: 429
+        # Request ID for distributed tracing
+        - name: request-id
+          enable: true
+          config:
+            header_name: X-Request-ID
+            include_in_response: true
+---
+# ApisixRoute — API gateway routes with stricter rate limits
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: realestate-api
+  namespace: realestate
+spec:
+  http:
+    - name: trpc-api
+      match:
+        hosts:
+          - ${APP_DOMAIN}
+        paths:
+          - /api/trpc/*
+      backends:
+        - serviceName: realestate-app
+          servicePort: 3000
+      plugins:
+        - name: limit-req
+          enable: true
+          config:
+            rate: 30
+            burst: 60
+            key: remote_addr
+            rejected_code: 429
+        - name: cors
+          enable: true
+          config:
+            allow_origins: ${ALLOWED_ORIGINS}
+            allow_methods: GET,POST,OPTIONS
+            allow_headers: Content-Type,Authorization,X-Request-ID
+            max_age: 3600
+    - name: auth-api
+      match:
+        hosts:
+          - ${APP_DOMAIN}
+        paths:
+          - /api/oauth/*
+          - /api/auth/*
+      backends:
+        - serviceName: realestate-app
+          servicePort: 3000
+      plugins:
+        # Stricter rate limit for auth endpoints
+        - name: limit-req
+          enable: true
+          config:
+            rate: 5
+            burst: 10
+            key: remote_addr
+            rejected_code: 429

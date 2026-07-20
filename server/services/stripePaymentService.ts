@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { logger } from "../_core/logger";
 
 // Initialize Stripe with secret key from environment
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -46,7 +47,7 @@ export async function createPaymentIntent(params: CreatePaymentIntentParams) {
       status: paymentIntent.status,
     };
   } catch (error) {
-    console.error('[Stripe] Error creating payment intent:', error);
+    logger.error('[Stripe] Error creating payment intent:', { error: String(error) });
     throw new Error(
       error instanceof Error ? error.message : 'Failed to create payment intent'
     );
@@ -72,7 +73,7 @@ export async function getPaymentIntent(paymentIntentId: string) {
       },
     };
   } catch (error) {
-    console.error('[Stripe] Error retrieving payment intent:', error);
+    logger.error('[Stripe] Error retrieving payment intent:', { error: String(error) });
     throw new Error(
       error instanceof Error ? error.message : 'Failed to retrieve payment intent'
     );
@@ -99,7 +100,7 @@ export async function processRefund(params: ProcessRefundParams) {
       reason: refund.reason,
     };
   } catch (error) {
-    console.error('[Stripe] Error processing refund:', error);
+    logger.error('[Stripe] Error processing refund:', { error: String(error) });
     throw new Error(
       error instanceof Error ? error.message : 'Failed to process refund'
     );
@@ -119,7 +120,7 @@ export async function cancelPaymentIntent(paymentIntentId: string) {
       status: paymentIntent.status,
     };
   } catch (error) {
-    console.error('[Stripe] Error cancelling payment intent:', error);
+    logger.error('[Stripe] Error cancelling payment intent:', { error: String(error) });
     throw new Error(
       error instanceof Error ? error.message : 'Failed to cancel payment intent'
     );
@@ -138,7 +139,7 @@ export function verifyWebhookSignature(
     const event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
     return event;
   } catch (error) {
-    console.error('[Stripe] Webhook signature verification failed:', error);
+    logger.error('[Stripe] Webhook signature verification failed:', { error: String(error) });
     return null;
   }
 }

@@ -4,6 +4,7 @@
  */
 
 import { ENV } from './env';
+import { logger } from "./logger";
 
 export interface EmailOptions {
   to: string | string[];
@@ -31,7 +32,7 @@ export interface EmailResult {
  */
 class MockEmailService {
   async send(options: EmailOptions): Promise<EmailResult> {
-    console.log('\n📧 [Mock Email Service] Email would be sent:');
+    logger.info('\n📧 [Mock Email Service] Email would be sent:');
     console.log('  To:', Array.isArray(options.to) ? options.to.join(', ') : options.to);
     console.log('  From:', options.from || 'noreply@realestate-platform.com');
     console.log('  Subject:', options.subject);
@@ -42,7 +43,7 @@ class MockEmailService {
     if (options.attachments) {
       console.log('  Attachments:', options.attachments.length);
     }
-    console.log('  Status: ✅ Logged (not actually sent)\n');
+    logger.info('  Status: ✅ Logged (not actually sent)\n');
 
     return {
       success: true,
@@ -51,7 +52,7 @@ class MockEmailService {
   }
 
   async sendBulk(emails: EmailOptions[]): Promise<EmailResult[]> {
-    console.log(`\n📧 [Mock Email Service] Bulk email (${emails.length} emails) would be sent`);
+    logger.info(`\n📧 [Mock Email Service] Bulk email (${emails.length} emails) would be sent`);
     return emails.map((email, index) => ({
       success: true,
       messageId: `mock-bulk-${Date.now()}-${index}`,
@@ -108,7 +109,7 @@ class SendGridEmailService {
 
       if (!response.ok) {
         const error = await response.text();
-        console.error('[SendGrid] Error sending email:', error);
+        logger.error('[SendGrid] Error sending email:', { error: String(error) });
         return {
           success: false,
           error: `SendGrid API error: ${response.status}`,
@@ -117,14 +118,14 @@ class SendGridEmailService {
 
       const messageId = response.headers.get('x-message-id') || undefined;
 
-      console.log('✅ [SendGrid] Email sent successfully:', messageId);
+      logger.info('✅ [SendGrid] Email sent successfully:', { detail: String(messageId) });
 
       return {
         success: true,
         messageId,
       };
     } catch (error) {
-      console.error('[SendGrid] Error sending email:', error);
+      logger.error('[SendGrid] Error sending email:', { error: String(error) });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -148,10 +149,10 @@ function createEmailService() {
   const fromEmail = process.env.FROM_EMAIL || 'noreply@realestate-platform.com';
 
   if (sendGridApiKey && sendGridApiKey !== 'mock') {
-    console.log('📧 [Email Service] Using SendGrid (real emails)');
+    logger.info('📧 [Email Service] Using SendGrid (real emails)');
     return new SendGridEmailService(sendGridApiKey, fromEmail);
   } else {
-    console.log('📧 [Email Service] Using Mock Service (emails logged to console)');
+    logger.info('📧 [Email Service] Using Mock Service (emails logged to console)');
     return new MockEmailService();
   }
 }

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { BaseGovernmentRegistryClient } from '../base/GovernmentRegistryClient';
+import { logger } from "../../../_core/logger";
 import {
   CofOVerificationResult,
   LandRecordData,
@@ -59,9 +60,9 @@ export class OyoRegistryClient extends BaseGovernmentRegistryClient {
       const expiresIn = (response as any).data.expires_in || 3600;
       this.tokenExpiry = new Date(Date.now() + expiresIn * 1000);
 
-      console.log(`[Oyo Registry] Successfully authenticated, token expires at ${this.tokenExpiry}`);
+      logger.info(`[Oyo Registry] Successfully authenticated, token expires at ${this.tokenExpiry}`);
     } catch (error) {
-      console.error('[Oyo Registry] Authentication failed:', error);
+      logger.error('[Oyo Registry] Authentication failed:', { error: String(error) });
       throw error;
     }
   }
@@ -194,7 +195,7 @@ export class OyoRegistryClient extends BaseGovernmentRegistryClient {
       const response = await this.client.get('/system/health');
       return (response as any).data.status === 'operational';
     } catch (error) {
-      console.error('[Oyo Registry] Health check failed:', error);
+      logger.error('[Oyo Registry] Health check failed:', { error: String(error) });
       return false;
     }
   }

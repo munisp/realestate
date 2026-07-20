@@ -1,4 +1,5 @@
 import { BaseGovernmentRegistryClient } from '../base/GovernmentRegistryClient';
+import { logger } from "../../../_core/logger";
 import {
   CofOVerificationResult,
   LandRecordData,
@@ -185,7 +186,7 @@ export class FCTRegistryClient extends BaseGovernmentRegistryClient {
       const response = await this.client.get('/status');
       return response.data.operational === true;
     } catch (error) {
-      console.error('[FCT Registry] Health check failed:', error);
+      logger.error('[FCT Registry] Health check failed:', { error: String(error) });
       return false;
     }
   }

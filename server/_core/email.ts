@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 /**
  * Email notification service using SendGrid
  * 
@@ -23,14 +24,14 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
   try {
     // Check if SendGrid is configured
     if (!process.env.SENDGRID_API_KEY) {
-      console.warn('[Email] SendGrid API key not configured. Email not sent.');
+      logger.warn('[Email] SendGrid API key not configured. Email not sent.');
       return { success: false, error: 'SendGrid API key not configured' };
     }
 
     // Dynamic import to avoid errors when SendGrid is not installed
     const sgMail = await import('@sendgrid/mail').catch(() => null);
     if (!sgMail) {
-      console.warn('[Email] @sendgrid/mail not installed. Run: pnpm add @sendgrid/mail');
+      logger.warn('[Email] @sendgrid/mail not installed. Run: pnpm add @sendgrid/mail');
       return { success: false, error: '@sendgrid/mail not installed' };
     }
 
@@ -45,10 +46,10 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
     };
 
     await sgMail.default.send(msg);
-    console.log(`[Email] Sent to ${options.to}: ${options.subject}`);
+    logger.info(`[Email] Sent to ${options.to}: ${options.subject}`);
     return { success: true };
   } catch (error) {
-    console.error('[Email] Failed to send:', error);
+    logger.error('[Email] Failed to send:', { error: String(error) });
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -169,5 +170,5 @@ export async function queueEmail(
 ): Promise<void> {
   // This would insert into notificationQueue table
   // For now, just send directly
-  console.log(`[Email] Queuing email to ${recipient} with template ${template}`);
+  logger.info(`[Email] Queuing email to ${recipient} with template ${template}`);
 }

@@ -7,6 +7,7 @@
 
 import type { Server as SocketIOServer } from 'socket.io';
 import { getDashboardMetrics, getPlatformHealthMetrics } from './analyticsService';
+import { logger } from "./logger";
 
 let metricsUpdateInterval: NodeJS.Timeout | null = null;
 
@@ -14,7 +15,7 @@ let metricsUpdateInterval: NodeJS.Timeout | null = null;
  * Initialize real-time metrics broadcasting
  */
 export function initializeRealtimeMetrics(io: SocketIOServer) {
-  console.log('[Real-time Metrics] Initializing...');
+  logger.info('[Real-time Metrics] Initializing...');
 
   // Create a namespace for analytics
   const analyticsNamespace = io.of('/analytics');
@@ -31,7 +32,7 @@ export function initializeRealtimeMetrics(io: SocketIOServer) {
         const metrics = await getDashboardMetrics();
         socket.emit('metrics:dashboard', metrics);
       } catch (error) {
-        console.error('[Real-time Metrics] Error fetching dashboard metrics:', error);
+        logger.error('[Real-time Metrics] Error fetching dashboard metrics:', { error: String(error) });
         socket.emit('metrics:error', { message: 'Failed to fetch metrics' });
       }
     });
@@ -41,7 +42,7 @@ export function initializeRealtimeMetrics(io: SocketIOServer) {
         const health = await getPlatformHealthMetrics();
         socket.emit('metrics:health', health);
       } catch (error) {
-        console.error('[Real-time Metrics] Error fetching health metrics:', error);
+        logger.error('[Real-time Metrics] Error fetching health metrics:', { error: String(error) });
         socket.emit('metrics:error', { message: 'Failed to fetch health metrics' });
       }
     });
@@ -63,7 +64,7 @@ async function sendMetricsUpdate(socket: any) {
     const metrics = await getDashboardMetrics();
     socket.emit('metrics:dashboard', metrics);
   } catch (error) {
-    console.error('[Real-time Metrics] Error sending metrics update:', error);
+    logger.error('[Real-time Metrics] Error sending metrics update:', { error: String(error) });
   }
 }
 
@@ -86,11 +87,11 @@ function startMetricsBroadcast(namespace: any) {
 
       console.log('[Real-time Metrics] Broadcasted updates to', namespace.sockets.size, 'clients');
     } catch (error) {
-      console.error('[Real-time Metrics] Error broadcasting metrics:', error);
+      logger.error('[Real-time Metrics] Error broadcasting metrics:', { error: String(error) });
     }
   }, 30000); // Update every 30 seconds
 
-  console.log('[Real-time Metrics] Started broadcasting (30s interval)');
+  logger.info('[Real-time Metrics] Started broadcasting (30s interval)');
 }
 
 /**
@@ -100,7 +101,7 @@ export function stopMetricsBroadcast() {
   if (metricsUpdateInterval) {
     clearInterval(metricsUpdateInterval);
     metricsUpdateInterval = null;
-    console.log('[Real-time Metrics] Stopped broadcasting');
+    logger.info('[Real-time Metrics] Stopped broadcasting');
   }
 }
 
@@ -113,9 +114,9 @@ export function triggerMetricsUpdate(io: SocketIOServer) {
   
   getDashboardMetrics().then(metrics => {
     analyticsNamespace.emit('metrics:dashboard', metrics);
-    console.log('[Real-time Metrics] Triggered immediate update');
+    logger.info('[Real-time Metrics] Triggered immediate update');
   }).catch(error => {
-    console.error('[Real-time Metrics] Error triggering update:', error);
+    logger.error('[Real-time Metrics] Error triggering update:', { error: String(error) });
   });
 }
 
@@ -125,7 +126,7 @@ export function triggerMetricsUpdate(io: SocketIOServer) {
 export function emitEvent(io: SocketIOServer, event: string, data: any) {
   const analyticsNamespace = io.of('/analytics');
   analyticsNamespace.emit(event, data);
-  console.log('[Real-time Metrics] Emitted event:', event);
+  logger.info('[Real-time Metrics] Emitted event:', { detail: String(event) });
 }
 
 /**

@@ -6,6 +6,7 @@
 
 import { getDb } from '../db';
 import { sql } from 'drizzle-orm';
+import { logger } from "../_core/logger";
 
 interface Experiment {
   id: string;
@@ -76,7 +77,7 @@ class ABTestingService {
   private async loadFromDatabase() {
     // In production, load from database
     // For now, initialize with empty maps
-    console.log('[A/B Testing] Service initialized');
+    logger.info('[A/B Testing] Service initialized');
   }
 
   /**
@@ -213,7 +214,7 @@ class ABTestingService {
   trackEvent(experimentId: string, userId: number, eventType: string, eventData?: Record<string, any>): void {
     const variantId = this.getVariant(experimentId, userId);
     if (!variantId) {
-      console.warn(`User ${userId} not assigned to experiment ${experimentId}`);
+      logger.warn(`User ${userId} not assigned to experiment ${experimentId}`);
       return;
     }
 
@@ -401,7 +402,7 @@ class ABTestingService {
         ON DUPLICATE KEY UPDATE assigned_at = NOW()
       `);
     } catch (error) {
-      console.error('Error logging assignment:', error);
+      logger.error('Error logging assignment:', { error: String(error) });
     }
   }
 
@@ -423,7 +424,7 @@ class ABTestingService {
         )
       `);
     } catch (error) {
-      console.error('Error logging event:', error);
+      logger.error('Error logging event:', { error: String(error) });
     }
   }
 
@@ -439,7 +440,7 @@ class ABTestingService {
       `);
       return (result[0] as any)?.count || 0;
     } catch (error) {
-      console.error('Error getting variant assignments:', error);
+      logger.error('Error getting variant assignments:', { error: String(error) });
       return 0;
     }
   }
@@ -456,7 +457,7 @@ class ABTestingService {
       `);
       return results as any[];
     } catch (error) {
-      console.error('Error getting variant events:', error);
+      logger.error('Error getting variant events:', { error: String(error) });
       return [];
     }
   }

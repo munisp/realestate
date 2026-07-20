@@ -5,6 +5,7 @@
  */
 
 import axios from 'axios';
+import { logger } from "./logger";
 
 // Walk Score API configuration
 const WALKSCORE_API_KEY = process.env.WALKSCORE_API_KEY || '';
@@ -40,7 +41,7 @@ class WalkScoreAPI {
    */
   async getScores(params: WalkScoreParams): Promise<WalkScoreResult> {
     if (!this.apiKey) {
-      console.warn('[WalkScore] API key not configured, returning mock data');
+      logger.warn('[WalkScore] API key not configured, returning mock data');
       return this.getMockScores(params);
     }
 
@@ -106,7 +107,7 @@ class WalkScoreAPI {
         overallGrade,
       };
     } catch (error) {
-      console.error('[WalkScore] API error:', error);
+      logger.error('[WalkScore] API error:', { error: String(error) });
       return this.getMockScores(params);
     }
   }

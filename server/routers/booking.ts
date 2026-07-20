@@ -1,6 +1,5 @@
-// @ts-nocheck
 import { z } from 'zod';
-import { publicProcedure, protectedProcedure, router } from '../_core/trpc';
+import { rateLimitedPublicProcedure as publicProcedure, protectedProcedure, router } from '../_core/trpc';
 import { getDb } from '../db';
 import { shortLetBookings, shortLetProperties, messages, users } from '../../drizzle/schema';
 import { eq, and, gte, lte, or } from 'drizzle-orm';

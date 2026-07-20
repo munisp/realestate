@@ -1,3 +1,4 @@
+import { logger } from "../_core/logger";
 /**
  * Booking.com Scraper Service
  * 
@@ -48,7 +49,7 @@ export class BookingComScraperService {
   constructor() {
     // Always use mock mode for now - real scraping requires proxy/headless browser
     this.mockMode = true;
-    console.log('[BookingComScraper] Running in mock mode - web scraping not yet implemented');
+    logger.info('[BookingComScraper] Running in mock mode - web scraping not yet implemented');
   }
 
   /**

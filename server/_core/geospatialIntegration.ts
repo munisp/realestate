@@ -1,10 +1,10 @@
-// @ts-nocheck
 /**
  * Enhanced Geospatial Integration
  * Integrates PostGIS database with geospatial-service for advanced spatial queries
  */
 
 import { geospatialClient } from './serviceClients';
+import { logger } from "./logger";
 
 // ============================================================================
 // Geospatial Integration Layer
@@ -43,14 +43,14 @@ export class GeospatialIntegration {
         metadata: property.features,
       });
 
-      console.log(`[Geospatial] Indexed property ${property.id} with H3 index ${result.h3Index}`);
+      logger.info(`[Geospatial] Indexed property ${property.id} with H3 index ${result.h3Index}`);
       
       return {
         indexed: true,
         h3Index: result.h3Index,
       };
     } catch (error) {
-      console.error('[Geospatial] Failed to index property:', error);
+      logger.error('[Geospatial] Failed to index property:', { error: String(error) });
       return {
         indexed: false,
         h3Index: '',
@@ -91,7 +91,7 @@ export class GeospatialIntegration {
 
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Search nearby failed:', error);
+      logger.error('[Geospatial] Search nearby failed:', { error: String(error) });
       return {
         properties: [],
         total: 0,
@@ -117,7 +117,7 @@ export class GeospatialIntegration {
 
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Polygon search failed:', error);
+      logger.error('[Geospatial] Polygon search failed:', { error: String(error) });
       return {
         properties: [],
         total: 0,
@@ -153,7 +153,7 @@ export class GeospatialIntegration {
       const result = await geospatialClient.getHeatmap(params.bounds, params.resolution);
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Heatmap generation failed:', error);
+      logger.error('[Geospatial] Heatmap generation failed:', { error: String(error) });
       return {
         cells: [],
         metadata: {
@@ -190,7 +190,7 @@ export class GeospatialIntegration {
       const result = await geospatialClient.getNeighborhoodStats(h3Index);
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Failed to get neighborhood stats:', error);
+      logger.error('[Geospatial] Failed to get neighborhood stats:', { error: String(error) });
       return {
         h3Index,
         propertyCount: 0,
@@ -229,7 +229,7 @@ export class GeospatialIntegration {
 
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Route calculation failed:', error);
+      logger.error('[Geospatial] Route calculation failed:', { error: String(error) });
       return {
         distance: 0,
         duration: 0,
@@ -258,7 +258,7 @@ export class GeospatialIntegration {
 
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Isochrone generation failed:', error);
+      logger.error('[Geospatial] Isochrone generation failed:', { error: String(error) });
       return {
         polygon: [],
         area: 0,
@@ -285,7 +285,7 @@ export class GeospatialIntegration {
       const result: any = await geospatialClient.post('/geocode', { address });
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Geocoding failed:', error);
+      logger.error('[Geospatial] Geocoding failed:', { error: String(error) });
       return null;
     }
   }
@@ -307,7 +307,7 @@ export class GeospatialIntegration {
       const result: any = await geospatialClient.post('/reverse-geocode', { lat, lng });
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] Reverse geocoding failed:', error);
+      logger.error('[Geospatial] Reverse geocoding failed:', { error: String(error) });
       return null;
     }
   }
@@ -341,7 +341,7 @@ export class GeospatialIntegration {
 
       return result as any;
     } catch (error) {
-      console.error('[Geospatial] POI search failed:', error);
+      logger.error('[Geospatial] POI search failed:', { error: String(error) });
       return {
         pois: [],
         total: 0,

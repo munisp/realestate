@@ -53,7 +53,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(__name__)
+logger = get_logger("city2graph-gnn-service")
 
 # Flask app
 app = Flask(__name__)
@@ -134,7 +134,7 @@ class SpatialGraphBuilder:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("city2graph-gnn-service")
         
     def build_property_graph(
         self,
@@ -251,7 +251,7 @@ class GNNValuationService:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("city2graph-gnn-service")
         self.graph_builder = SpatialGraphBuilder()
         self.model = None
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') if TORCH_AVAILABLE else None

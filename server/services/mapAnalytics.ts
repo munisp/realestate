@@ -5,6 +5,7 @@
 
 import { getDb } from '../db';
 import { sql } from 'drizzle-orm';
+import { logger } from "../_core/logger";
 
 export interface MapAnalyticsEvent {
   userId?: number;
@@ -31,7 +32,7 @@ export interface MapPerformanceMetrics {
 export async function trackMapEvent(event: MapAnalyticsEvent): Promise<void> {
   const db = await getDb();
   if (!db) {
-    console.warn('[Map Analytics] Database not available');
+    logger.warn('[Map Analytics] Database not available');
     return;
   }
 
@@ -58,7 +59,7 @@ export async function trackMapEvent(event: MapAnalyticsEvent): Promise<void> {
       )
     `);
   } catch (error) {
-    console.error('[Map Analytics] Failed to track event:', error);
+    logger.error('[Map Analytics] Failed to track event:', { error: String(error) });
   }
 }
 
@@ -72,7 +73,7 @@ export async function getProviderMetrics(
 ): Promise<MapPerformanceMetrics | null> {
   const db = await getDb();
   if (!db) {
-    console.warn('[Map Analytics] Database not available');
+    logger.warn('[Map Analytics] Database not available');
     return null;
   }
 
@@ -109,7 +110,7 @@ export async function getProviderMetrics(
 
     return null;
   } catch (error) {
-    console.error('[Map Analytics] Failed to get metrics:', error);
+    logger.error('[Map Analytics] Failed to get metrics:', { error: String(error) });
     return null;
   }
 }
@@ -215,7 +216,7 @@ export async function getDailyAnalytics(days: number = 7): Promise<
 > {
   const db = await getDb();
   if (!db) {
-    console.warn('[Map Analytics] Database not available');
+    logger.warn('[Map Analytics] Database not available');
     return [];
   }
 
@@ -237,7 +238,7 @@ export async function getDailyAnalytics(days: number = 7): Promise<
 
     return (result.rows || []) as any[];
   } catch (error) {
-    console.error('[Map Analytics] Failed to get daily analytics:', error);
+    logger.error('[Map Analytics] Failed to get daily analytics:', { error: String(error) });
     return [];
   }
 }

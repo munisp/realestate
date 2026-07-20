@@ -7,6 +7,7 @@ import {
   properties 
 } from "../../drizzle/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { logger } from "../_core/logger";
 
 /**
  * GNN Service Layer
@@ -126,7 +127,7 @@ export async function getMarketTrends(
 
     return prediction;
   } catch (error) {
-    console.error("Error fetching market trends:", error);
+    logger.error("Error fetching market trends:", { error: String(error) });
     return generateMockMarketTrends(neighborhood);
   }
 }
@@ -174,7 +175,7 @@ export async function getNeighborhoodIntel(
 
     return intel;
   } catch (error) {
-    console.error("Error fetching neighborhood intel:", error);
+    logger.error("Error fetching neighborhood intel:", { error: String(error) });
     return generateMockNeighborhoodIntel(neighborhood);
   }
 }
@@ -196,7 +197,7 @@ export async function getTransitAccessibility(
 
     return transitData;
   } catch (error) {
-    console.error("Error fetching transit data:", error);
+    logger.error("Error fetching transit data:", { error: String(error) });
     return generateMockTransitData(propertyId);
   }
 }
@@ -218,7 +219,7 @@ export async function getInvestmentScore(
 
     return score;
   } catch (error) {
-    console.error("Error fetching investment score:", error);
+    logger.error("Error fetching investment score:", { error: String(error) });
     return generateMockInvestmentScore(propertyId);
   }
 }

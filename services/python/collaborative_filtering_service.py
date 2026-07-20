@@ -10,7 +10,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import TruncatedSVD
 import pandas as pd
 from datetime import datetime, timedelta
-import logging
 import os
 import json
 from typing import List, Dict, Tuple, Optional
@@ -18,8 +17,8 @@ import pickle
 from collections import defaultdict
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("collaborative-filtering-service")
 
 # Configuration
 MODEL_PATH = os.getenv('MODEL_PATH', '/tmp/cf_model.pkl')

@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 /**
  * Permify Authorization Client
  *
@@ -122,14 +123,14 @@ async function permifyCheck(
     });
 
     if (!response.ok) {
-      console.warn(`[Permify] Check failed: ${response.status} ${response.statusText}`);
+      logger.warn(`[Permify] Check failed: ${response.status} ${response.statusText}`);
       return null;
     }
 
     const data = await response.json() as { can: string };
     return data.can === "RESULT_ALLOWED";
   } catch (error) {
-    console.warn(`[Permify] Check error:`, error);
+    logger.warn(`[Permify] Check error:`, { detail: String(error) });
     return null;
   }
 }
@@ -167,7 +168,7 @@ async function permifyWriteRelationship(
 
     return response.ok;
   } catch (error) {
-    console.warn(`[Permify] Write relationship error:`, error);
+    logger.warn(`[Permify] Write relationship error:`, { detail: String(error) });
     return false;
   }
 }
@@ -202,7 +203,7 @@ async function permifyDeleteRelationship(
 
     return response.ok;
   } catch (error) {
-    console.warn(`[Permify] Delete relationship error:`, error);
+    logger.warn(`[Permify] Delete relationship error:`, { detail: String(error) });
     return false;
   }
 }
@@ -242,7 +243,7 @@ export async function grantRelationship(
 ): Promise<void> {
   const success = await permifyWriteRelationship(req);
   if (!success && PERMIFY_ENDPOINT) {
-    console.warn(`[Permify] Failed to write relationship: ${req.entity}:${req.entityId}#${req.relation}@${req.subjectId}`);
+    logger.warn(`[Permify] Failed to write relationship: ${req.entity}:${req.entityId}#${req.relation}@${req.subjectId}`);
   }
 }
 
@@ -254,7 +255,7 @@ export async function revokeRelationship(
 ): Promise<void> {
   const success = await permifyDeleteRelationship(req);
   if (!success && PERMIFY_ENDPOINT) {
-    console.warn(`[Permify] Failed to delete relationship: ${req.entity}:${req.entityId}#${req.relation}@${req.subjectId}`);
+    logger.warn(`[Permify] Failed to delete relationship: ${req.entity}:${req.entityId}#${req.relation}@${req.subjectId}`);
   }
 }
 

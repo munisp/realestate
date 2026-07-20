@@ -1758,6 +1758,31 @@ Provide a valuation estimate with confidence interval (lower and upper bounds) a
   
 });
 export type AppRouter = typeof appRouter;
+// ── tRPC v2 Router Namespace ──────────────────────────────────────────────────
+// Use this namespace for any breaking changes to existing procedures.
+// Clients should migrate to v2 endpoints before v1 procedures are deprecated.
+//
+// Example usage in client:
+//   const result = await trpc.v2.properties.search.query({ ... });
+//
+// To add a v2 procedure:
+//   1. Create server/routers/v2/<routerName>.ts
+//   2. Import and add it to the v2Router below
+//   3. Deprecate the v1 procedure with a JSDoc @deprecated tag
+export const v2Router = router({
+  // Placeholder — add v2 procedures here as v1 procedures are superseded.
+  // Example:
+  //   properties: propertiesV2Router,
+  //   search: advancedSearchV2Router,
+  health: publicProcedure.query(() => ({
+    version: "2.0",
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  })),
+});
+
+export type V2Router = typeof v2Router;
+
 
 // Start exchange rate monitoring
 startExchangeRateMonitoring();

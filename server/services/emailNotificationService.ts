@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { ENV } from "../_core/env";
+import { logger } from "../_core/logger";
 
 /**
  * Email Notification Service
@@ -315,14 +316,14 @@ export async function sendEmail(
 ): Promise<boolean> {
   try {
     // TODO: Integrate with actual email service (Manus notification API or external provider)
-    console.log(`[Email] Sending to ${to}: ${subject}`);
-    console.log(`[Email] HTML length: ${html.length}, Text length: ${text.length}`);
+    logger.info(`[Email] Sending to ${to}: ${subject}`);
+    logger.info(`[Email] HTML length: ${html.length}, Text length: ${text.length}`);
     
     // For now, just log the email
     // In production, this would call the notification API
     return true;
   } catch (error) {
-    console.error("[Email] Failed to send:", error);
+    logger.error("[Email] Failed to send:", { error: String(error) });
     return false;
   }
 }

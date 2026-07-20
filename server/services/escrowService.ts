@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { eq, and, sql, desc } from 'drizzle-orm';
 import { getDb } from '../db';
 import {
@@ -18,6 +17,7 @@ import {
 import { PaymentProviderFactory } from './paymentProviders/PaymentProviderFactory';
 import { performFraudChecks } from './fraudDetectionService';
 import { createHash } from 'crypto';
+import { logger } from "../_core/logger";
 
 /**
  * Enhanced Escrow Service with:
@@ -218,7 +218,7 @@ export async function createEscrow(params: CreateEscrowParams): Promise<EscrowAc
     // Check idempotency
     const idempotencyCheck = await checkIdempotency(tx, idempotencyKey, requestHash);
     if (idempotencyCheck.exists) {
-      console.log('[Escrow] Request already processed, returning cached response');
+      logger.info('[Escrow] Request already processed, returning cached response');
       return idempotencyCheck.response;
     }
 
@@ -298,7 +298,7 @@ export async function createEscrow(params: CreateEscrowParams): Promise<EscrowAc
       // Mark idempotency as completed
       await markIdempotencyCompleted(tx, idempotencyKey, fullEscrow);
 
-      console.log(`[Escrow] Created escrow ${fullEscrow.id} with ${params.paymentProvider}`);
+      logger.info(`[Escrow] Created escrow ${fullEscrow.id} with ${params.paymentProvider}`);
       return fullEscrow;
     } catch (error: any) {
       await markIdempotencyFailed(tx, idempotencyKey, error.message);
@@ -384,7 +384,7 @@ export async function fundEscrow(
       // Mark idempotency as completed
       await markIdempotencyCompleted(tx, idempotencyKey, updatedEscrow);
 
-      console.log(`[Escrow] Funded escrow ${escrowId} with ${amount} cents`);
+      logger.info(`[Escrow] Funded escrow ${escrowId} with ${amount} cents`);
       return updatedEscrow;
     } catch (error: any) {
       await markIdempotencyFailed(tx, idempotencyKey, error.message);
@@ -517,7 +517,7 @@ export async function releaseEscrow(params: ReleaseEscrowParams): Promise<Escrow
       // Mark idempotency as completed
       await markIdempotencyCompleted(tx, idempotencyKey, updatedEscrow);
 
-      console.log(`[Escrow] Released ${releaseAmount} cents from escrow ${params.escrowId}`);
+      logger.info(`[Escrow] Released ${releaseAmount} cents from escrow ${params.escrowId}`);
       return updatedEscrow;
     } catch (error: any) {
       await markIdempotencyFailed(tx, idempotencyKey, error.message);
@@ -644,7 +644,7 @@ export async function refundEscrow(params: RefundEscrowParams): Promise<EscrowAc
       // Mark idempotency as completed
       await markIdempotencyCompleted(tx, idempotencyKey, updatedEscrow);
 
-      console.log(`[Escrow] Refunded ${refundAmount} cents from escrow ${params.escrowId}`);
+      logger.info(`[Escrow] Refunded ${refundAmount} cents from escrow ${params.escrowId}`);
       return updatedEscrow;
     } catch (error: any) {
       await markIdempotencyFailed(tx, idempotencyKey, error.message);

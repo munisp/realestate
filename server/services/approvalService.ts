@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { eq, and, sql } from 'drizzle-orm';
 import { getDb } from '../db';
+import { logger } from "../_core/logger";
 import {
   escrowAccounts,
   escrowApprovals,
@@ -174,7 +175,7 @@ export async function requestApprovals(
           subject: 'Approval Required',
           message: `Approval required for escrow ${params.escrowId} - ${params.action}`,
         }),
-      }).catch(e => console.error('Notification failed:', e));
+      }).catch(e => logger.error('Notification failed:', { error: String(e) }));
       console.log(
         `[Approval] Requested ${req.approverType} approval from user ${req.approverId} for escrow ${params.escrowId}`
       );
@@ -251,7 +252,7 @@ export async function approveAction(params: ApproveParams): Promise<EscrowApprov
           subject: 'All Approvals Received',
           message: `All approvals received for escrow ${approval.escrowId} - ${approval.action}`,
         }),
-      }).catch(e => console.error('Notification failed:', e));
+      }).catch(e => logger.error('Notification failed:', { error: String(e) }));
     }
 
     return updatedApproval;
@@ -317,7 +318,7 @@ export async function rejectAction(params: RejectParams): Promise<EscrowApproval
         subject: 'Approval Rejected',
         message: `Approval rejected for escrow ${approval.escrowId} - ${approval.action}: ${params.reason}`,
       }),
-    }).catch(e => console.error('Notification failed:', e));
+    }).catch(e => logger.error('Notification failed:', { error: String(e) }));
 
     return updatedApproval;
   });
@@ -428,5 +429,5 @@ export async function cancelApprovals(escrowId: number, action: string): Promise
       )
     );
 
-  console.log(`[Approval] Cancelled pending approvals for escrow ${escrowId} ${action}`);
+  logger.info(`[Approval] Cancelled pending approvals for escrow ${escrowId} ${action}`);
 }

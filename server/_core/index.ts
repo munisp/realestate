@@ -100,7 +100,7 @@ async function startServer() {
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+    logger.info(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
   // Initialize Socket.IO for real-time features
@@ -128,7 +128,7 @@ async function startServer() {
   startCompetitorTrackingScheduler();
 
   server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+    logger.info(`Server running on http://localhost:${port}/`);
   });
 
   // ── Global error handler (must be last middleware) ──────────────────────
@@ -152,7 +152,7 @@ function globalErrorHandler(
     process.env.NODE_ENV === "production" && status === 500
       ? "Internal server error"
       : err.message ?? "Internal server error";
-  console.error("[Error]", err);
+  logger.error("[Error]", { error: String(err) });
   res.status(status).json({ error: message });
 }
 

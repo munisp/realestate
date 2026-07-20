@@ -1,0 +1,69 @@
+version: "3.9"
+
+# PostgreSQL automated backup for docker-compose deployments.
+# Usage: docker-compose -f docker-compose.yml -f infrastructure/postgres/docker-compose.backup.yml up -d
+#
+# Backs up daily at 02:00, uploads to S3/MinIO, prunes files older than 30 days.
+
+services:
+  pg-backup:
+    image: prodrigestivill/postgres-backup-local:15
+    container_name: realestate-pg-backup
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-realestate}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_EXTRA_OPTS: "-Z9 --schema=public --blobs"
+      SCHEDULE: "@daily"
+      BACKUP_KEEP_DAYS: 30
+      BACKUP_KEEP_WEEKS: 8
+      BACKUP_KEEP_MONTHS: 6
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      - pg-backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - realestate-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # Optional: sync backups to S3/MinIO using rclone
+  backup-sync:
+    image: rclone/rclone:latest
+    container_name: realestate-backup-sync
+    restart: unless-stopped
+    environment:
+      RCLONE_CONFIG_S3_TYPE: s3
+      RCLONE_CONFIG_S3_PROVIDER: Minio
+      RCLONE_CONFIG_S3_ENV_AUTH: "false"
+      RCLONE_CONFIG_S3_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
+      RCLONE_CONFIG_S3_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}
+      RCLONE_CONFIG_S3_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
+    volumes:
+      - pg-backups:/backups:ro
+    command: >
+      /bin/sh -c "
+        while true; do
+          echo '[sync] Syncing backups to S3...'
+          rclone sync /backups s3:${S3_BUCKET:-realestate-backups}/postgres/ --progress
+          echo '[sync] Done. Sleeping 6h...'
+          sleep 21600
+        done
+      "
+    networks:
+      - realestate-network
+
+volumes:
+  pg-backups:
+    driver: local
+
+networks:
+  realestate-network:
+    external: true

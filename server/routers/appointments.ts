@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, rateLimitedPublicProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as appointmentService from "../services/appointmentService";
 
 export const appointmentsRouter = router({
   /**
    * Get available time slots for an agent on a specific date
    */
-  getAvailableSlots: publicProcedure
+  getAvailableSlots: rateLimitedPublicProcedure
     .input(
       z.object({
         agentId: z.number(),
@@ -21,7 +21,7 @@ export const appointmentsRouter = router({
   /**
    * Check if a specific time slot is available
    */
-  checkSlotAvailability: publicProcedure
+  checkSlotAvailability: rateLimitedPublicProcedure
     .input(
       z.object({
         agentId: z.number(),

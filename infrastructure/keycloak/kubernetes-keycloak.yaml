@@ -1,0 +1,234 @@
+---
+# Keycloak Kubernetes Deployment
+# Namespace: realestate
+# Requires:
+#   - Secret "keycloak-secret" with keys: KC_DB_PASSWORD, KEYCLOAK_ADMIN_PASSWORD
+#   - PersistentVolumeClaim for PostgreSQL data
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: realestate
+  labels:
+    app.kubernetes.io/managed-by: kubectl
+---
+# ── Keycloak PostgreSQL ───────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: keycloak-postgres
+  namespace: realestate
+  labels:
+    app: keycloak-postgres
+spec:
+  serviceName: keycloak-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak-postgres
+  template:
+    metadata:
+      labels:
+        app: keycloak-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: keycloak
+            - name: POSTGRES_USER
+              value: keycloak
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secret
+                  key: KC_DB_PASSWORD
+          volumeMounts:
+            - name: keycloak-pg-data
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "keycloak"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "keycloak"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+  volumeClaimTemplates:
+    - metadata:
+        name: keycloak-pg-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-postgres
+  namespace: realestate
+spec:
+  clusterIP: None
+  ports:
+    - port: 5432
+  selector:
+    app: keycloak-postgres
+---
+# ── Keycloak Server ───────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: realestate
+  labels:
+    app: keycloak
+    version: "23.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until nc -z keycloak-postgres 5432; do
+                echo "Waiting for Keycloak PostgreSQL..."
+                sleep 2
+              done
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:23.0
+          args: ["start"]
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 9000
+              name: management
+          env:
+            - name: KC_DB
+              value: postgres
+            - name: KC_DB_URL
+              value: jdbc:postgresql://keycloak-postgres:5432/keycloak
+            - name: KC_DB_USERNAME
+              value: keycloak
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secret
+                  key: KC_DB_PASSWORD
+            - name: KC_HOSTNAME
+              value: ${KEYCLOAK_HOSTNAME}
+            - name: KC_HOSTNAME_STRICT
+              value: "true"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "true"
+            - name: KC_PROXY
+              value: edge
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_LOG_LEVEL
+              value: "info"
+            - name: KEYCLOAK_ADMIN
+              value: admin
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-secret
+                  key: KEYCLOAK_ADMIN_PASSWORD
+            - name: JAVA_OPTS_APPEND
+              value: "-Djgroups.dns.query=keycloak-headless"
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 9000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: realestate
+  labels:
+    app: keycloak
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    - name: management
+      port: 9000
+      targetPort: 9000
+  selector:
+    app: keycloak
+---
+# Headless service for cluster discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-headless
+  namespace: realestate
+spec:
+  clusterIP: None
+  ports:
+    - port: 7600
+      name: jgroups
+  selector:
+    app: keycloak
+---
+# Secret template — populate before applying
+# kubectl create secret generic keycloak-secret \
+#   --namespace=realestate \
+#   --from-literal=KC_DB_PASSWORD=<strong-password> \
+#   --from-literal=KEYCLOAK_ADMIN_PASSWORD=<strong-admin-password>
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-secret
+  namespace: realestate
+  annotations:
+    kubernetes.io/description: "Keycloak credentials — replace placeholder values"
+type: Opaque
+stringData:
+  KC_DB_PASSWORD: "REPLACE_ME"
+  KEYCLOAK_ADMIN_PASSWORD: "REPLACE_ME"

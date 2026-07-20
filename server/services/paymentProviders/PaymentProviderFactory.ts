@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { IPaymentProvider } from './IPaymentProvider';
 import { getDb } from '../../db';
 import { paymentProviders } from '../../../drizzle/schema';
@@ -8,6 +7,7 @@ import { MojalooPaymentProvider } from './MojalooPaymentProvider';
 import { TigerBeetlePaymentProvider } from './TigerBeetlePaymentProvider';
 import { FlutterwavePaymentProvider } from './FlutterwavePaymentProvider';
 import { PaystackPaymentProvider } from './PaystackPaymentProvider';
+import { logger } from "../../_core/logger";
 
 /**
  * Payment Provider Factory
@@ -36,13 +36,13 @@ class PaymentProviderFactoryClass {
    */
   async initialize(configs: ProviderConfig[]): Promise<void> {
     if (this.initialized) {
-      console.log('[PaymentProviderFactory] Already initialized');
+      logger.info('[PaymentProviderFactory] Already initialized');
       return;
     }
 
     for (const config of configs) {
       if (!config.enabled) {
-        console.log(`[PaymentProviderFactory] Skipping disabled provider: ${config.name}`);
+        logger.info(`[PaymentProviderFactory] Skipping disabled provider: ${config.name}`);
         continue;
       }
 
@@ -53,14 +53,14 @@ class PaymentProviderFactoryClass {
         this.providers.set(config.name, provider);
         this.providerConfigs.set(config.name, config);
         
-        console.log(`[PaymentProviderFactory] Initialized provider: ${config.name}`);
+        logger.info(`[PaymentProviderFactory] Initialized provider: ${config.name}`);
       } catch (error) {
-        console.error(`[PaymentProviderFactory] Failed to initialize ${config.name}:`, error);
+        logger.error(`[PaymentProviderFactory] Failed to initialize ${config.name}:`, { error: String(error) });
       }
     }
 
     this.initialized = true;
-    console.log(`[PaymentProviderFactory] Initialized ${this.providers.size} providers`);
+    logger.info(`[PaymentProviderFactory] Initialized ${this.providers.size} providers`);
   }
 
   /**
@@ -153,7 +153,7 @@ class PaymentProviderFactoryClass {
 
       // Check health
       if (!(await this.isProviderHealthy(provider))) {
-        console.log(`[PaymentProviderFactory] Provider ${name} is unhealthy, skipping`);
+        logger.info(`[PaymentProviderFactory] Provider ${name} is unhealthy, skipping`);
         continue;
       }
 
@@ -180,7 +180,7 @@ class PaymentProviderFactoryClass {
     try {
       return await provider.healthCheck();
     } catch (error) {
-      console.error(`[PaymentProviderFactory] Health check failed for ${provider.name}:`, error);
+      logger.error(`[PaymentProviderFactory] Health check failed for ${provider.name}:`, { error: String(error) });
       return false;
     }
   }
@@ -228,7 +228,7 @@ class PaymentProviderFactoryClass {
     await provider.initialize(config.config);
     this.providerConfigs.set(name.toLowerCase(), config);
 
-    console.log(`[PaymentProviderFactory] Reloaded provider: ${name}`);
+    logger.info(`[PaymentProviderFactory] Reloaded provider: ${name}`);
   }
 
   /**
@@ -238,7 +238,7 @@ class PaymentProviderFactoryClass {
     const config = this.providerConfigs.get(name.toLowerCase());
     if (config) {
       config.enabled = false;
-      console.log(`[PaymentProviderFactory] Disabled provider: ${name}`);
+      logger.info(`[PaymentProviderFactory] Disabled provider: ${name}`);
     }
   }
 
@@ -249,7 +249,7 @@ class PaymentProviderFactoryClass {
     const config = this.providerConfigs.get(name.toLowerCase());
     if (config) {
       config.enabled = true;
-      console.log(`[PaymentProviderFactory] Enabled provider: ${name}`);
+      logger.info(`[PaymentProviderFactory] Enabled provider: ${name}`);
     }
   }
 }

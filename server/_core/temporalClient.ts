@@ -1,4 +1,5 @@
 import { Client, Connection } from '@temporalio/client';
+import { logger } from "./logger";
 
 let temporalClient: Client | null = null;
 
@@ -21,10 +22,10 @@ export async function getTemporalClient(): Promise<Client> {
       namespace: process.env.TEMPORAL_NAMESPACE || 'default',
     });
 
-    console.log('[Temporal] Connected to Temporal server');
+    logger.info('[Temporal] Connected to Temporal server');
     return temporalClient;
   } catch (error) {
-    console.error('[Temporal] Failed to connect:', error);
+    logger.error('[Temporal] Failed to connect:', { error: String(error) });
     throw error;
   }
 }
@@ -46,7 +47,7 @@ export async function startWorkflow(
     args,
   });
 
-  console.log(`[Temporal] Started workflow: ${workflowType} (${handle.workflowId})`);
+  logger.info(`[Temporal] Started workflow: ${workflowType} (${handle.workflowId})`);
   return handle.workflowId;
 }
 
@@ -62,7 +63,7 @@ export async function signalWorkflow(
   const handle = client.workflow.getHandle(workflowId);
   
   await handle.signal(signalName, ...args);
-  console.log(`[Temporal] Sent signal ${signalName} to workflow ${workflowId}`);
+  logger.info(`[Temporal] Sent signal ${signalName} to workflow ${workflowId}`);
 }
 
 /**
@@ -99,7 +100,7 @@ export async function cancelWorkflow(workflowId: string): Promise<void> {
   const handle = client.workflow.getHandle(workflowId);
   
   await handle.cancel();
-  console.log(`[Temporal] Cancelled workflow ${workflowId}`);
+  logger.info(`[Temporal] Cancelled workflow ${workflowId}`);
 }
 
 /**

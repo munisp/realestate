@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { RegistryConfig, RegistryError, GovernmentRegistryClient as IGovernmentRegistryClient } from './types';
+import { logger } from "../../../_core/logger";
 
 /**
  * Base class for government registry clients
@@ -105,7 +106,7 @@ export abstract class BaseGovernmentRegistryClient implements IGovernmentRegistr
       originalError: error,
     };
 
-    console.error(`[${this.state} Registry] Error:`, registryError);
+    logger.error(`[${this.state} Registry] Error:`, { error: String(registryError) });
     
     return Promise.reject(registryError);
   }

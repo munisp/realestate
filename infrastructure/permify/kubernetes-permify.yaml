@@ -1,0 +1,161 @@
+---
+# Permify Authorization Service — Kubernetes Deployment
+# Namespace: realestate
+# Requires:
+#   - Secret "permify-secret" with keys: PERMIFY_DATABASE_URI
+#   - The main PostgreSQL instance must be running (reuses it for Permify data)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: permify
+  namespace: realestate
+  labels:
+    app: permify
+    version: "0.9"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: permify
+  template:
+    metadata:
+      labels:
+        app: permify
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3478"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: permify
+          image: ghcr.io/permify/permify:v0.9.6
+          args:
+            - serve
+            - --config=/config/config.yaml
+          ports:
+            - containerPort: 3476
+              name: grpc
+            - containerPort: 3478
+              name: http
+          env:
+            - name: PERMIFY_DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: permify-secret
+                  key: PERMIFY_DATABASE_URI
+          volumeMounts:
+            - name: permify-config
+              mountPath: /config
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3478
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 3478
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: permify-config
+          configMap:
+            name: permify-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: permify-config
+  namespace: realestate
+data:
+  config.yaml: |
+    server:
+      rate_limit: 100
+      grpc:
+        port: 3476
+        tls:
+          enabled: false
+      http:
+        enabled: true
+        port: 3478
+        tls:
+          enabled: false
+    logger:
+      level: info
+      output: stdout
+    profiler:
+      enabled: false
+    meter:
+      enabled: true
+      exporter: otlp
+    tracer:
+      enabled: false
+    database:
+      engine: postgres
+      uri: "${PERMIFY_DATABASE_URI}"
+      auto_migrate: true
+      max_open_connections: 10
+      max_idle_connections: 5
+      max_connection_lifetime: 300
+      max_connection_idle_time: 60
+      pool:
+        max_size: 10
+    service:
+      circuit_breaker: false
+      watch:
+        enabled: false
+      schema:
+        cache:
+          number_of_counters: 1000
+          max_cost: 10MB
+      permission:
+        bulk_limit: 100
+        concurrency_limit: 100
+        cache:
+          number_of_counters: 10000
+          max_cost: 100MB
+      relationship:
+        bulk_limit: 100
+        concurrency_limit: 100
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: permify
+  namespace: realestate
+  labels:
+    app: permify
+spec:
+  ports:
+    - name: grpc
+      port: 3476
+      targetPort: 3476
+    - name: http
+      port: 3478
+      targetPort: 3478
+  selector:
+    app: permify
+---
+# Secret template
+# kubectl create secret generic permify-secret \
+#   --namespace=realestate \
+#   --from-literal=PERMIFY_DATABASE_URI="postgres://permify:password@postgres:5432/permify?sslmode=disable"
+apiVersion: v1
+kind: Secret
+metadata:
+  name: permify-secret
+  namespace: realestate
+  annotations:
+    kubernetes.io/description: "Permify database credentials"
+type: Opaque
+stringData:
+  PERMIFY_DATABASE_URI: "postgres://permify:REPLACE_ME@postgres:5432/permify?sslmode=disable"

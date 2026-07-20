@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
 import { latLngToCell, cellToBoundary } from 'h3-js';
+import { logger } from "../_core/logger";
 
 /**
  * Redis Cluster Cache Service
@@ -72,7 +73,7 @@ class ClusterCacheService {
         maxRetriesPerRequest: 3,
         retryStrategy: (times) => {
           if (times > 3) {
-            console.warn('[ClusterCache] Redis connection failed, using in-memory cache');
+            logger.warn('[ClusterCache] Redis connection failed, using in-memory cache');
             return null;
           }
           return Math.min(times * 100, 3000);
@@ -85,7 +86,7 @@ class ClusterCacheService {
       });
 
       this.redis.on('connect', () => {
-        console.log('[ClusterCache] Redis connected successfully');
+        logger.info('[ClusterCache] Redis connected successfully');
       });
 
       // Connect asynchronously
@@ -94,7 +95,7 @@ class ClusterCacheService {
         this.redis = null;
       });
     } catch (error) {
-      console.warn('[ClusterCache] Redis initialization failed:', error);
+      logger.warn('[ClusterCache] Redis initialization failed:', { detail: String(error) });
       this.redis = null;
     }
   }
@@ -146,10 +147,10 @@ class ClusterCacheService {
         return null;
       }
 
-      console.log(`[ClusterCache] Cache HIT for zoom ${zoom}, age: ${Math.round(age / 1000)}s`);
+      logger.info(`[ClusterCache] Cache HIT for zoom ${zoom}, age: ${Math.round(age / 1000)}s`);
       return data;
     } catch (error) {
-      console.error('[ClusterCache] Error getting cached clusters:', error);
+      logger.error('[ClusterCache] Error getting cached clusters:', { error: String(error) });
       return null;
     }
   }
@@ -173,9 +174,9 @@ class ClusterCacheService {
       };
 
       await this.redis.setex(key, this.DEFAULT_TTL, JSON.stringify(cacheData));
-      console.log(`[ClusterCache] Cached clusters for zoom ${zoom}, TTL: ${this.DEFAULT_TTL}s`);
+      logger.info(`[ClusterCache] Cached clusters for zoom ${zoom}, TTL: ${this.DEFAULT_TTL}s`);
     } catch (error) {
-      console.error('[ClusterCache] Error caching clusters:', error);
+      logger.error('[ClusterCache] Error caching clusters:', { error: String(error) });
     }
   }
 
@@ -192,10 +193,10 @@ class ClusterCacheService {
       if (!cached) return null;
 
       const data = JSON.parse(cached);
-      console.log(`[ClusterCache] Cache HIT for H3 cell ${h3Index}`);
+      logger.info(`[ClusterCache] Cache HIT for H3 cell ${h3Index}`);
       return data.properties;
     } catch (error) {
-      console.error('[ClusterCache] Error getting cached cluster properties:', error);
+      logger.error('[ClusterCache] Error getting cached cluster properties:', { error: String(error) });
       return null;
     }
   }
@@ -214,9 +215,9 @@ class ClusterCacheService {
       };
 
       await this.redis.setex(key, this.DEFAULT_TTL, JSON.stringify(cacheData));
-      console.log(`[ClusterCache] Cached ${properties.length} properties for H3 cell ${h3Index}`);
+      logger.info(`[ClusterCache] Cached ${properties.length} properties for H3 cell ${h3Index}`);
     } catch (error) {
-      console.error('[ClusterCache] Error caching cluster properties:', error);
+      logger.error('[ClusterCache] Error caching cluster properties:', { error: String(error) });
     }
   }
 
@@ -237,7 +238,7 @@ class ClusterCacheService {
       
       if (keys.length > 0) {
         await this.redis.del(...keys);
-        console.log(`[ClusterCache] Invalidated ${keys.length} H3 cell caches for property ${propertyId}`);
+        logger.info(`[ClusterCache] Invalidated ${keys.length} H3 cell caches for property ${propertyId}`);
       }
 
       // Also invalidate viewport caches (use pattern matching)
@@ -256,10 +257,10 @@ class ClusterCacheService {
       });
 
       stream.on('end', () => {
-        console.log(`[ClusterCache] Invalidated ${deletedCount} viewport caches`);
+        logger.info(`[ClusterCache] Invalidated ${deletedCount} viewport caches`);
       });
     } catch (error) {
-      console.error('[ClusterCache] Error invalidating property cache:', error);
+      logger.error('[ClusterCache] Error invalidating property cache:', { error: String(error) });
     }
   }
 
@@ -286,10 +287,10 @@ class ClusterCacheService {
       });
 
       stream.on('end', () => {
-        console.log(`[ClusterCache] Invalidated all ${deletedCount} cluster caches`);
+        logger.info(`[ClusterCache] Invalidated all ${deletedCount} cluster caches`);
       });
     } catch (error) {
-      console.error('[ClusterCache] Error invalidating all caches:', error);
+      logger.error('[ClusterCache] Error invalidating all caches:', { error: String(error) });
     }
   }
 
@@ -304,7 +305,7 @@ class ClusterCacheService {
   ): Promise<void> {
     if (!this.redis) return;
 
-    console.log(`[ClusterCache] Warming cache for ${popularBounds.length} popular areas...`);
+    logger.info(`[ClusterCache] Warming cache for ${popularBounds.length} popular areas...`);
 
     for (const bounds of popularBounds) {
       for (const zoom of zoomLevels) {
@@ -314,7 +315,7 @@ class ClusterCacheService {
           const existing = await this.getCachedClusters(bounds, zoom, resolution);
           
           if (existing) {
-            console.log(`[ClusterCache] Already cached: zoom ${zoom}`);
+            logger.info(`[ClusterCache] Already cached: zoom ${zoom}`);
             continue;
           }
 
@@ -322,14 +323,14 @@ class ClusterCacheService {
           const data = await dataFetcher(bounds, zoom);
           await this.setCachedClusters(bounds, zoom, resolution, data);
           
-          console.log(`[ClusterCache] Warmed cache: zoom ${zoom}, ${data.stats.totalProperties} properties`);
+          logger.info(`[ClusterCache] Warmed cache: zoom ${zoom}, ${data.stats.totalProperties} properties`);
         } catch (error) {
-          console.error(`[ClusterCache] Error warming cache for zoom ${zoom}:`, error);
+          logger.error(`[ClusterCache] Error warming cache for zoom ${zoom}:`, { error: String(error) });
         }
       }
     }
 
-    console.log('[ClusterCache] Cache warming complete');
+    logger.info('[ClusterCache] Cache warming complete');
   }
 
   /**
@@ -386,7 +387,7 @@ class ClusterCacheService {
         hitRate: Math.round(hitRate * 100) / 100,
       };
     } catch (error) {
-      console.error('[ClusterCache] Error getting cache stats:', error);
+      logger.error('[ClusterCache] Error getting cache stats:', { error: String(error) });
       return {
         totalKeys: 0,
         memoryUsage: '0 MB',
@@ -401,7 +402,7 @@ class ClusterCacheService {
   async close(): Promise<void> {
     if (this.redis) {
       await this.redis.quit();
-      console.log('[ClusterCache] Redis connection closed');
+      logger.info('[ClusterCache] Redis connection closed');
     }
   }
 }

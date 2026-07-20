@@ -5,7 +5,6 @@ Provides caching, rate limiting, and circuit breaker patterns
 
 import os
 import json
-import logging
 import time
 import hashlib
 from typing import Any, Optional, Callable
@@ -13,8 +12,8 @@ from datetime import datetime, timedelta
 from functools import wraps
 from enum import Enum
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("api-cache")
 
 
 class CircuitState(Enum):

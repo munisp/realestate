@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { BaseGovernmentRegistryClient } from '../base/GovernmentRegistryClient';
+import { logger } from "../../../_core/logger";
 import {
   CofOVerificationResult,
   LandRecordData,
@@ -58,9 +59,9 @@ export class KanoRegistryClient extends BaseGovernmentRegistryClient {
       const expiresIn = response.data.expires_in || 7200;
       this.tokenExpiry = new Date(Date.now() + expiresIn * 1000);
 
-      console.log(`[Kano Registry] Successfully authenticated, token expires at ${this.tokenExpiry}`);
+      logger.info(`[Kano Registry] Successfully authenticated, token expires at ${this.tokenExpiry}`);
     } catch (error) {
-      console.error('[Kano Registry] Authentication failed:', error);
+      logger.error('[Kano Registry] Authentication failed:', { error: String(error) });
       throw error;
     }
   }
@@ -189,7 +190,7 @@ export class KanoRegistryClient extends BaseGovernmentRegistryClient {
       const response = await this.client.get('/health');
       return response.data.healthy === true;
     } catch (error) {
-      console.error('[Kano Registry] Health check failed:', error);
+      logger.error('[Kano Registry] Health check failed:', { error: String(error) });
       return false;
     }
   }

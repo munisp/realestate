@@ -6,6 +6,7 @@
  */
 
 import { Resend } from 'resend';
+import { logger } from "../_core/logger";
 
 interface EmailOptions {
   to: string | string[];
@@ -41,9 +42,9 @@ class ResendEmailService {
     if (apiKey) {
       this.resend = new Resend(apiKey);
       this.isConfigured = true;
-      console.log('[ResendEmailService] Initialized with API key');
+      logger.info('[ResendEmailService] Initialized with API key');
     } else {
-      console.warn('[ResendEmailService] RESEND_API_KEY not configured, using mock mode');
+      logger.warn('[ResendEmailService] RESEND_API_KEY not configured, using mock mode');
     }
   }
 
@@ -77,7 +78,7 @@ class ResendEmailService {
         messageId: response.data?.id || 'unknown',
       };
     } catch (error) {
-      console.error('[ResendEmailService] Failed to send email:', error);
+      logger.error('[ResendEmailService] Failed to send email:', { error: String(error) });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -101,14 +102,14 @@ class ResendEmailService {
   private async sendMockEmail(options: EmailOptions): Promise<EmailResponse> {
     const mockId = `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    console.log('[ResendEmailService] MOCK EMAIL SENT:');
+    logger.info('[ResendEmailService] MOCK EMAIL SENT:');
     console.log('  To:', options.to);
     console.log('  Subject:', options.subject);
     console.log('  From:', options.from || this.fromEmail);
     if (options.replyTo) console.log('  Reply-To:', options.replyTo);
     if (options.cc) console.log('  CC:', options.cc);
     if (options.bcc) console.log('  BCC:', options.bcc);
-    console.log('  Message ID:', mockId);
+    logger.info('  Message ID:', { detail: String(mockId) });
     console.log('  HTML Preview (first 200 chars):', options.html.substring(0, 200));
 
     return {
@@ -130,7 +131,7 @@ class ResendEmailService {
       const domain = this.fromEmail.split('@')[1];
       return { configured: true, domain };
     } catch (error) {
-      console.error('[ResendEmailService] Configuration verification failed:', error);
+      logger.error('[ResendEmailService] Configuration verification failed:', { error: String(error) });
       return { configured: false };
     }
   }

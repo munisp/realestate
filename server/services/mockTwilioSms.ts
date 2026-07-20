@@ -1,3 +1,4 @@
+import { logger } from "../_core/logger";
 /**
  * Mock Twilio SMS Service
  * Simulates SMS delivery for testing without requiring actual Twilio credentials
@@ -133,7 +134,7 @@ class MockTwilioSMSService {
     let lastError: string | undefined;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      console.log(`[MockTwilio] Attempt ${attempt}/${maxRetries} to send SMS to ${to}`);
+      logger.info(`[MockTwilio] Attempt ${attempt}/${maxRetries} to send SMS to ${to}`);
       
       const result = await this.sendSMS(to, body, options);
       

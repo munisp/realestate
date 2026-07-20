@@ -4,6 +4,7 @@ import { getDb } from "../db";
 import { properties } from "../../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { gnnServiceClient } from "./gnnServiceClient";
+import { logger } from "../_core/logger";
 
 interface LiveProperty {
   id: number;
@@ -35,19 +36,19 @@ export class LivePropertyFeedService {
     });
 
     this.wss.on("connection", (ws: WebSocket) => {
-      console.log("[LivePropertyFeed] Client connected");
+      logger.info("[LivePropertyFeed] Client connected");
       this.clients.add(ws);
 
       // Send initial properties
       this.sendRecentProperties(ws);
 
       ws.on("close", () => {
-        console.log("[LivePropertyFeed] Client disconnected");
+        logger.info("[LivePropertyFeed] Client disconnected");
         this.clients.delete(ws);
       });
 
       ws.on("error", (error) => {
-        console.error("[LivePropertyFeed] WebSocket error:", error);
+        logger.error("[LivePropertyFeed] WebSocket error:", { error: String(error) });
         this.clients.delete(ws);
       });
     });
@@ -55,7 +56,7 @@ export class LivePropertyFeedService {
     // Start checking for new properties every 10 seconds
     this.startPropertyMonitoring();
 
-    console.log("[LivePropertyFeed] Service initialized");
+    logger.info("[LivePropertyFeed] Service initialized");
   }
 
   private async sendRecentProperties(ws: WebSocket) {
@@ -80,7 +81,7 @@ export class LivePropertyFeedService {
         }
       }
     } catch (error) {
-      console.error("[LivePropertyFeed] Error sending recent properties:", error);
+      logger.error("[LivePropertyFeed] Error sending recent properties:", { error: String(error) });
     }
   }
 
@@ -115,7 +116,7 @@ export class LivePropertyFeedService {
         }
       }
     } catch (error) {
-      console.error("[LivePropertyFeed] Error checking for new properties:", error);
+      logger.error("[LivePropertyFeed] Error checking for new properties:", { error: String(error) });
     }
   }
 
@@ -155,7 +156,7 @@ export class LivePropertyFeedService {
         timestamp: property.createdAt || new Date(),
       };
     } catch (error) {
-      console.error("[LivePropertyFeed] Error transforming property:", error);
+      logger.error("[LivePropertyFeed] Error transforming property:", { error: String(error) });
       return null;
     }
   }
@@ -189,13 +190,13 @@ export class LivePropertyFeedService {
           client.send(message);
           successCount++;
         } catch (error) {
-          console.error("[LivePropertyFeed] Error sending to client:", error);
+          logger.error("[LivePropertyFeed] Error sending to client:", { error: String(error) });
           errorCount++;
         }
       }
     });
 
-    console.log(`[LivePropertyFeed] Broadcasted property ${property.id} to ${successCount} clients (${errorCount} errors)`);
+    logger.info(`[LivePropertyFeed] Broadcasted property ${property.id} to ${successCount} clients (${errorCount} errors)`);
   }
 
   // Manual trigger for testing
@@ -233,7 +234,7 @@ export class LivePropertyFeedService {
       this.wss.close();
     }
 
-    console.log("[LivePropertyFeed] Service shut down");
+    logger.info("[LivePropertyFeed] Service shut down");
   }
 }
 

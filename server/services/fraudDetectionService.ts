@@ -1,6 +1,6 @@
-// @ts-nocheck
 import { eq, and, sql, desc, gte } from 'drizzle-orm';
 import { getDb } from '../db';
+import { logger } from "../_core/logger";
 import {
   escrowAccounts,
   escrowFraudChecks,
@@ -110,14 +110,14 @@ export async function performFraudChecks(
         subject: 'Critical Fraud Alert',
         message: `Escrow ${escrow.id} blocked - Critical risk detected`,
       }),
-    }).catch(e => console.error('Notification failed:', e));
-    console.log(`[Fraud] Escrow ${escrow.id} blocked - Critical risk detected`);
+    }).catch(e => logger.error('Notification failed:', { error: String(e) }));
+    logger.info(`[Fraud] Escrow ${escrow.id} blocked - Critical risk detected`);
     return false;
   }
 
   if (highRiskCheckFailed || overallRiskScore >= 60) {
     // Flag for manual review but don't block
-    console.log(`[Fraud] Escrow ${escrow.id} flagged for manual review - High risk detected`);
+    logger.info(`[Fraud] Escrow ${escrow.id} flagged for manual review - High risk detected`);
     await fetch('http://localhost:5104/api/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -127,7 +127,7 @@ export async function performFraudChecks(
         subject: 'Fraud Review Required',
         message: `Escrow ${escrow.id} flagged for manual review - High risk detected`,
       }),
-    }).catch(e => console.error('Notification failed:', e));
+    }).catch(e => logger.error('Notification failed:', { error: String(e) }));
   }
 
   return true;

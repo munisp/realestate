@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { IPaymentProvider, EscrowCreateResult, EscrowReleaseResult, EscrowRefundResult, EscrowStatusResult } from './IPaymentProvider';
 import { TigerBeetleProvider } from '../../payments/providers/TigerBeetleProvider';
+import { logger } from "../../_core/logger";
 
 export class TigerBeetlePaymentProvider implements IPaymentProvider {
   name = 'tigerbeetle';
@@ -16,7 +17,7 @@ export class TigerBeetlePaymentProvider implements IPaymentProvider {
 
   async initialize(config: any): Promise<void> {
     // Configuration is handled via environment variables in the Python service
-    console.log('[TigerBeetlePaymentProvider] Initialized');
+    logger.info('[TigerBeetlePaymentProvider] Initialized');
   }
 
   async createEscrow(params: {

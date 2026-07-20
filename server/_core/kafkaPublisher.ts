@@ -1,10 +1,10 @@
-// @ts-nocheck
 /**
  * Kafka Event Publisher
  * Publishes domain events to Kafka topics for consumption by lakehouse and microservices
  */
 
 import { Kafka, Producer, ProducerRecord, Message } from 'kafkajs';
+import { logger } from "./logger";
 
 // ============================================================================
 // Configuration
@@ -138,12 +138,12 @@ class KafkaPublisher {
    */
   async connect(): Promise<void> {
     if (this.isConnected) {
-      console.log('[Kafka] Already connected');
+      logger.info('[Kafka] Already connected');
       return;
     }
 
     if (!KAFKA_ENABLED) {
-      console.log('[Kafka] Disabled in development mode (set KAFKA_ENABLED=true to enable)');
+      logger.info('[Kafka] Disabled in development mode (set KAFKA_ENABLED=true to enable)');
       return;
     }
 
@@ -155,9 +155,9 @@ class KafkaPublisher {
 
       await this.producer.connect();
       this.isConnected = true;
-      console.log('[Kafka] Producer connected successfully');
+      logger.info('[Kafka] Producer connected successfully');
     } catch (error) {
-      console.error('[Kafka] Failed to connect producer:', error);
+      logger.error('[Kafka] Failed to connect producer:', { error: String(error) });
       throw error;
     }
   }
@@ -169,7 +169,7 @@ class KafkaPublisher {
     if (this.producer && this.isConnected) {
       await this.producer.disconnect();
       this.isConnected = false;
-      console.log('[Kafka] Producer disconnected');
+      logger.info('[Kafka] Producer disconnected');
     }
   }
 
@@ -182,17 +182,17 @@ class KafkaPublisher {
     key?: string
   ): Promise<void> {
     if (!KAFKA_ENABLED) {
-      console.log(`[Kafka] Skipping event publish to ${topic} (Kafka disabled)`);
+      logger.info(`[Kafka] Skipping event publish to ${topic} (Kafka disabled)`);
       return;
     }
 
     if (!this.producer || !this.isConnected) {
-      console.warn('[Kafka] Producer not connected, attempting to connect...');
+      logger.warn('[Kafka] Producer not connected, attempting to connect...');
       await this.connect();
     }
 
     if (!this.producer || !this.isConnected) {
-      console.warn(`[Kafka] Failed to connect, skipping event publish to ${topic}`);
+      logger.warn(`[Kafka] Failed to connect, skipping event publish to ${topic}`);
       return;
     }
 
@@ -214,7 +214,7 @@ class KafkaPublisher {
 
       console.log(`[Kafka] Published event to ${topic}:`, event.eventType);
     } catch (error) {
-      console.error(`[Kafka] Failed to publish event to ${topic}:`, error);
+      logger.error(`[Kafka] Failed to publish event to ${topic}:`, { error: String(error) });
       throw error;
     }
   }
@@ -232,9 +232,9 @@ class KafkaPublisher {
         topicMessages: records,
       });
 
-      console.log(`[Kafka] Published batch of ${records.length} events`);
+      logger.info(`[Kafka] Published batch of ${records.length} events`);
     } catch (error) {
-      console.error('[Kafka] Failed to publish batch:', error);
+      logger.error('[Kafka] Failed to publish batch:', { error: String(error) });
       throw error;
     }
   }
@@ -321,14 +321,14 @@ export const kafkaPublisher = getKafkaPublisher();
 // ============================================================================
 
 process.on('SIGTERM', async () => {
-  console.log('[Kafka] SIGTERM received, disconnecting...');
+  logger.info('[Kafka] SIGTERM received, disconnecting...');
   if (publisherInstance) {
     await publisherInstance.disconnect();
   }
 });
 
 process.on('SIGINT', async () => {
-  console.log('[Kafka] SIGINT received, disconnecting...');
+  logger.info('[Kafka] SIGINT received, disconnecting...');
   if (publisherInstance) {
     await publisherInstance.disconnect();
   }

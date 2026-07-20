@@ -5,13 +5,12 @@ Provides Nigerian economic data for property valuation
 
 import os
 import json
-import logging
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 import requests
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("worldbank-service")
 
 
 class WorldBankService:

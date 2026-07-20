@@ -15,6 +15,7 @@ import { eq, and, inArray } from 'drizzle-orm';
 // Import verification services
 import { RegistryAggregator } from './governmentRegistry/RegistryAggregator';
 import { notificationService } from './notificationService';
+import { logger } from "../_core/logger";
 
 /**
  * CSV Row Interface
@@ -120,13 +121,13 @@ export class BulkVerificationService {
         email: metadata.notificationEmail,
         phone: metadata.notificationPhone,
       }).catch(error => {
-        console.error(`[BulkVerification] Failed to send job started notification:`, error);
+        logger.error(`[BulkVerification] Failed to send job started notification:`, { error: String(error) });
       });
     }
 
     // Start processing asynchronously
     this.processBulkJob(job.id).catch(error => {
-      console.error(`[BulkVerification] Error processing job ${jobId}:`, error);
+      logger.error(`[BulkVerification] Error processing job ${jobId}:`, { error: String(error) });
     });
 
     return jobId;
@@ -178,7 +179,7 @@ export class BulkVerificationService {
           await this.processItem(item.id);
           successCount++;
         } catch (error: any) {
-          console.error(`[BulkVerification] Error processing item ${item.id}:`, error);
+          logger.error(`[BulkVerification] Error processing item ${item.id}:`, { error: String(error) });
           failCount++;
         }
 
@@ -215,7 +216,7 @@ export class BulkVerificationService {
         })
         .where(eq(bulkVerificationJobs.id, jobId));
 
-      console.log(`[BulkVerification] Job ${job.jobId} completed: ${successCount} successful, ${failCount} failed`);
+      logger.info(`[BulkVerification] Job ${job.jobId} completed: ${successCount} successful, ${failCount} failed`);
 
       // Send job completed notification
       if (job.metadata?.notificationEmail || job.metadata?.notificationPhone) {
@@ -229,11 +230,11 @@ export class BulkVerificationService {
           email: job.metadata.notificationEmail,
           phone: job.metadata.notificationPhone,
         }).catch(error => {
-          console.error(`[BulkVerification] Failed to send job completed notification:`, error);
+          logger.error(`[BulkVerification] Failed to send job completed notification:`, { error: String(error) });
         });
       }
     } catch (error: any) {
-      console.error(`[BulkVerification] Job ${jobId} failed:`, error);
+      logger.error(`[BulkVerification] Job ${jobId} failed:`, { error: String(error) });
 
       await db
         .update(bulkVerificationJobs)
@@ -257,7 +258,7 @@ export class BulkVerificationService {
           email: failedJob.metadata.notificationEmail,
           phone: failedJob.metadata.notificationPhone,
         }).catch(err => {
-          console.error(`[BulkVerification] Failed to send job failed notification:`, err);
+          logger.error(`[BulkVerification] Failed to send job failed notification:`, { error: String(err) });
         });
       }
     }
@@ -348,7 +349,7 @@ export class BulkVerificationService {
         })
         .where(eq(bulkVerificationItems.id, itemId));
     } catch (error: any) {
-      console.error(`[BulkVerification] Item ${itemId} failed:`, error);
+      logger.error(`[BulkVerification] Item ${itemId} failed:`, { error: String(error) });
 
       await db
         .update(bulkVerificationItems)

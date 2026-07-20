@@ -7,6 +7,7 @@
 
 import { resendEmailService, EmailOptions, EmailResponse } from './resendEmailService';
 import * as db from '../db';
+import { logger } from "../_core/logger";
 
 interface RetryConfig {
   maxRetries: number;
@@ -112,7 +113,7 @@ class EmailRetryService {
       // If not the last attempt, wait before retrying
       if (attempt < config.maxRetries) {
         const delay = this.calculateBackoffDelay(attempt, config);
-        console.log(`[EmailRetryService] Waiting ${delay}ms before retry...`);
+        logger.info(`[EmailRetryService] Waiting ${delay}ms before retry...`);
         await this.sleep(delay);
       }
     }
@@ -198,7 +199,7 @@ class EmailRetryService {
         });
       }
     } catch (error) {
-      console.error('[EmailRetryService] Failed to persist delivery log:', error);
+      logger.error('[EmailRetryService] Failed to persist delivery log:', { error: String(error) });
     }
   }
 

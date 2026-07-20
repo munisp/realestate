@@ -9,6 +9,7 @@
 import { getDb } from "../../db";
 import { landVerificationRequests } from "../../../drizzle/schema";
 import { desc, sql, and, gte, isNotNull } from "drizzle-orm";
+import { logger } from "../../_core/logger";
 
 export interface TrainingDataPoint {
   cofONumber: string;
@@ -179,8 +180,8 @@ export async function trainModel(
   const runId = generateRunId();
   const modelVersion = generateModelVersion();
 
-  console.log(`[MLflow Training] Starting training run ${runId}`);
-  console.log(`[MLflow Training] Dataset size: ${trainingData.length} samples`);
+  logger.info(`[MLflow Training] Starting training run ${runId}`);
+  logger.info(`[MLflow Training] Dataset size: ${trainingData.length} samples`);
 
   try {
     // In a real implementation, this would:
@@ -208,12 +209,12 @@ export async function trainModel(
     // Log training run to database
     await logTrainingRun(run);
 
-    console.log(`[MLflow Training] Completed training run ${runId}`);
-    console.log(`[MLflow Training] Accuracy: ${metrics.accuracy.toFixed(4)}, F1: ${metrics.f1Score.toFixed(4)}`);
+    logger.info(`[MLflow Training] Completed training run ${runId}`);
+    logger.info(`[MLflow Training] Accuracy: ${metrics.accuracy.toFixed(4)}, F1: ${metrics.f1Score.toFixed(4)}`);
 
     return run;
   } catch (error) {
-    console.error(`[MLflow Training] Training failed:`, error);
+    logger.error(`[MLflow Training] Training failed:`, { error: String(error) });
     
     const failedRun: TrainingRun = {
       runId,
@@ -298,7 +299,7 @@ export async function submitVerificationFeedback(
     })
     .where(sql`${landVerificationRequests.id} = ${verificationId}`);
 
-  console.log(`[MLflow Training] Feedback submitted for verification ${verificationId}`);
+  logger.info(`[MLflow Training] Feedback submitted for verification ${verificationId}`);
 }
 
 /**
@@ -322,7 +323,7 @@ export async function checkAndTriggerRetraining(): Promise<TrainingRun | null> {
   const RETRAINING_THRESHOLD = 100; // Retrain after 100 new cases
 
   if (recentCases.length >= RETRAINING_THRESHOLD) {
-    console.log(`[MLflow Training] Triggering automatic retraining (${recentCases.length} new cases)`);
+    logger.info(`[MLflow Training] Triggering automatic retraining (${recentCases.length} new cases)`);
     
     const trainingData = await collectTrainingData(
       new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days

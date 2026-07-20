@@ -1,0 +1,151 @@
+---
+# Kubernetes CronJob: PostgreSQL backup to S3/MinIO
+# Runs daily at 02:00 UTC, keeps 30 days of backups.
+# Requires:
+#   - Secret "postgres-backup-secret" with keys:
+#       PGPASSWORD, S3_ENDPOINT, S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: realestate
+  labels:
+    app: postgres-backup
+    component: database
+spec:
+  schedule: "0 2 * * *"          # Daily at 02:00 UTC
+  timeZone: "UTC"
+  concurrencyPolicy: Forbid       # Don't run if previous job is still running
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600  # 1 hour max
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pg-backup
+              image: postgres:15-alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+
+                  TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                  BACKUP_FILE="/tmp/realestate_${TIMESTAMP}.sql.gz"
+                  S3_KEY="backups/postgres/realestate_${TIMESTAMP}.sql.gz"
+
+                  echo "[backup] Starting PostgreSQL dump at ${TIMESTAMP}"
+
+                  # Dump all databases
+                  pg_dumpall \
+                    --host="${PGHOST}" \
+                    --port="${PGPORT:-5432}" \
+                    --username="${PGUSER}" \
+                    --no-password \
+                    --clean \
+                    --if-exists \
+                    | gzip -9 > "${BACKUP_FILE}"
+
+                  BACKUP_SIZE=$(du -sh "${BACKUP_FILE}" | cut -f1)
+                  echo "[backup] Dump complete. Size: ${BACKUP_SIZE}"
+
+                  # Upload to S3/MinIO using curl (no aws-cli dependency)
+                  echo "[backup] Uploading to s3://${S3_BUCKET}/${S3_KEY}"
+
+                  # Install aws-cli via pip (alpine)
+                  apk add --no-cache python3 py3-pip --quiet
+                  pip3 install awscli --quiet
+
+                  aws s3 cp "${BACKUP_FILE}" "s3://${S3_BUCKET}/${S3_KEY}" \
+                    --endpoint-url "${S3_ENDPOINT}" \
+                    --no-progress
+
+                  echo "[backup] Upload complete: s3://${S3_BUCKET}/${S3_KEY}"
+
+                  # Prune backups older than 30 days
+                  echo "[backup] Pruning backups older than 30 days..."
+                  CUTOFF=$(date -d "30 days ago" +%Y%m%d 2>/dev/null || date -v-30d +%Y%m%d)
+                  aws s3 ls "s3://${S3_BUCKET}/backups/postgres/" \
+                    --endpoint-url "${S3_ENDPOINT}" \
+                    | awk '{print $4}' \
+                    | while read KEY; do
+                        FILE_DATE=$(echo "${KEY}" | grep -oE '[0-9]{8}' | head -1)
+                        if [ -n "${FILE_DATE}" ] && [ "${FILE_DATE}" -lt "${CUTOFF}" ]; then
+                          echo "[backup] Deleting old backup: ${KEY}"
+                          aws s3 rm "s3://${S3_BUCKET}/backups/postgres/${KEY}" \
+                            --endpoint-url "${S3_ENDPOINT}"
+                        fi
+                      done
+
+                  echo "[backup] Backup job completed successfully"
+                  rm -f "${BACKUP_FILE}"
+              env:
+                - name: PGHOST
+                  value: postgres.realestate.svc.cluster.local
+                - name: PGPORT
+                  value: "5432"
+                - name: PGUSER
+                  value: postgres
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-secret
+                      key: PGPASSWORD
+                - name: S3_ENDPOINT
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-secret
+                      key: S3_ENDPOINT
+                - name: S3_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-secret
+                      key: S3_BUCKET
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-secret
+                      key: AWS_ACCESS_KEY_ID
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-secret
+                      key: AWS_SECRET_ACCESS_KEY
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+---
+# Secret template — populate with real values before applying
+# kubectl create secret generic postgres-backup-secret \
+#   --namespace=realestate \
+#   --from-literal=PGPASSWORD=<db-password> \
+#   --from-literal=S3_ENDPOINT=https://minio.your-domain.com \
+#   --from-literal=S3_BUCKET=realestate-backups \
+#   --from-literal=AWS_ACCESS_KEY_ID=<minio-access-key> \
+#   --from-literal=AWS_SECRET_ACCESS_KEY=<minio-secret-key>
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-backup-secret
+  namespace: realestate
+  annotations:
+    # Managed externally — do not commit real values
+    kubernetes.io/description: "PostgreSQL backup credentials"
+type: Opaque
+stringData:
+  PGPASSWORD: "REPLACE_ME"
+  S3_ENDPOINT: "https://minio.your-domain.com"
+  S3_BUCKET: "realestate-backups"
+  AWS_ACCESS_KEY_ID: "REPLACE_ME"
+  AWS_SECRET_ACCESS_KEY: "REPLACE_ME"

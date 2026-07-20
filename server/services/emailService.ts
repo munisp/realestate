@@ -8,6 +8,7 @@
 
 import { getDb } from "../db";
 import { emailDeliveryLog } from "../../drizzle/schema";
+import { logger } from "../_core/logger";
 
 interface EmailOptions {
   to: string | string[];
@@ -35,7 +36,7 @@ export async function sendEmail(
   const { userId, propertyId, alertType, ...emailOptions } = options;
   // Mock mode: log email instead of sending
   if (MOCK_MODE) {
-    console.log('[Email] MOCK MODE - Email would be sent:');
+    logger.info('[Email] MOCK MODE - Email would be sent:');
     console.log('  To:', options.to);
     console.log('  Subject:', options.subject);
     console.log('  From:', options.from || DEFAULT_FROM);
@@ -60,7 +61,7 @@ export async function sendEmail(
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('[Email] Failed to send email:', error);
+      logger.error('[Email] Failed to send email:', { error: String(error) });
       return false;
     }
 
@@ -78,7 +79,7 @@ export async function sendEmail(
     
     return true;
   } catch (error) {
-    console.error('[Email] Error sending email:', error);
+    logger.error('[Email] Error sending email:', { error: String(error) });
     
     // Track failure
     await trackEmailDelivery({
@@ -124,7 +125,7 @@ async function trackEmailDelivery(data: {
       errorMessage: data.errorMessage || null,
     });
   } catch (error) {
-    console.error("[Email] Failed to track delivery:", error);
+    logger.error("[Email] Failed to track delivery:", { error: String(error) });
   }
 }
 

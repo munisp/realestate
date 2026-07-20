@@ -1,5 +1,6 @@
 import { getDb } from '../db';
 import { eq } from 'drizzle-orm';
+import { logger } from "../_core/logger";
 
 // SMS Delivery Log table schema (add to drizzle/schema.ts)
 export interface SMSDeliveryLog {
@@ -34,7 +35,7 @@ export async function logSMSDelivery(log: {
 }): Promise<void> {
   const db = await getDb();
   if (!db) {
-    console.warn('[SMS Delivery Log] Database not available');
+    logger.warn('[SMS Delivery Log] Database not available');
     return;
   }
 
@@ -60,7 +61,7 @@ export async function logSMSDelivery(log: {
     //   createdAt: new Date(),
     // });
   } catch (error) {
-    console.error('[SMS Delivery Log] Failed to log delivery:', error);
+    logger.error('[SMS Delivery Log] Failed to log delivery:', { error: String(error) });
   }
 }
 

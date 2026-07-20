@@ -43,3 +43,45 @@ export const adminProcedure = t.procedure.use(
     });
   }),
 );
+
+// ── Per-IP in-memory rate limiter for public tRPC procedures ─────────────────
+// Public procedures are unauthenticated and therefore higher risk for abuse.
+// Limit: 60 calls/minute per IP (sliding window).
+const publicRateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+const publicRateLimit = t.middleware(async ({ ctx, next, path }) => {
+  const ip = (ctx as any).req?.ip ?? (ctx as any).req?.socket?.remoteAddress ?? "unknown";
+  const key = `${ip}:${path}`;
+  const now = Date.now();
+  const windowMs = 60_000;  // 1 minute
+  const maxRequests = 60;
+
+  const entry = publicRateLimitStore.get(key);
+  if (!entry || entry.resetAt < now) {
+    publicRateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
+  } else {
+    entry.count += 1;
+    if (entry.count > maxRequests) {
+      throw new TRPCError({
+        code: "TOO_MANY_REQUESTS",
+        message: `Rate limit exceeded. Try again in ${Math.ceil((entry.resetAt - now) / 1000)}s.`,
+      });
+    }
+  }
+
+  // Prune old entries periodically (1% chance per call)
+  if (Math.random() < 0.01) {
+    const nowPrune = Date.now();
+    for (const [k, v] of publicRateLimitStore.entries()) {
+      if (v.resetAt < nowPrune) publicRateLimitStore.delete(k);
+    }
+  }
+
+  return next();
+});
+
+/**
+ * Rate-limited public procedure — use for all unauthenticated endpoints.
+ * Allows 60 calls/minute per IP per procedure path.
+ */
+export const rateLimitedPublicProcedure = t.procedure.use(publicRateLimit);

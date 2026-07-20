@@ -6,6 +6,7 @@
  */
 
 import axios, { AxiosInstance } from 'axios';
+import { logger } from "./logger";
 
 // ============================================================================
 // Configuration
@@ -53,7 +54,7 @@ class LakehouseClient {
         return config;
       },
       (error) => {
-        console.error('[Lakehouse API] Request error:', error);
+        logger.error('[Lakehouse API] Request error:', { error: String(error) });
         return Promise.reject(error);
       }
     );

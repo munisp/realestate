@@ -21,6 +21,7 @@
 import { getDb } from "../db";
 import { fluvioEvents } from "../../drizzle/schema";
 import { randomUUID } from "crypto";
+import { logger } from "../_core/logger";
 
 // ==================== CONFIGURATION ====================
 
@@ -79,7 +80,7 @@ export async function publishEvent(
         return true;
       }
     } catch (error) {
-      console.error(`[Fluvio] Failed to publish to topic ${topic}:`, error);
+      logger.error(`[Fluvio] Failed to publish to topic ${topic}:`, { error: String(error) });
     }
   }
 
@@ -133,7 +134,7 @@ async function recordFluvioEvent(
     });
   } catch (error) {
     // Non-critical: log but don't throw
-    console.error(`[Fluvio] Failed to record event in DB:`, error);
+    logger.error(`[Fluvio] Failed to record event in DB:`, { error: String(error) });
   }
 }
 

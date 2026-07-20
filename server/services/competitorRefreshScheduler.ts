@@ -11,6 +11,7 @@ import { competitorDataService } from './competitorDataService';
 import { getDb } from '../db';
 import { shortLetProperties, marketPricingRecommendations } from '../../drizzle/schema';
 import { eq, and, gte } from 'drizzle-orm';
+import { logger } from "../_core/logger";
 
 interface SchedulerStatus {
   dailyRefresh: {
@@ -59,7 +60,7 @@ export class CompetitorRefreshScheduler {
   start() {
     this.startDailyRefresh();
     this.startWeeklyAnalysis();
-    console.log('[CompetitorRefreshScheduler] All tasks started');
+    logger.info('[CompetitorRefreshScheduler] All tasks started');
   }
 
   /**
@@ -74,7 +75,7 @@ export class CompetitorRefreshScheduler {
       this.weeklyTask.stop();
       this.status.weeklyAnalysis.enabled = false;
     }
-    console.log('[CompetitorRefreshScheduler] All tasks stopped');
+    logger.info('[CompetitorRefreshScheduler] All tasks stopped');
   }
 
   /**
@@ -86,16 +87,16 @@ export class CompetitorRefreshScheduler {
     }
 
     this.dailyTask = cron.schedule(this.status.dailyRefresh.schedule, async () => {
-      console.log('[CompetitorRefreshScheduler] Starting daily price refresh...');
+      logger.info('[CompetitorRefreshScheduler] Starting daily price refresh...');
       this.status.dailyRefresh.status = 'running';
       this.status.dailyRefresh.lastRun = new Date();
 
       try {
         await this.refreshAllPropertyPricing();
         this.status.dailyRefresh.status = 'idle';
-        console.log('[CompetitorRefreshScheduler] Daily price refresh completed');
+        logger.info('[CompetitorRefreshScheduler] Daily price refresh completed');
       } catch (error) {
-        console.error('[CompetitorRefreshScheduler] Daily refresh error:', error);
+        logger.error('[CompetitorRefreshScheduler] Daily refresh error:', { error: String(error) });
         this.status.dailyRefresh.status = 'error';
       }
     });
@@ -114,16 +115,16 @@ export class CompetitorRefreshScheduler {
     }
 
     this.weeklyTask = cron.schedule(this.status.weeklyAnalysis.schedule, async () => {
-      console.log('[CompetitorRefreshScheduler] Starting weekly market analysis...');
+      logger.info('[CompetitorRefreshScheduler] Starting weekly market analysis...');
       this.status.weeklyAnalysis.status = 'running';
       this.status.weeklyAnalysis.lastRun = new Date();
 
       try {
         await this.performWeeklyAnalysis();
         this.status.weeklyAnalysis.status = 'idle';
-        console.log('[CompetitorRefreshScheduler] Weekly analysis completed');
+        logger.info('[CompetitorRefreshScheduler] Weekly analysis completed');
       } catch (error) {
-        console.error('[CompetitorRefreshScheduler] Weekly analysis error:', error);
+        logger.error('[CompetitorRefreshScheduler] Weekly analysis error:', { error: String(error) });
         this.status.weeklyAnalysis.status = 'error';
       }
     });
@@ -157,7 +158,7 @@ export class CompetitorRefreshScheduler {
         .from(shortLetProperties)
         .where(eq(shortLetProperties.status, 'active'));
 
-      console.log(`[CompetitorRefreshScheduler] Processing ${properties.length} properties...`);
+      logger.info(`[CompetitorRefreshScheduler] Processing ${properties.length} properties...`);
 
       for (const property of properties) {
         processed++;
@@ -197,14 +198,14 @@ export class CompetitorRefreshScheduler {
           // Small delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
-          console.error(`[CompetitorRefreshScheduler] Error processing property ${property.id}:`, error);
+          logger.error(`[CompetitorRefreshScheduler] Error processing property ${property.id}:`, { error: String(error) });
           errors++;
         }
       }
 
-      console.log(`[CompetitorRefreshScheduler] Refresh complete: ${updated}/${processed} updated, ${errors} errors`);
+      logger.info(`[CompetitorRefreshScheduler] Refresh complete: ${updated}/${processed} updated, ${errors} errors`);
     } catch (error) {
-      console.error('[CompetitorRefreshScheduler] Fatal error during refresh:', error);
+      logger.error('[CompetitorRefreshScheduler] Fatal error during refresh:', { error: String(error) });
       throw error;
     }
 
@@ -229,7 +230,7 @@ export class CompetitorRefreshScheduler {
 
       const cities = [...new Set(properties.map(p => (p as any).city || 'Lagos'))];
       
-      console.log(`[CompetitorRefreshScheduler] Analyzing ${cities.length} cities...`);
+      logger.info(`[CompetitorRefreshScheduler] Analyzing ${cities.length} cities...`);
 
       for (const city of cities) {
         // Get market analysis for different property types
@@ -254,14 +255,14 @@ export class CompetitorRefreshScheduler {
             // await db.insert(marketTrends).values({ ... });
             
           } catch (error) {
-            console.error(`[CompetitorRefreshScheduler] Error analyzing ${city} ${bedrooms}BR:`, error);
+            logger.error(`[CompetitorRefreshScheduler] Error analyzing ${city} ${bedrooms}BR:`, { error: String(error) });
           }
         }
       }
 
-      console.log('[CompetitorRefreshScheduler] Weekly analysis complete');
+      logger.info('[CompetitorRefreshScheduler] Weekly analysis complete');
     } catch (error) {
-      console.error('[CompetitorRefreshScheduler] Fatal error during weekly analysis:', error);
+      logger.error('[CompetitorRefreshScheduler] Fatal error during weekly analysis:', { error: String(error) });
       throw error;
     }
   }
@@ -275,11 +276,11 @@ export class CompetitorRefreshScheduler {
     error?: string;
   }> {
     try {
-      console.log('[CompetitorRefreshScheduler] Manual refresh triggered');
+      logger.info('[CompetitorRefreshScheduler] Manual refresh triggered');
       const result = await this.refreshAllPropertyPricing();
       return { success: true, result };
     } catch (error: any) {
-      console.error('[CompetitorRefreshScheduler] Manual refresh failed:', error);
+      logger.error('[CompetitorRefreshScheduler] Manual refresh failed:', { error: String(error) });
       return { success: false, error: error.message };
     }
   }
@@ -337,4 +338,4 @@ export const competitorRefreshScheduler = new CompetitorRefreshScheduler();
 
 // Auto-start on module load
 competitorRefreshScheduler.start();
-console.log('[CompetitorRefreshScheduler] Initialized and started');
+logger.info('[CompetitorRefreshScheduler] Initialized and started');

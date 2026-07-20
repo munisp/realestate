@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { BaseGovernmentRegistryClient } from '../base/GovernmentRegistryClient';
+import { logger } from "../../../_core/logger";
 import {
   CofOVerificationResult,
   LandRecordData,
@@ -47,7 +48,7 @@ export class RiversRegistryClient extends BaseGovernmentRegistryClient {
    */
   protected async authenticate(): Promise<void> {
     // Basic auth is handled in headers, no token needed
-    console.log('[Rivers Registry] Using Basic Authentication');
+    logger.info('[Rivers Registry] Using Basic Authentication');
   }
 
   /**
@@ -169,7 +170,7 @@ export class RiversRegistryClient extends BaseGovernmentRegistryClient {
       const response = await this.client.get('/status');
       return response.data.operational === true;
     } catch (error) {
-      console.error('[Rivers Registry] Health check failed:', error);
+      logger.error('[Rivers Registry] Health check failed:', { error: String(error) });
       return false;
     }
   }

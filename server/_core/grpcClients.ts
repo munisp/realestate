@@ -13,6 +13,7 @@
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import path from 'path';
+import { logger } from "./logger";
 
 // ============================================================================
 // Configuration
@@ -69,7 +70,7 @@ class GrpcClient<T = any> {
       const ServiceConstructor = protoDescriptor[packageName][serviceName];
 
       if (!ServiceConstructor) {
-        console.error(`[gRPC] Service ${serviceName} not found in proto`);
+        logger.error(`[gRPC] Service ${serviceName} not found in proto`);
         return;
       }
 
@@ -79,10 +80,10 @@ class GrpcClient<T = any> {
         grpc.credentials.createInsecure()
       );
 
-      console.log(`[gRPC] ${serviceName} client created: ${serverAddress}`);
+      logger.info(`[gRPC] ${serviceName} client created: ${serverAddress}`);
       this.isAvailable = true;
     } catch (error) {
-      console.error(`[gRPC] Failed to create ${serviceName} client:`, error);
+      logger.error(`[gRPC] Failed to create ${serviceName} client:`, { error: String(error) });
       this.isAvailable = false;
     }
   }
@@ -111,7 +112,7 @@ class GrpcClient<T = any> {
           console.error(`[gRPC] ${this.serviceName}.${method} error:`, error.message);
           reject(error);
         } else {
-          console.log(`[gRPC] ${this.serviceName}.${method} success`);
+          logger.info(`[gRPC] ${this.serviceName}.${method} success`);
           resolve(response);
         }
       });
@@ -205,7 +206,7 @@ export class PaymentGrpcClient extends GrpcClient {
 export class NotificationGrpcClient {
   constructor() {
     // Note: notification.proto needs to be created
-    console.log('[gRPC] NotificationService client placeholder (proto file needed)');
+    logger.info('[gRPC] NotificationService client placeholder (proto file needed)');
   }
 
   async sendEmail(request: {
@@ -217,7 +218,7 @@ export class NotificationGrpcClient {
     success: boolean;
     message_id: string;
   }> {
-    console.log('[gRPC] NotificationService.sendEmail (not implemented)');
+    logger.info('[gRPC] NotificationService.sendEmail (not implemented)');
     throw new Error('NotificationService not implemented - proto file needed');
   }
 }
@@ -229,7 +230,7 @@ export class NotificationGrpcClient {
 export class ImageGrpcClient {
   constructor() {
     // Note: image.proto needs to be created
-    console.log('[gRPC] ImageService client placeholder (proto file needed)');
+    logger.info('[gRPC] ImageService client placeholder (proto file needed)');
   }
 
   async optimizeImage(request: {
@@ -241,7 +242,7 @@ export class ImageGrpcClient {
     optimized_url: string;
     size_bytes: number;
   }> {
-    console.log('[gRPC] ImageService.optimizeImage (not implemented)');
+    logger.info('[gRPC] ImageService.optimizeImage (not implemented)');
     throw new Error('ImageService not implemented - proto file needed');
   }
 }

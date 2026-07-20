@@ -6,15 +6,14 @@ Provides semantic search, multi-language support, and NLP analysis for property 
 from flask import Flask, request, jsonify
 import numpy as np
 from typing import List, Dict, Tuple, Optional
-import logging
 import os
 from datetime import datetime
 import re
 from collections import defaultdict
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("nlp-semantic-search-service")
 
 # Configuration
 SUPPORTED_LANGUAGES = ['en', 'yo', 'ig', 'ha', 'fr', 'ar']  # English, Yoruba, Igbo, Hausa, French, Arabic

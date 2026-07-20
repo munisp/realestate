@@ -10,6 +10,7 @@ import {
 } from "../../../drizzle/schema";
 import { eq, and, lte, sql } from "drizzle-orm";
 import { notifyOwner } from "../../_core/notification";
+import { logger } from "../../_core/logger";
 
 interface ScheduledVerificationConfig {
   propertyId: number;
@@ -48,35 +49,35 @@ export class AutomatedVerificationScheduler {
    */
   public start(): void {
     if (this.isRunning) {
-      console.log("[AutomatedVerificationScheduler] Already running");
+      logger.info("[AutomatedVerificationScheduler] Already running");
       return;
     }
 
-    console.log("[AutomatedVerificationScheduler] Starting scheduler...");
+    logger.info("[AutomatedVerificationScheduler] Starting scheduler...");
 
     // Daily job: Check for scheduled verifications that are due
     const dailyJob = cron.schedule("0 2 * * *", async () => {
-      console.log("[AutomatedVerificationScheduler] Running daily verification check");
+      logger.info("[AutomatedVerificationScheduler] Running daily verification check");
       await this.processDueVerifications();
     });
 
     // Weekly job: Check high-value properties for quarterly verification
     const weeklyJob = cron.schedule("0 3 * * 1", async () => {
-      console.log("[AutomatedVerificationScheduler] Running weekly high-value property check");
+      logger.info("[AutomatedVerificationScheduler] Running weekly high-value property check");
       await this.checkHighValueProperties();
     });
 
     this.jobs.push(dailyJob, weeklyJob);
     this.isRunning = true;
 
-    console.log("[AutomatedVerificationScheduler] Scheduler started successfully");
+    logger.info("[AutomatedVerificationScheduler] Scheduler started successfully");
   }
 
   /**
    * Stop all scheduled jobs
    */
   public stop(): void {
-    console.log("[AutomatedVerificationScheduler] Stopping scheduler...");
+    logger.info("[AutomatedVerificationScheduler] Stopping scheduler...");
     this.jobs.forEach((job) => job.stop());
     this.jobs = [];
     this.isRunning = false;
@@ -121,7 +122,7 @@ export class AutomatedVerificationScheduler {
         message: `Verification scheduled for ${nextVerificationDate.toISOString()}`,
       };
     } catch (error) {
-      console.error("[AutomatedVerificationScheduler] Error scheduling verification:", error);
+      logger.error("[AutomatedVerificationScheduler] Error scheduling verification:", { error: String(error) });
       return {
         success: false,
         message: error instanceof Error ? error.message : "Unknown error",
@@ -135,7 +136,7 @@ export class AutomatedVerificationScheduler {
   private async processDueVerifications(): Promise<void> {
     const db = await getDb();
     if (!db) {
-      console.error("[AutomatedVerificationScheduler] Database not available");
+      logger.error("[AutomatedVerificationScheduler] Database not available");
       return;
     }
 
@@ -159,7 +160,7 @@ export class AutomatedVerificationScheduler {
         await this.executeScheduledVerification(scheduled);
       }
     } catch (error) {
-      console.error("[AutomatedVerificationScheduler] Error processing due verifications:", error);
+      logger.error("[AutomatedVerificationScheduler] Error processing due verifications:", { error: String(error) });
     }
   }
 
@@ -342,7 +343,7 @@ export class AutomatedVerificationScheduler {
         );
       }
     } catch (error) {
-      console.error("[AutomatedVerificationScheduler] Error detecting changes:", error);
+      logger.error("[AutomatedVerificationScheduler] Error detecting changes:", { error: String(error) });
     }
   }
 
@@ -390,14 +391,14 @@ This is an automated alert from your scheduled verification system.
 
       // TODO: Send email/SMS if configured
       if (scheduled.notificationEmail) {
-        console.log(`[AutomatedVerificationScheduler] Would send email to ${scheduled.notificationEmail}`);
+        logger.info(`[AutomatedVerificationScheduler] Would send email to ${scheduled.notificationEmail}`);
       }
 
       if (scheduled.notificationPhone) {
-        console.log(`[AutomatedVerificationScheduler] Would send SMS to ${scheduled.notificationPhone}`);
+        logger.info(`[AutomatedVerificationScheduler] Would send SMS to ${scheduled.notificationPhone}`);
       }
     } catch (error) {
-      console.error("[AutomatedVerificationScheduler] Error sending alert:", error);
+      logger.error("[AutomatedVerificationScheduler] Error sending alert:", { error: String(error) });
     }
   }
 
@@ -432,7 +433,7 @@ This is an automated alert from your scheduled verification system.
         });
       }
     } catch (error) {
-      console.error("[AutomatedVerificationScheduler] Error checking high-value properties:", error);
+      logger.error("[AutomatedVerificationScheduler] Error checking high-value properties:", { error: String(error) });
     }
   }
 

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { invokeLLM } from "../../_core/llm";
 import crypto from "crypto";
+import { logger } from "../../_core/logger";
 
 /**
  * ML-Based Fraud Detection Service
@@ -412,7 +413,7 @@ Respond in JSON format:
       additionalIssues: result.additionalIssues || [],
     };
   } catch (error) {
-    console.error("[MLFraudDetection] AI reasoning failed:", error);
+    logger.error("[MLFraudDetection] AI reasoning failed:", { error: String(error) });
     return {
       score: 0,
       explanation: "AI analysis unavailable",

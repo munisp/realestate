@@ -1,3 +1,4 @@
+import { logger } from "../_core/logger";
 /**
  * Airbnb API Integration Service
  * 
@@ -55,10 +56,10 @@ export class AirbnbIntegrationService {
     this.mockMode = !this.apiKey;
     
     if (this.mockMode) {
-      console.log('[AirbnbIntegration] Running in mock mode - no API key configured');
-      console.log('[AirbnbIntegration] Add RAPIDAPI_KEY to environment to enable real data');
+      logger.info('[AirbnbIntegration] Running in mock mode - no API key configured');
+      logger.info('[AirbnbIntegration] Add RAPIDAPI_KEY to environment to enable real data');
     } else {
-      console.log('[AirbnbIntegration] Real API mode enabled');
+      logger.info('[AirbnbIntegration] Real API mode enabled');
     }
   }
 
@@ -70,7 +71,7 @@ export class AirbnbIntegrationService {
     const cacheKey = JSON.stringify(params);
     const cached = this.cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < this.cacheDuration) {
-      console.log('[AirbnbIntegration] Returning cached data');
+      logger.info('[AirbnbIntegration] Returning cached data');
       return cached.data;
     }
 
@@ -108,7 +109,7 @@ export class AirbnbIntegrationService {
       
       // Cache the result
       this.cache.set(cacheKey, { data: result, timestamp: Date.now() });
-      console.log('[AirbnbIntegration] Successfully fetched and cached real Airbnb data');
+      logger.info('[AirbnbIntegration] Successfully fetched and cached real Airbnb data');
       
       return result;
     } catch (error: any) {
@@ -116,18 +117,18 @@ export class AirbnbIntegrationService {
       
       // Check if it's a rate limit error
       if (error.message?.includes('429') || error.message?.includes('rate limit')) {
-        console.warn('[AirbnbIntegration] Rate limit exceeded - using cached/mock data');
+        logger.warn('[AirbnbIntegration] Rate limit exceeded - using cached/mock data');
       }
       
       // Return cached data if available, even if expired
       const cached = this.cache.get(cacheKey);
       if (cached) {
-        console.log('[AirbnbIntegration] Returning expired cache due to API error');
+        logger.info('[AirbnbIntegration] Returning expired cache due to API error');
         return cached.data;
       }
       
       // Fallback to mock data
-      console.log('[AirbnbIntegration] Falling back to mock data');
+      logger.info('[AirbnbIntegration] Falling back to mock data');
       return this.generateMockData(params);
     }
   }

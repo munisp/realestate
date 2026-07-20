@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/realestate/services/go/common"
 	"bytes"
 	"context"
 	"crypto/sha256"
@@ -292,10 +293,10 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 		"note": fmt.Sprintf("Escrow payment for transaction %s", req.EscrowID),
 	}
 
-	log.Printf("Creating quote for escrow %s", req.EscrowID)
+	log.Info("Creating quote for escrow %s", "args", []any{req.EscrowID})
 	quoteResp, err := h.client.createQuote(quotePayload)
 	if err != nil {
-		log.Printf("Quote creation failed: %v", err)
+		log.Info("Quote creation failed: %v", "args", []any{err})
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("failed to create quote: %v", err))
 		return
 	}
@@ -320,10 +321,10 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 		"expiration": time.Now().Add(24 * time.Hour).Format(time.RFC3339),
 	}
 
-	log.Printf("Creating transfer for escrow %s", req.EscrowID)
+	log.Info("Creating transfer for escrow %s", "args", []any{req.EscrowID})
 	transferResp, err := h.client.createTransfer(transferPayload)
 	if err != nil {
-		log.Printf("Transfer creation failed: %v", err)
+		log.Info("Transfer creation failed: %v", "args", []any{err})
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("failed to create transfer: %v", err))
 		return
 	}
@@ -351,7 +352,7 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 
 	storeSet(req.EscrowID, escrowData)
 
-	log.Printf("Escrow %s created successfully", req.EscrowID)
+	log.Info("Escrow %s created successfully", "args", []any{req.EscrowID})
 
 	respondJSON(w, http.StatusCreated, map[string]interface{}{
 		"success":            true,
@@ -406,10 +407,10 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 		"completedTimestamp": time.Now().UTC().Format(time.RFC3339) + "Z",
 	}
 
-	log.Printf("Releasing escrow %s", req.ProviderEscrowID)
+	log.Info("Releasing escrow %s", "args", []any{req.ProviderEscrowID})
 	_, err := h.client.updateTransfer(escrowData.TransferID, fulfilPayload)
 	if err != nil {
-		log.Printf("Transfer fulfilment failed: %v", err)
+		log.Info("Transfer fulfilment failed: %v", "args", []any{err})
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("failed to release funds: %v", err))
 		return
 	}
@@ -420,7 +421,7 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 	escrowData.ReleasedAmount += releaseAmount
 	storeSet(escrowData.EscrowID, escrowData)
 
-	log.Printf("Escrow %s released successfully", req.ProviderEscrowID)
+	log.Info("Escrow %s released successfully", "args", []any{req.ProviderEscrowID})
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"success":        true,
@@ -466,10 +467,10 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	log.Printf("Refunding escrow %s", req.ProviderEscrowID)
+	log.Info("Refunding escrow %s", "args", []any{req.ProviderEscrowID})
 	_, err := h.client.updateTransfer(escrowData.TransferID, abortPayload)
 	if err != nil {
-		log.Printf("Transfer abort failed: %v", err)
+		log.Info("Transfer abort failed: %v", "args", []any{err})
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("failed to refund: %v", err))
 		return
 	}
@@ -480,7 +481,7 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 	escrowData.RefundedAmount += refundAmount
 	storeSet(escrowData.EscrowID, escrowData)
 
-	log.Printf("Escrow %s refunded successfully", req.ProviderEscrowID)
+	log.Info("Escrow %s refunded successfully", "args", []any{req.ProviderEscrowID})
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"success":        true,
@@ -538,7 +539,7 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Verify signature with MOJALOOP_WEBHOOK_SECRET
 	// For now, just log it
-	log.Printf("Received webhook with signature: %s", signature)
+	log.Info("Received webhook with signature: %s", "args", []any{signature})
 
 	var payload WebhookPayload
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
@@ -546,7 +547,7 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Webhook event: %s at %s", payload.EventType, payload.Timestamp)
+	log.Info("Webhook event: %s at %s", "args", []any{payload.EventType, payload.Timestamp})
 
 	// Handle different event types
 	switch payload.EventType {
@@ -557,7 +558,7 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	case "quote.response":
 		h.handleQuoteResponse(payload.Data)
 	default:
-		log.Printf("Unknown event type: %s", payload.EventType)
+		log.Info("Unknown event type: %s", "args", []any{payload.EventType})
 	}
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
@@ -585,7 +586,7 @@ func (h *Handler) handleTransferCommitted(data map[string]interface{}) {
 	store.mu.RUnlock()
 
 	if escrowData == nil {
-		log.Printf("Escrow not found for transfer: %s", transferID)
+		log.Info("Escrow not found for transfer: %s", "args", []any{transferID})
 		return
 	}
 
@@ -593,7 +594,7 @@ func (h *Handler) handleTransferCommitted(data map[string]interface{}) {
 	escrowData.Status = "COMMITTED"
 	storeSet(escrowData.EscrowID, escrowData)
 
-	log.Printf("Transfer committed: %s (escrow: %s)", transferID, escrowData.EscrowID)
+	log.Info("Transfer committed: %s (escrow: %s)", "args", []any{transferID, escrowData.EscrowID})
 
 	// Notify TypeScript backend about the committed transfer
 	go notifyBackend(escrowData.EscrowID, "committed")
@@ -618,7 +619,7 @@ func (h *Handler) handleTransferAborted(data map[string]interface{}) {
 	store.mu.RUnlock()
 
 	if escrowData == nil {
-		log.Printf("Escrow not found for transfer: %s", transferID)
+		log.Info("Escrow not found for transfer: %s", "args", []any{transferID})
 		return
 	}
 
@@ -626,7 +627,7 @@ func (h *Handler) handleTransferAborted(data map[string]interface{}) {
 	escrowData.Status = "ABORTED"
 	storeSet(escrowData.EscrowID, escrowData)
 
-	log.Printf("Transfer aborted: %s (escrow: %s)", transferID, escrowData.EscrowID)
+	log.Info("Transfer aborted: %s (escrow: %s)", "args", []any{transferID, escrowData.EscrowID})
 
 	// Notify TypeScript backend about the aborted transfer
 	go notifyBackend(escrowData.EscrowID, "aborted")
@@ -639,7 +640,7 @@ func (h *Handler) handleQuoteResponse(data map[string]interface{}) {
 		return
 	}
 
-	log.Printf("Quote response received: %s", quoteID)
+	log.Info("Quote response received: %s", "args", []any{quoteID})
 
 	// Find escrow by quote ID
 	store.mu.RLock()
@@ -653,7 +654,7 @@ func (h *Handler) handleQuoteResponse(data map[string]interface{}) {
 	store.mu.RUnlock()
 
 	if escrowData != nil {
-		log.Printf("Quote response for escrow: %s", escrowData.EscrowID)
+		log.Info("Quote response for escrow: %s", "args", []any{escrowData.EscrowID})
 	}
 }
 
@@ -725,9 +726,11 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)
-		log.Printf("[%s] %s %s - %v", r.Method, r.RequestURI, r.RemoteAddr, time.Since(start))
+		log.Info("[%s] %s %s - %v", "args", []any{r.Method, r.RequestURI, r.RemoteAddr, time.Since(start}))
 	})
 }
+
+var log = common.NewLogger("mojaloop-service")
 
 func main() {
 	port := getEnv("PORT", "5010")
@@ -766,9 +769,10 @@ func main() {
 
 	// Graceful shutdown
 	go func() {
-		log.Printf("Starting Mojaloop Payment Provider Service on port %s", port)
+		log.Info("Starting Mojaloop Payment Provider Service on port %s", "args", []any{port})
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
+			log.Error("Server failed to start: %v", "args", []any{err})
+os.Exit(1)
 		}
 	}()
 
@@ -776,14 +780,15 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	log.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+		log.Error("Server forced to shutdown: %v", "args", []any{err})
+os.Exit(1)
 	}
 
-	log.Println("Server exited")
+	log.Info("Server exited")
 }

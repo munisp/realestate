@@ -1,5 +1,6 @@
 import { eq, and, gte, or, sql } from "drizzle-orm";
 import { getDb } from "../db";
+import { logger } from "../_core/logger";
 import {
   savedSearches,
   properties,
@@ -95,7 +96,7 @@ export async function findMatchingSavedSearches(propertyId: number): Promise<Pro
         }
       }
     } catch (error) {
-      console.error(`Error parsing search criteria for search ${search.id}:`, error);
+      logger.error(`Error parsing search criteria for search ${search.id}:`, { error: String(error) });
     }
   }
 

@@ -1,4 +1,5 @@
 import { ENV } from '../_core/env';
+import { logger } from "../_core/logger";
 
 interface SMSMessage {
   to: string;
@@ -49,13 +50,13 @@ class SMSService {
           process.env.TWILIO_AUTH_TOKEN
         );
         this.mockMode = false;
-        console.log('[SMS Service] Initialized with Twilio');
+        logger.info('[SMS Service] Initialized with Twilio');
       } catch (error) {
-        console.warn('[SMS Service] Twilio package not installed, using mock mode');
+        logger.warn('[SMS Service] Twilio package not installed, using mock mode');
         this.mockMode = true;
       }
     } else {
-      console.log('[SMS Service] No Twilio credentials found, using mock mode');
+      logger.info('[SMS Service] No Twilio credentials found, using mock mode');
       this.mockMode = true;
     }
   }
@@ -83,14 +84,14 @@ class SMSService {
         to: message.to,
       });
 
-      console.log(`[SMS Service] Sent SMS to ${message.to}, SID: ${result.sid}`);
+      logger.info(`[SMS Service] Sent SMS to ${message.to}, SID: ${result.sid}`);
 
       return {
         success: true,
         messageId: result.sid,
       };
     } catch (error: any) {
-      console.error('[SMS Service] Failed to send SMS:', error);
+      logger.error('[SMS Service] Failed to send SMS:', { error: String(error) });
       return {
         success: false,
         error: error.message || 'Failed to send SMS',
@@ -104,11 +105,11 @@ class SMSService {
   private async sendMockSMS(message: SMSMessage): Promise<SMSDeliveryResult> {
     const mockMessageId = `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    console.log('[SMS Service] Mock SMS sent:');
-    console.log(`  To: ${message.to}`);
-    console.log(`  From: ${this.fromNumber}`);
-    console.log(`  Body: ${message.body}`);
-    console.log(`  Message ID: ${mockMessageId}`);
+    logger.info('[SMS Service] Mock SMS sent:');
+    logger.info(`  To: ${message.to}`);
+    logger.info(`  From: ${this.fromNumber}`);
+    logger.info(`  Body: ${message.body}`);
+    logger.info(`  Message ID: ${mockMessageId}`);
 
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 100));

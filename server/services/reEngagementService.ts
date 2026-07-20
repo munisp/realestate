@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { eq, and, lt, sql } from "drizzle-orm";
 import { getDb } from "../db";
+import { logger } from "../_core/logger";
 import {
   reEngagementCampaigns,
   userActivityTracking,
@@ -237,7 +238,7 @@ export async function processScheduledEmails(): Promise<number> {
 
       // TODO: Send actual email using email service
       // For now, just mark as sent
-      console.log(`Sending re-engagement email to ${user.email}: ${emailTemplate.subject}`);
+      logger.info(`Sending re-engagement email to ${user.email}: ${emailTemplate.subject}`);
 
       // Update log
       await db
@@ -265,7 +266,7 @@ export async function processScheduledEmails(): Promise<number> {
 
       processed++;
     } catch (error) {
-      console.error(`Error processing re-engagement email ${email.id}:`, error);
+      logger.error(`Error processing re-engagement email ${email.id}:`, { error: String(error) });
 
       // Mark as failed
       await db

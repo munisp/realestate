@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, rateLimitedPublicProcedure, protectedProcedure, router } from "../_core/trpc";
 import {
   trackValuationView,
   updateValuationView,
@@ -15,7 +15,7 @@ import {
 
 export const analyticsRouter = router({
   // Track valuation page view
-  trackValuationView: publicProcedure
+  trackValuationView: rateLimitedPublicProcedure
     .input(
       z.object({
         propertyId: z.number(),
@@ -35,7 +35,7 @@ export const analyticsRouter = router({
     }),
 
   // Update valuation view (duration, scroll depth, etc.)
-  updateValuationView: publicProcedure
+  updateValuationView: rateLimitedPublicProcedure
     .input(
       z.object({
         viewId: z.number(),
@@ -54,7 +54,7 @@ export const analyticsRouter = router({
     }),
 
   // Track tab engagement
-  trackTabEngagement: publicProcedure
+  trackTabEngagement: rateLimitedPublicProcedure
     .input(
       z.object({
         viewId: z.number(),
@@ -71,7 +71,7 @@ export const analyticsRouter = router({
     }),
 
   // Track conversion event
-  trackConversion: publicProcedure
+  trackConversion: rateLimitedPublicProcedure
     .input(
       z.object({
         viewId: z.number(),
@@ -88,7 +88,7 @@ export const analyticsRouter = router({
     }),
 
   // Track user feedback
-  trackFeedback: publicProcedure
+  trackFeedback: rateLimitedPublicProcedure
     .input(
       z.object({
         propertyId: z.number(),

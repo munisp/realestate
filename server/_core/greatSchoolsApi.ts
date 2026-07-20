@@ -5,6 +5,7 @@
  */
 
 import axios from 'axios';
+import { logger } from "./logger";
 
 // GreatSchools API configuration
 const GREATSCHOOLS_API_KEY = process.env.GREATSCHOOLS_API_KEY || '';
@@ -64,7 +65,7 @@ class GreatSchoolsAPI {
    */
   async searchNearby(params: SchoolSearchParams): Promise<SchoolSearchResult> {
     if (!this.apiKey) {
-      console.warn('[GreatSchools] API key not configured, returning mock data');
+      logger.warn('[GreatSchools] API key not configured, returning mock data');
       return this.getMockSchools(params);
     }
 
@@ -116,7 +117,7 @@ class GreatSchoolsAPI {
         averageRating: Math.round(averageRating * 10) / 10,
       };
     } catch (error) {
-      console.error('[GreatSchools] API error:', error);
+      logger.error('[GreatSchools] API error:', { error: String(error) });
       // Fallback to mock data on error
       return this.getMockSchools(params);
     }
@@ -163,7 +164,7 @@ class GreatSchoolsAPI {
         phone: school.phone,
       };
     } catch (error) {
-      console.error('[GreatSchools] Failed to get school details:', error);
+      logger.error('[GreatSchools] Failed to get school details:', { error: String(error) });
       return null;
     }
   }

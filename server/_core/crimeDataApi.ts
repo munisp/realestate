@@ -5,6 +5,7 @@
  */
 
 import axios from 'axios';
+import { logger } from "./logger";
 
 // SpotCrime API configuration
 const SPOTCRIME_API_KEY = process.env.SPOTCRIME_API_KEY || '';
@@ -59,7 +60,7 @@ class CrimeDataAPI {
    */
   async searchNearby(params: CrimeSearchParams): Promise<CrimeSearchResult> {
     if (!this.apiKey) {
-      console.warn('[CrimeData] API key not configured, returning mock data');
+      logger.warn('[CrimeData] API key not configured, returning mock data');
       return this.getMockCrimeData(params);
     }
 
@@ -97,7 +98,7 @@ class CrimeDataAPI {
         safetyGrade,
       };
     } catch (error) {
-      console.error('[CrimeData] API error:', error);
+      logger.error('[CrimeData] API error:', { error: String(error) });
       return this.getMockCrimeData(params);
     }
   }

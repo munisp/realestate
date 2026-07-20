@@ -15,6 +15,7 @@ import type {
 import { eq, and, gte, lte, inArray, sql } from "drizzle-orm";
 import { getInvestmentScore, getMarketTrends, getNeighborhoodIntel } from "./gnnService";
 import { sendGNNAlertEmail, sendGNNAlertSMS } from "./gnnAlertEmailService";
+import { logger } from "../_core/logger";
 
 export interface AlertCriteria {
   cities?: string[];
@@ -310,7 +311,7 @@ export class GnnAlertService {
       }
 
     } catch (error) {
-      console.error('[GnnAlertService] Error evaluating property:', error);
+      logger.error('[GnnAlertService] Error evaluating property:', { error: String(error) });
     }
 
     return matches;
@@ -325,7 +326,7 @@ export class GnnAlertService {
     const db = await getDb();
     
     if (!db) {
-      console.log('[GnnAlertService] Database not available, skipping evaluation');
+      logger.info('[GnnAlertService] Database not available, skipping evaluation');
       return { triggersCreated: 0, notificationsSent: 0 };
     }
 
@@ -335,7 +336,7 @@ export class GnnAlertService {
         .from(gnnAlertSubscriptions)
         .where(eq(gnnAlertSubscriptions.isActive, 1) as any);
 
-      console.log(`[GnnAlertService] Evaluating ${activeSubscriptions.length} active subscriptions`);
+      logger.info(`[GnnAlertService] Evaluating ${activeSubscriptions.length} active subscriptions`);
 
       let triggersCreated = 0;
       let notificationsSent = 0;
@@ -398,7 +399,7 @@ export class GnnAlertService {
             }
           }
         } catch (error) {
-          console.error(`[GnnAlertService] Error evaluating subscription ${subscription.id}:`, error);
+          logger.error(`[GnnAlertService] Error evaluating subscription ${subscription.id}:`, { error: String(error) });
         }
       }
       
@@ -416,7 +417,7 @@ export class GnnAlertService {
       return { triggersCreated, notificationsSent };
 
     } catch (error) {
-      console.error('[GnnAlertService] Error evaluating subscriptions:', error);
+      logger.error('[GnnAlertService] Error evaluating subscriptions:', { error: String(error) });
       
       // Log error
       await db.insert(gnnAlertEvaluationLog).values({
@@ -569,7 +570,7 @@ export class GnnAlertService {
 
       return emailResult.success;
     } catch (error) {
-      console.error('[GNN Alert] Error sending notifications:', error);
+      logger.error('[GNN Alert] Error sending notifications:', { error: String(error) });
       return false;
     }
   }

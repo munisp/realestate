@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { IPaymentProvider, EscrowCreateResult, EscrowReleaseResult, EscrowRefundResult, EscrowStatusResult } from './IPaymentProvider';
 import { PaystackProvider } from '../../payments/providers/PaystackProvider';
+import { logger } from "../../_core/logger";
 
 export class PaystackPaymentProvider implements IPaymentProvider {
   name = 'paystack';
@@ -16,7 +17,7 @@ export class PaystackPaymentProvider implements IPaymentProvider {
 
   async initialize(config: any): Promise<void> {
     // Configuration is handled via environment variables in the Python service
-    console.log('[PaystackPaymentProvider] Initialized');
+    logger.info('[PaystackPaymentProvider] Initialized');
   }
 
   async createEscrow(params: {

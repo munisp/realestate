@@ -2,6 +2,7 @@ import { generateImage } from '../_core/imageGeneration';
 import { getDb } from '../db';
 import { eq } from 'drizzle-orm';
 import { properties } from '../../drizzle/schema';
+import { logger } from "../_core/logger";
 
 /**
  * Virtual Staging Service
@@ -85,7 +86,7 @@ export async function generateVirtualStaging(
       };
     }
 
-    console.log('[Virtual Staging] Successfully generated staged image');
+    logger.info('[Virtual Staging] Successfully generated staged image');
 
     return {
       success: true,
@@ -95,7 +96,7 @@ export async function generateVirtualStaging(
       style,
     };
   } catch (error) {
-    console.error('[Virtual Staging] Error:', error);
+    logger.error('[Virtual Staging] Error:', { error: String(error) });
     return {
       success: false,
       originalImageUrl: request.originalImageUrl,
@@ -207,14 +208,14 @@ export function getAvailableStyles(): Array<{ value: string; label: string; desc
 export async function batchGenerateStaging(
   requests: VirtualStagingRequest[]
 ): Promise<VirtualStagingResult[]> {
-  console.log(`[Virtual Staging] Batch generating ${requests.length} staged images`);
+  logger.info(`[Virtual Staging] Batch generating ${requests.length} staged images`);
 
   const results = await Promise.all(
     requests.map(request => generateVirtualStaging(request))
   );
 
   const successCount = results.filter(r => r.success).length;
-  console.log(`[Virtual Staging] Batch complete: ${successCount}/${requests.length} successful`);
+  logger.info(`[Virtual Staging] Batch complete: ${successCount}/${requests.length} successful`);
 
   return results;
 }

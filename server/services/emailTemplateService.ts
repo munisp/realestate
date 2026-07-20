@@ -1,6 +1,7 @@
 import Handlebars from "handlebars";
 import fs from "fs/promises";
 import path from "path";
+import { logger } from "../_core/logger";
 
 /**
  * Email Template Service
@@ -32,7 +33,7 @@ async function loadTemplate(templateName: string): Promise<HandlebarsTemplateDel
     
     return compiled;
   } catch (error) {
-    console.error(`[EmailTemplate] Failed to load template ${templateName}:`, error);
+    logger.error(`[EmailTemplate] Failed to load template ${templateName}:`, { error: String(error) });
     throw new Error(`Email template '${templateName}' not found`);
   }
 }
@@ -149,7 +150,7 @@ export async function renderNewListingEmail(data: {
  */
 export function clearTemplateCache(): void {
   templateCache.clear();
-  console.log("[EmailTemplate] Template cache cleared");
+  logger.info("[EmailTemplate] Template cache cleared");
 }
 
 /**
@@ -163,18 +164,18 @@ export async function preloadTemplates(): Promise<void> {
     "new-listing",
   ];
   
-  console.log("[EmailTemplate] Preloading templates...");
+  logger.info("[EmailTemplate] Preloading templates...");
   
   for (const template of templates) {
     try {
       await loadTemplate(template);
-      console.log(`[EmailTemplate] Loaded: ${template}`);
+      logger.info(`[EmailTemplate] Loaded: ${template}`);
     } catch (error) {
-      console.warn(`[EmailTemplate] Failed to preload ${template}:`, error);
+      logger.warn(`[EmailTemplate] Failed to preload ${template}:`, { detail: String(error) });
     }
   }
   
-  console.log(`[EmailTemplate] Preloaded ${templateCache.size} templates`);
+  logger.info(`[EmailTemplate] Preloaded ${templateCache.size} templates`);
 }
 
 // Register Handlebars helpers

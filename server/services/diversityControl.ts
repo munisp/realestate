@@ -1,3 +1,4 @@
+import { logger } from "../_core/logger";
 /**
  * Diversity Control Service
  * 

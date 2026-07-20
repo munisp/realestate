@@ -1,4 +1,5 @@
 import { CofOVerificationResult, LandRecordData, OwnershipRecord } from './base/types';
+import { logger } from "../../_core/logger";
 
 /**
  * Cache entry structure

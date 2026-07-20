@@ -12,6 +12,7 @@
 
 import { lakehouseClient } from "../_core/lakehouseClient";
 import { kafkaPublisher } from "../_core/kafkaPublisher";
+import { logger } from "../_core/logger";
 
 // ============================================================================
 // Event Publishing (TypeScript → Kafka → Bronze Layer)
@@ -44,7 +45,7 @@ export async function publishRecommendationInteraction(
 
     console.log("[ML Pipeline] Published interaction event:", event.interactionType);
   } catch (error) {
-    console.error("[ML Pipeline] Failed to publish event:", error);
+    logger.error("[ML Pipeline] Failed to publish event:", { error: String(error) });
     // Don't throw - event publishing should not block user actions
   }
 }
@@ -129,7 +130,7 @@ export async function fetchTrainingData(params: {
   try {
     // This would call the lakehouse analytics API to get pre-aggregated training data
     // For now, return empty array as lakehouse is not fully integrated
-    console.log("[ML Pipeline] Fetching training data from lakehouse...");
+    logger.info("[ML Pipeline] Fetching training data from lakehouse...");
     
     // In production, this would be:
     // const response = await lakehouseClient.apiClient.post('/ml/training-data', params);
@@ -137,7 +138,7 @@ export async function fetchTrainingData(params: {
     
     return [];
   } catch (error) {
-    console.error("[ML Pipeline] Failed to fetch training data:", error);
+    logger.error("[ML Pipeline] Failed to fetch training data:", { error: String(error) });
     return [];
   }
 }
@@ -151,7 +152,7 @@ export async function batchFetchPropertyFeatures(
   try {
     return await lakehouseClient.batchGetMLFeatures(propertyIds);
   } catch (error) {
-    console.error("[ML Pipeline] Failed to fetch property features:", error);
+    logger.error("[ML Pipeline] Failed to fetch property features:", { error: String(error) });
     return [];
   }
 }
@@ -206,7 +207,7 @@ export async function trainRecommendationModel(
   const startTime = Date.now();
 
   try {
-    console.log("[ML Pipeline] Starting model training...");
+    logger.info("[ML Pipeline] Starting model training...");
     console.log("[ML Pipeline] Model type:", config.modelType);
     console.log("[ML Pipeline] Training period:", config.trainingDataParams.startDate, "to", config.trainingDataParams.endDate);
 
@@ -214,7 +215,7 @@ export async function trainRecommendationModel(
     const trainingData = await fetchTrainingData(config.trainingDataParams);
 
     if (trainingData.length === 0) {
-      console.warn("[ML Pipeline] No training data available. Returning mock result.");
+      logger.warn("[ML Pipeline] No training data available. Returning mock result.");
       return {
         modelId: `${config.modelType}_model`,
         modelVersion: `v${Date.now()}`,
@@ -240,9 +241,9 @@ export async function trainRecommendationModel(
         endDate: config.trainingDataParams.endDate,
         timestamp: new Date().toISOString(),
       });
-      console.log("[ML Pipeline] Training job published to Kafka");
+      logger.info("[ML Pipeline] Training job published to Kafka");
     } catch (error) {
-      console.warn("[ML Pipeline] Failed to publish training job:", error);
+      logger.warn("[ML Pipeline] Failed to publish training job:", { detail: String(error) });
     }
 
     // In production with ML service running:
@@ -270,11 +271,11 @@ export async function trainRecommendationModel(
       mlflowRunId: `mlflow_run_${Date.now()}`,
     };
 
-    console.log("[ML Pipeline] Training completed:", result);
+    logger.info("[ML Pipeline] Training completed:", { detail: String(result) });
     console.log("[ML Pipeline] Check MLflow at", process.env.MLFLOW_TRACKING_URI || "http://localhost:5050");
     return result;
   } catch (error) {
-    console.error("[ML Pipeline] Training failed:", error);
+    logger.error("[ML Pipeline] Training failed:", { error: String(error) });
     throw error;
   }
 }
@@ -287,7 +288,7 @@ export async function trainRecommendationModel(
 export async function scheduleModelRetraining(
   frequency: "daily" | "weekly" | "monthly" = "weekly"
 ): Promise<void> {
-  console.log(`[ML Pipeline] Scheduling model retraining: ${frequency}`);
+  logger.info(`[ML Pipeline] Scheduling model retraining: ${frequency}`);
 
   // Calculate date range based on frequency
   const endDate = new Date();
@@ -322,7 +323,7 @@ export async function scheduleModelRetraining(
 
   try {
     const result = await trainRecommendationModel(config);
-    console.log("[ML Pipeline] Scheduled training completed:", result);
+    logger.info("[ML Pipeline] Scheduled training completed:", { detail: String(result) });
     
     // Optionally notify owner of training completion
     // await notifyOwner({
@@ -330,7 +331,7 @@ export async function scheduleModelRetraining(
     //   content: `Model ${result.modelVersion} trained with ${result.sampleSize} samples. Accuracy: ${(result.metrics.accuracy * 100).toFixed(2)}%`,
     // });
   } catch (error) {
-    console.error("[ML Pipeline] Scheduled training failed:", error);
+    logger.error("[ML Pipeline] Scheduled training failed:", { error: String(error) });
   }
 }
 
@@ -375,7 +376,7 @@ export async function getMLRecommendations(
     // For now, return empty array as ML service is not integrated
     return [];
   } catch (error) {
-    console.error("[ML Pipeline] Failed to get ML recommendations:", error);
+    logger.error("[ML Pipeline] Failed to get ML recommendations:", { error: String(error) });
     return [];
   }
 }
@@ -404,7 +405,7 @@ export async function trackModelPerformance(
   modelVersion: string,
   period: "day" | "week" | "month" = "week"
 ): Promise<ModelMetrics> {
-  console.log("[ML Pipeline] Tracking model performance:", modelVersion);
+  logger.info("[ML Pipeline] Tracking model performance:", { detail: String(modelVersion) });
 
   // This would query the lakehouse for production metrics
   // const metrics = await lakehouseClient.getModelPerformance({ modelVersion, period });

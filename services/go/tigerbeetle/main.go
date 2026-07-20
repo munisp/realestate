@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/realestate/services/go/common"
 	"context"
 	"crypto/sha256"
 	"encoding/binary"
@@ -300,7 +301,7 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.client.CreateAccounts([]tb_types.Account{escrowAccount}); err != nil {
-		log.Printf("Error creating escrow account: %v", err)
+		log.Info("Error creating escrow account: %v", "args", []any{err})
 	}
 
 	// Ensure buyer and seller accounts exist
@@ -316,7 +317,7 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.client.CreateAccounts([]tb_types.Account{buyerAccount, sellerAccount}); err != nil {
-		log.Printf("Error creating buyer/seller accounts: %v", err)
+		log.Info("Error creating buyer/seller accounts: %v", "args", []any{err})
 	}
 
 	// Create transfer from buyer to escrow (hold funds)
@@ -332,7 +333,7 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.client.CreateTransfers([]tb_types.Transfer{transfer}); err != nil {
-		log.Printf("Error creating transfer: %v", err)
+		log.Info("Error creating transfer: %v", "args", []any{err})
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("failed to hold funds: %v", err))
 		return
 	}
@@ -358,7 +359,7 @@ func (h *Handler) CreateEscrow(w http.ResponseWriter, r *http.Request) {
 
 	tbStoreSet(req.EscrowID, metadata)
 
-	log.Printf("Escrow %s created successfully", req.EscrowID)
+	log.Info("Escrow %s created successfully", "args", []any{req.EscrowID})
 
 	respondJSON(w, http.StatusCreated, map[string]interface{}{
 		"success":            true,
@@ -434,7 +435,7 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.client.CreateTransfers([]tb_types.Transfer{transfer}); err != nil {
-		log.Printf("Error releasing funds: %v", err)
+		log.Info("Error releasing funds: %v", "args", []any{err})
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("failed to release funds: %v", err))
 		return
 	}
@@ -445,7 +446,7 @@ func (h *Handler) ReleaseEscrow(w http.ResponseWriter, r *http.Request) {
 	metadata.ReleasedAmount += releaseAmount
 	tbStoreSet(metadata.EscrowID, metadata)
 
-	log.Printf("Escrow %s released successfully", req.ProviderEscrowID)
+	log.Info("Escrow %s released successfully", "args", []any{req.ProviderEscrowID})
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"success":        true,
@@ -517,7 +518,7 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.client.CreateTransfers([]tb_types.Transfer{transfer}); err != nil {
-		log.Printf("Error refunding: %v", err)
+		log.Info("Error refunding: %v", "args", []any{err})
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("failed to refund: %v", err))
 		return
 	}
@@ -528,7 +529,7 @@ func (h *Handler) RefundEscrow(w http.ResponseWriter, r *http.Request) {
 	metadata.RefundedAmount += refundAmount
 	tbStoreSet(metadata.EscrowID, metadata)
 
-	log.Printf("Escrow %s refunded successfully", req.ProviderEscrowID)
+	log.Info("Escrow %s refunded successfully", "args", []any{req.ProviderEscrowID})
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
 		"success":        true,
@@ -656,9 +657,11 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)
-		log.Printf("[%s] %s %s - %v", r.Method, r.RequestURI, r.RemoteAddr, time.Since(start))
+		log.Info("[%s] %s %s - %v", "args", []any{r.Method, r.RequestURI, r.RemoteAddr, time.Since(start}))
 	})
 }
+
+var log = common.NewLogger("tigerbeetle-service")
 
 func main() {
 	port := getEnv("PORT", "5011")
@@ -667,15 +670,16 @@ func main() {
 	var pgErr error
 	pgTBStore, pgErr = NewPostgresTigerBeetleStore()
 	if pgErr != nil {
-		log.Printf("WARNING: PostgreSQL unavailable: %v. Falling back to in-memory store.", pgErr)
+		log.Info("WARNING: PostgreSQL unavailable: %v. Falling back to in-memory store.", "args", []any{pgErr})
 	} else {
 		defer pgTBStore.Close()
-		log.Println("PostgreSQL TigerBeetle metadata store initialized successfully")
+		log.Info("PostgreSQL TigerBeetle metadata store initialized successfully")
 	}
 
 	client, err := NewTigerBeetleClient()
 	if err != nil {
-		log.Fatalf("Failed to initialize TigerBeetle client: %v", err)
+		log.Error("Failed to initialize TigerBeetle client: %v", "args", []any{err})
+os.Exit(1)
 	}
 	defer client.Close()
 
@@ -709,11 +713,12 @@ func main() {
 
 	// Graceful shutdown
 	go func() {
-		log.Printf("Starting TigerBeetle Payment Provider Service on port %s", port)
-		log.Printf("Cluster ID: %d", TigerBeetleClusterID)
-		log.Printf("Addresses: %s", TigerBeetleAddresses)
+		log.Info("Starting TigerBeetle Payment Provider Service on port %s", "args", []any{port})
+		log.Info("Cluster ID: %d", "args", []any{TigerBeetleClusterID})
+		log.Info("Addresses: %s", "args", []any{TigerBeetleAddresses})
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
+			log.Error("Server failed to start: %v", "args", []any{err})
+os.Exit(1)
 		}
 	}()
 
@@ -721,14 +726,15 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	log.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+		log.Error("Server forced to shutdown: %v", "args", []any{err})
+os.Exit(1)
 	}
 
-	log.Println("Server exited")
+	log.Info("Server exited")
 }

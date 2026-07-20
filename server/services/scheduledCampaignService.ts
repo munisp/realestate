@@ -11,6 +11,7 @@ import {
 } from "../../drizzle/schema";
 import { and, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
 import { sendEmail } from "./emailService";
+import { logger } from "../_core/logger";
 
 export interface CampaignWithSequences {
   id: number;
@@ -333,7 +334,7 @@ export const scheduledCampaignService: ScheduledCampaignService = {
 
                     emailsSent++;
                   } catch (error) {
-                    console.error(`Failed to send campaign email to ${userEmail}:`, error);
+                    logger.error(`Failed to send campaign email to ${userEmail}:`, { error: String(error) });
                   }
                 }
               }

@@ -6,6 +6,7 @@
 import axios, { AxiosInstance } from 'axios';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+import { logger } from "./logger";
 
 // ============================================================================
 // Configuration
@@ -73,7 +74,7 @@ class PythonServiceClient {
         return config;
       },
       (error) => {
-        console.error(`[${serviceName}] Request error:`, error);
+        logger.error(`[${serviceName}] Request error:`, { error: String(error) });
         return Promise.reject(error);
       }
     );
@@ -90,7 +91,7 @@ class PythonServiceClient {
         
         if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
           this.isAvailable = false;
-          console.warn(`[${serviceName}] Service unavailable. Set ${serviceName.toUpperCase()}_SERVICE_URL in .env to enable.`);
+          logger.warn(`[${serviceName}] Service unavailable. Set ${serviceName.toUpperCase()}_SERVICE_URL in .env to enable.`);
         }
         
         return Promise.reject(error);
@@ -376,7 +377,7 @@ export class PaymentServiceClient {
   // private client: any;
 
   constructor() {
-    console.log('[Payment Service] gRPC client initialized');
+    logger.info('[Payment Service] gRPC client initialized');
   }
 
   async processPayment(request: {

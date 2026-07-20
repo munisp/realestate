@@ -10,6 +10,7 @@
  */
 
 import { queryPostGIS, getPostGISClient } from './postgis';
+import { logger } from "../_core/logger";
 
 export interface PropertySyncData {
   id: number;
@@ -93,11 +94,11 @@ export async function syncPropertyToPostGIS(
       property.updatedAt,
     ]);
 
-    console.log(`[PostGIS Sync] Property ${property.id} synced successfully`);
+    logger.info(`[PostGIS Sync] Property ${property.id} synced successfully`);
     return { success: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[PostGIS Sync] Failed to sync property ${property.id}:`, errorMessage);
+    logger.error(`[PostGIS Sync] Failed to sync property ${property.id}:`, { error: String(errorMessage) });
     return { success: false, error: errorMessage };
   }
 }
@@ -114,11 +115,11 @@ export async function deletePropertyFromPostGIS(
       WHERE id = $1
     `, [propertyId]);
 
-    console.log(`[PostGIS Sync] Property ${propertyId} deleted successfully`);
+    logger.info(`[PostGIS Sync] Property ${propertyId} deleted successfully`);
     return { success: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[PostGIS Sync] Failed to delete property ${propertyId}:`, errorMessage);
+    logger.error(`[PostGIS Sync] Failed to delete property ${propertyId}:`, { error: String(errorMessage) });
     return { success: false, error: errorMessage };
   }
 }
@@ -208,10 +209,10 @@ export async function batchSyncPropertiesToPostGIS(
     }
 
     await client.query('COMMIT');
-    console.log(`[PostGIS Sync] Batch sync completed: ${success} success, ${failed} failed`);
+    logger.info(`[PostGIS Sync] Batch sync completed: ${success} success, ${failed} failed`);
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('[PostGIS Sync] Batch sync transaction failed:', error);
+    logger.error('[PostGIS Sync] Batch sync transaction failed:', { error: String(error) });
     throw error;
   } finally {
     client.release();
@@ -226,9 +227,9 @@ export async function batchSyncPropertiesToPostGIS(
 export async function refreshMaterializedViews(): Promise<void> {
   try {
     await queryPostGIS('SELECT spatial.refresh_property_density()');
-    console.log('[PostGIS Sync] Materialized views refreshed');
+    logger.info('[PostGIS Sync] Materialized views refreshed');
   } catch (error) {
-    console.error('[PostGIS Sync] Failed to refresh materialized views:', error);
+    logger.error('[PostGIS Sync] Failed to refresh materialized views:', { error: String(error) });
     throw error;
   }
 }
@@ -266,7 +267,7 @@ export async function getSyncStats(): Promise<{
       outOfSyncCount: parseInt(row.outOfSync),
     };
   } catch (error) {
-    console.error('[PostGIS Sync] Failed to get sync stats:', error);
+    logger.error('[PostGIS Sync] Failed to get sync stats:', { error: String(error) });
     throw error;
   }
 }
@@ -279,7 +280,7 @@ export async function isPostGISAvailable(): Promise<boolean> {
     await queryPostGIS('SELECT 1');
     return true;
   } catch (error) {
-    console.error('[PostGIS Sync] PostGIS not available:', error);
+    logger.error('[PostGIS Sync] PostGIS not available:', { error: String(error) });
     return false;
   }
 }

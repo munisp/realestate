@@ -4,6 +4,7 @@ import { FCTRegistryClient } from './implementations/FCTRegistryClient';
 import { RiversRegistryClient } from './implementations/RiversRegistryClient';
 import { KanoRegistryClient } from './implementations/KanoRegistryClient';
 import { OyoRegistryClient } from './implementations/OyoRegistryClient';
+import { logger } from "../../_core/logger";
 
 /**
  * Factory class to create and manage government registry clients
@@ -85,7 +86,7 @@ export class RegistryFactory {
           const client = this.getClient(state);
           results[state] = await client.healthCheck();
         } catch (error) {
-          console.error(`[RegistryFactory] Health check failed for ${state}:`, error);
+          logger.error(`[RegistryFactory] Health check failed for ${state}:`, { error: String(error) });
           results[state] = false;
         }
       })

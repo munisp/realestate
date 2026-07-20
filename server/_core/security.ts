@@ -6,6 +6,7 @@
  */
 import { Request, Response, NextFunction, Application } from "express";
 import { ENV } from "./env";
+import { logger } from "./logger";
 
 // ─── Security Headers ────────────────────────────────────────────────────────
 
@@ -294,10 +295,10 @@ export function registerGracefulShutdown(
     if (isShuttingDown) return;
     isShuttingDown = true;
 
-    console.log(`[Server] ${signal} received – starting graceful shutdown`);
+    logger.info(`[Server] ${signal} received – starting graceful shutdown`);
 
     server.close(async () => {
-      console.log("[Server] HTTP server closed");
+      logger.info("[Server] HTTP server closed");
       try {
         const { getDb } = await import("../db");
         const db = await getDb();
@@ -305,17 +306,17 @@ export function registerGracefulShutdown(
           // Drizzle does not expose a close method; the underlying pg Pool does.
           // @ts-ignore – access the internal pool if available
           await (db as any).$client?.end?.();
-          console.log("[Server] Database pool closed");
+          logger.info("[Server] Database pool closed");
         }
       } catch (err) {
-        console.error("[Server] Error during shutdown:", err);
+        logger.error("[Server] Error during shutdown:", { error: String(err) });
       }
       process.exit(0);
     });
 
     // Force exit after 30 s if graceful shutdown stalls
     setTimeout(() => {
-      console.error("[Server] Graceful shutdown timed out – forcing exit");
+      logger.error("[Server] Graceful shutdown timed out – forcing exit");
       process.exit(1);
     }, 30_000);
   };
@@ -324,12 +325,12 @@ export function registerGracefulShutdown(
   process.on("SIGINT", () => shutdown("SIGINT"));
 
   process.on("uncaughtException", (err) => {
-    console.error("[Server] Uncaught exception:", err);
+    logger.error("[Server] Uncaught exception:", { error: String(err) });
     shutdown("uncaughtException");
   });
 
   process.on("unhandledRejection", (reason) => {
-    console.error("[Server] Unhandled rejection:", reason);
+    logger.error("[Server] Unhandled rejection:", { error: String(reason) });
     shutdown("unhandledRejection");
   });
 }

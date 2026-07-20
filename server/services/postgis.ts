@@ -6,6 +6,7 @@
  */
 
 import { Pool, PoolClient, QueryResult } from 'pg';
+import { logger } from "../_core/logger";
 
 // Singleton pool instance
 let pool: Pool | null = null;
@@ -29,10 +30,10 @@ export function getPostGISPool(): Pool {
 
     // Error handler
     pool.on('error', (err) => {
-      console.error('[PostGIS] Unexpected error on idle client', err);
+      logger.error('[PostGIS] Unexpected error on idle client', { error: String(err) });
     });
 
-    console.log('[PostGIS] Connection pool created');
+    logger.info('[PostGIS] Connection pool created');
   }
 
   return pool;
@@ -50,9 +51,9 @@ export async function queryPostGIS<T = any>(
     const result = await pool.query<T>(text, params);
     return result;
   } catch (error) {
-    console.error('[PostGIS] Query error:', error);
-    console.error('[PostGIS] Query:', text);
-    console.error('[PostGIS] Params:', params);
+    logger.error('[PostGIS] Query error:', { error: String(error) });
+    logger.error('[PostGIS] Query:', { error: String(text) });
+    logger.error('[PostGIS] Params:', { error: String(params) });
     throw error;
   }
 }
@@ -72,7 +73,7 @@ export async function closePostGISPool(): Promise<void> {
   if (pool) {
     await pool.end();
     pool = null;
-    console.log('[PostGIS] Connection pool closed');
+    logger.info('[PostGIS] Connection pool closed');
   }
 }
 

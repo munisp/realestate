@@ -16,6 +16,7 @@ import {
   InsertValuationFeedback
 } from "../../drizzle/schema";
 import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
+import { logger } from "../_core/logger";
 
 // ============================================================================
 // View Tracking
@@ -24,7 +25,7 @@ import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
 export async function trackValuationView(data: InsertValuationView) {
   const db = await getDb();
   if (!db) {
-    console.warn("[ValuationAnalytics] Database not available");
+    logger.warn("[ValuationAnalytics] Database not available");
     return null;
   }
 
@@ -32,7 +33,7 @@ export async function trackValuationView(data: InsertValuationView) {
     const [inserted] = await db.insert(valuationViews).values(data).returning();
     return (inserted as any)?.id ?? null;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to track view:", error);
+    logger.error("[ValuationAnalytics] Failed to track view:", { error: String(error) });
     return null;
   }
 }
@@ -51,7 +52,7 @@ export async function updateValuationView(
       .where(eq(valuationViews.id, viewId));
     return true;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to update view:", error);
+    logger.error("[ValuationAnalytics] Failed to update view:", { error: String(error) });
     return false;
   }
 }
@@ -68,7 +69,7 @@ export async function trackTabEngagement(data: InsertValuationTabEngagement) {
     const [inserted] = await db.insert(valuationTabEngagement).values(data).returning();
     return (inserted as any)?.id ?? null;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to track tab engagement:", error);
+    logger.error("[ValuationAnalytics] Failed to track tab engagement:", { error: String(error) });
     return null;
   }
 }
@@ -91,7 +92,7 @@ export async function getTabEngagementStats(propertyId: number) {
 
     return stats;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to get tab stats:", error);
+    logger.error("[ValuationAnalytics] Failed to get tab stats:", { error: String(error) });
     return null;
   }
 }
@@ -124,7 +125,7 @@ export async function trackConversion(data: InsertValuationConversion) {
     
     return (result as any)?.id;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to track conversion:", error);
+    logger.error("[ValuationAnalytics] Failed to track conversion:", { error: String(error) });
     return null;
   }
 }
@@ -160,7 +161,7 @@ export async function getConversionRate(
       favoriteRate: (stats?.addedToFavorites || 0) / (stats?.totalViews || 1),
     };
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to get conversion rate:", error);
+    logger.error("[ValuationAnalytics] Failed to get conversion rate:", { error: String(error) });
     return null;
   }
 }
@@ -177,7 +178,7 @@ export async function trackFeedback(data: InsertValuationFeedback) {
     const [inserted] = await db.insert(valuationFeedback).values(data).returning();
     return (inserted as any)?.id ?? null;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to track feedback:", error);
+    logger.error("[ValuationAnalytics] Failed to track feedback:", { error: String(error) });
     return null;
   }
 }
@@ -201,7 +202,7 @@ export async function getAverageFeedback(propertyId?: number) {
 
     return stats;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to get feedback stats:", error);
+    logger.error("[ValuationAnalytics] Failed to get feedback stats:", { error: String(error) });
     return null;
   }
 }
@@ -276,7 +277,7 @@ export async function getValuationAnalyticsDashboard(
       referrerStats,
     };
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to get dashboard data:", error);
+    logger.error("[ValuationAnalytics] Failed to get dashboard data:", { error: String(error) });
     return null;
   }
 }
@@ -312,7 +313,7 @@ export async function getValuationFunnel(
 
     return funnel;
   } catch (error) {
-    console.error("[ValuationAnalytics] Failed to get funnel data:", error);
+    logger.error("[ValuationAnalytics] Failed to get funnel data:", { error: String(error) });
     return null;
   }
 }

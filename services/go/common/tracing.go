@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/realestate/services/go/common"
 	"context"
 	"fmt"
 	"log"
@@ -74,8 +75,7 @@ func InitTracer(config TracingConfig) (func(context.Context) error, error) {
 		propagation.Baggage{},
 	))
 
-	log.Printf("[Tracing] Initialized for service: %s (version: %s, environment: %s)",
-		config.ServiceName, config.ServiceVersion, config.Environment)
+	log.Info("[Tracing] Initialized for service: %s (version: %s, environment: %s)", "args", []any{config.ServiceName, config.ServiceVersion, config.Environment})
 
 	// Return shutdown function
 	return tp.Shutdown, nil

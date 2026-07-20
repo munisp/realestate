@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { getDb } from "../db";
 import { eq } from "drizzle-orm";
+import { logger } from "../_core/logger";
 import {
   landRecords,
   certificateOfOccupancy,
@@ -135,8 +136,8 @@ class HyperledgerFabricClient {
       status: "confirmed",
     };
 
-    console.log(`[Blockchain] Land record registered: ${landRecord.parcelId}`);
-    console.log(`[Blockchain] Transaction: ${transaction.transactionId}`);
+    logger.info(`[Blockchain] Land record registered: ${landRecord.parcelId}`);
+    logger.info(`[Blockchain] Transaction: ${transaction.transactionId}`);
 
     return transaction;
   }
@@ -170,8 +171,8 @@ class HyperledgerFabricClient {
       status: "confirmed",
     };
 
-    console.log(`[Blockchain] Ownership transfer recorded for parcel: ${transfer.landRecordId}`);
-    console.log(`[Blockchain] Transaction: ${transaction.transactionId}`);
+    logger.info(`[Blockchain] Ownership transfer recorded for parcel: ${transfer.landRecordId}`);
+    logger.info(`[Blockchain] Transaction: ${transaction.transactionId}`);
 
     return transaction;
   }
@@ -204,8 +205,8 @@ class HyperledgerFabricClient {
       status: "confirmed",
     };
 
-    console.log(`[Blockchain] C of O verification stored: ${cofO.cofONumber}`);
-    console.log(`[Blockchain] Transaction: ${transaction.transactionId}`);
+    logger.info(`[Blockchain] C of O verification stored: ${cofO.cofONumber}`);
+    logger.info(`[Blockchain] Transaction: ${transaction.transactionId}`);
 
     return transaction;
   }
@@ -218,7 +219,7 @@ class HyperledgerFabricClient {
 
     // In production, this would query the actual blockchain
     // For now, return null to indicate not found
-    console.log(`[Blockchain] Querying land record: ${parcelId}`);
+    logger.info(`[Blockchain] Querying land record: ${parcelId}`);
     return null;
   }
 
@@ -229,7 +230,7 @@ class HyperledgerFabricClient {
     await this.simulateBlockchainDelay();
 
     // Mock transaction history
-    console.log(`[Blockchain] Fetching transaction history: ${parcelId}`);
+    logger.info(`[Blockchain] Fetching transaction history: ${parcelId}`);
     return [];
   }
 
@@ -240,7 +241,7 @@ class HyperledgerFabricClient {
     await this.simulateBlockchainDelay();
 
     // In production, this would verify the transaction on the blockchain
-    console.log(`[Blockchain] Verifying transaction: ${transactionHash}`);
+    logger.info(`[Blockchain] Verifying transaction: ${transactionHash}`);
     return true;
   }
 }
@@ -315,7 +316,7 @@ export async function registerLandOnBlockchain(
       transactionId: transaction.transactionId,
     };
   } catch (error) {
-    console.error("[Blockchain] Error registering land record:", error);
+    logger.error("[Blockchain] Error registering land record:", { error: String(error) });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -385,7 +386,7 @@ export async function recordOwnershipTransferOnBlockchain(
       transactionId: transaction.transactionId,
     };
   } catch (error) {
-    console.error("[Blockchain] Error recording ownership transfer:", error);
+    logger.error("[Blockchain] Error recording ownership transfer:", { error: String(error) });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -450,7 +451,7 @@ export async function storeCofOVerificationOnBlockchain(
       transactionId: transaction.transactionId,
     };
   } catch (error) {
-    console.error("[Blockchain] Error storing C of O verification:", error);
+    logger.error("[Blockchain] Error storing C of O verification:", { error: String(error) });
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -467,7 +468,7 @@ export async function queryBlockchainLandRecord(
   try {
     return await fabricClient.queryLandRecord(parcelId);
   } catch (error) {
-    console.error("[Blockchain] Error querying land record:", error);
+    logger.error("[Blockchain] Error querying land record:", { error: String(error) });
     return null;
   }
 }
@@ -481,7 +482,7 @@ export async function getBlockchainTransactionHistory(
   try {
     return await fabricClient.getTransactionHistory(parcelId);
   } catch (error) {
-    console.error("[Blockchain] Error fetching transaction history:", error);
+    logger.error("[Blockchain] Error fetching transaction history:", { error: String(error) });
     return [];
   }
 }
@@ -495,7 +496,7 @@ export async function verifyBlockchainTransaction(
   try {
     return await fabricClient.verifyTransaction(transactionHash);
   } catch (error) {
-    console.error("[Blockchain] Error verifying transaction:", error);
+    logger.error("[Blockchain] Error verifying transaction:", { error: String(error) });
     return false;
   }
 }

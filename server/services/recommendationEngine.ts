@@ -6,6 +6,7 @@
  */
 
 import { invokeLLM } from '../_core/llm';
+import { logger } from "../_core/logger";
 
 export interface UserPreferences {
   // Budget
@@ -327,7 +328,7 @@ Return your response in this JSON format:
     const result = JSON.parse(response.choices[0].message.content as string);
     return result;
   } catch (error) {
-    console.error('Error generating recommendations:', error);
+    logger.error('Error generating recommendations:', { error: String(error) });
     
     // Fallback: simple scoring based on preferences
     const fallbackRecs = filteredProperties

@@ -5,7 +5,6 @@ Ethical web scraper for Nigerian property market data
 
 import os
 import json
-import logging
 import time
 import random
 from typing import Dict, List, Optional
@@ -14,8 +13,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("propertypro-scraper")
 
 
 class PropertyProScraper:

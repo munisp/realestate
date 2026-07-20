@@ -1,5 +1,5 @@
-// @ts-nocheck
 import Stripe from 'stripe';
+import { logger } from "../../_core/logger";
 import {
   IPaymentProvider,
   CreateEscrowParams,
@@ -32,7 +32,7 @@ export class StripePaymentProvider implements IPaymentProvider {
     this.stripe = new Stripe(config.secretKey, {
       apiVersion: '2025-10-29.clover',
     });
-    console.log('[Stripe] Provider initialized');
+    logger.info('[Stripe] Provider initialized');
   }
 
   async createEscrow(params: CreateEscrowParams): Promise<CreateEscrowResponse> {
@@ -65,7 +65,7 @@ export class StripePaymentProvider implements IPaymentProvider {
         },
       };
     } catch (error: any) {
-      console.error('[Stripe] Create escrow error:', error);
+      logger.error('[Stripe] Create escrow error:', { error: String(error) });
       return {
         success: false,
         providerEscrowId: '',
@@ -120,7 +120,7 @@ export class StripePaymentProvider implements IPaymentProvider {
         },
       };
     } catch (error: any) {
-      console.error('[Stripe] Release escrow error:', error);
+      logger.error('[Stripe] Release escrow error:', { error: String(error) });
       return {
         success: false,
         transactionId: '',
@@ -176,7 +176,7 @@ export class StripePaymentProvider implements IPaymentProvider {
 
       throw new Error(`Cannot refund escrow in status: ${paymentIntent.status}`);
     } catch (error: any) {
-      console.error('[Stripe] Refund escrow error:', error);
+      logger.error('[Stripe] Refund escrow error:', { error: String(error) });
       return {
         success: false,
         transactionId: '',
@@ -226,13 +226,13 @@ export class StripePaymentProvider implements IPaymentProvider {
         },
       };
     } catch (error: any) {
-      console.error('[Stripe] Get escrow status error:', error);
+      logger.error('[Stripe] Get escrow status error:', { error: String(error) });
       throw error;
     }
   }
 
   async handleWebhook(event: WebhookEvent): Promise<void> {
-    console.log(`[Stripe] Handling webhook event: ${event.eventType}`);
+    logger.info(`[Stripe] Handling webhook event: ${event.eventType}`);
 
     // Handle different event types
     switch (event.eventType) {
@@ -276,7 +276,7 @@ export class StripePaymentProvider implements IPaymentProvider {
       await this.stripe.balance.retrieve();
       return true;
     } catch (error) {
-      console.error('[Stripe] Health check failed:', error);
+      logger.error('[Stripe] Health check failed:', { error: String(error) });
       return false;
     }
   }

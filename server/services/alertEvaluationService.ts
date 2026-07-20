@@ -4,6 +4,7 @@ import { alertConfigurations, alertHistory, InsertAlertHistory } from "../../dri
 import { serviceHealth, apiUsage } from "../../drizzle/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { notifyOwner } from "../_core/notification";
+import { logger } from "../_core/logger";
 
 /**
  * Alert Evaluation Service
@@ -49,7 +50,7 @@ export class AlertEvaluationService {
           await this.triggerAlert(config, result);
         }
       } catch (error) {
-        console.error(`[Alert Evaluation] Error evaluating alert ${config.id}:`, error);
+        logger.error(`[Alert Evaluation] Error evaluating alert ${config.id}:`, { error: String(error) });
       }
     }
 
@@ -293,7 +294,7 @@ export class AlertEvaluationService {
       .limit(1);
 
     if (recentAlert.length > 0) {
-      console.log(`[Alert] Skipping alert ${config.id} - in cooldown period`);
+      logger.info(`[Alert] Skipping alert ${config.id} - in cooldown period`);
       return;
     }
 
@@ -342,7 +343,7 @@ export class AlertEvaluationService {
         .where(eq(alertHistory.id, inserted.id));
     }
 
-    console.log(`[Alert] Triggered alert ${config.id}: ${result.message}`);
+    logger.info(`[Alert] Triggered alert ${config.id}: ${result.message}`);
   }
 
   /**
@@ -369,7 +370,7 @@ Time: ${new Date().toISOString()}
 
       await notifyOwner({ title, content });
     } catch (error) {
-      console.error("[Alert] Failed to send email notification:", error);
+      logger.error("[Alert] Failed to send email notification:", { error: String(error) });
     }
   }
 
@@ -407,13 +408,13 @@ Time: ${new Date().toISOString()}
             provider: 'twilio',
           });
 
-          console.log(`[Alert] SMS sent to ${phoneNumber} for alert ${config.id}`);
+          logger.info(`[Alert] SMS sent to ${phoneNumber} for alert ${config.id}`);
         } catch (error) {
-          console.error(`[Alert] Failed to send SMS to ${phoneNumber}:`, error);
+          logger.error(`[Alert] Failed to send SMS to ${phoneNumber}:`, { error: String(error) });
         }
       }
     } catch (error) {
-      console.error('[Alert] Failed to send SMS notification:', error);
+      logger.error('[Alert] Failed to send SMS notification:', { error: String(error) });
     }
   }
 
@@ -445,7 +446,7 @@ Time: ${new Date().toISOString()}
         body: JSON.stringify(payload),
       });
     } catch (error) {
-      console.error("[Alert] Failed to send webhook notification:", error);
+      logger.error("[Alert] Failed to send webhook notification:", { error: String(error) });
     }
   }
 

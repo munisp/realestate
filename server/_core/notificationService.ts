@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Notification Service
  * 
@@ -10,6 +9,7 @@ import { ENV } from './env';
 import { getDb } from '../db';
 import { notificationQueue, emailTemplates } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
+import { logger } from "./logger";
 
 export interface NotificationParams {
   userId: number;
@@ -68,7 +68,7 @@ export async function sendEmail(params: EmailNotificationParams): Promise<{ succ
   const fromEmail = process.env.FROM_EMAIL || 'noreply@realestate-platform.com';
   
   if (!sendgridApiKey) {
-    console.warn('[Notification] SendGrid API key not configured, email not sent');
+    logger.warn('[Notification] SendGrid API key not configured, email not sent');
     console.log('[Notification] Email preview:', {
       to: params.to,
       subject: params.subject,
@@ -92,7 +92,7 @@ export async function sendEmail(params: EmailNotificationParams): Promise<{ succ
     console.log('[Notification] Email sent successfully to:', params.to);
     return { success: true };
   } catch (error) {
-    console.error('[Notification] Failed to send email:', error);
+    logger.error('[Notification] Failed to send email:', { error: String(error) });
     throw error;
   }
 }
@@ -101,7 +101,7 @@ export async function sendEmail(params: EmailNotificationParams): Promise<{ succ
  * Send an SMS notification
  */
 export async function sendSMS(to: string, message: string): Promise<{ success: boolean }> {
-  console.log('[Notification] Sending SMS to:', to);
+  logger.info('[Notification] Sending SMS to:', { detail: String(to) });
   
   // In production, integrate with an SMS service:
   // - Twilio: pnpm add twilio
@@ -320,7 +320,7 @@ export async function processNotificationQueue(): Promise<{ processed: number; f
 
       processed++;
     } catch (error) {
-      console.error('[Notification] Failed to send:', error);
+      logger.error('[Notification] Failed to send:', { error: String(error) });
       
       await db.update(notificationQueue)
         .set({ 

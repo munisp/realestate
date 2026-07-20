@@ -5,6 +5,7 @@
 
 import { mockGovernmentRegistry, type RegistryVerificationResult } from './mockGovernmentRegistry';
 import { mockTwilioSMS, type SMSDeliveryResult } from './mockTwilioSms';
+import { logger } from "../_core/logger";
 
 export interface COFOVerificationRequest {
   certificateNumber: string;
@@ -60,7 +61,7 @@ class COFOVerificationService {
     propertyAddress?: string;
     confidence: number;
   }> {
-    console.log('[COFOVerification] Extracting details from document:', documentUrl);
+    logger.info('[COFOVerification] Extracting details from document:', { detail: String(documentUrl) });
 
     // Simulate OCR processing delay
     await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
@@ -153,7 +154,7 @@ class COFOVerificationService {
       return response;
 
     } catch (error) {
-      console.error('[COFOVerification] Verification error:', error);
+      logger.error('[COFOVerification] Verification error:', { error: String(error) });
 
       const errorResponse: COFOVerificationResponse = {
         verificationId,

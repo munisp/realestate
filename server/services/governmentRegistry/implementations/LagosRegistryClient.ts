@@ -1,4 +1,5 @@
 import { BaseGovernmentRegistryClient } from '../base/GovernmentRegistryClient';
+import { logger } from "../../../_core/logger";
 import {
   CofOVerificationResult,
   LandRecordData,
@@ -58,9 +59,9 @@ export class LagosRegistryClient extends BaseGovernmentRegistryClient {
       const expiresIn = response.data.expires_in || 3600;
       this.tokenExpiry = new Date(Date.now() + expiresIn * 1000);
 
-      console.log(`[Lagos Registry] Successfully authenticated, token expires at ${this.tokenExpiry}`);
+      logger.info(`[Lagos Registry] Successfully authenticated, token expires at ${this.tokenExpiry}`);
     } catch (error) {
-      console.error('[Lagos Registry] Authentication failed:', error);
+      logger.error('[Lagos Registry] Authentication failed:', { error: String(error) });
       throw error;
     }
   }
@@ -185,7 +186,7 @@ export class LagosRegistryClient extends BaseGovernmentRegistryClient {
       const response = await this.client.get('/health');
       return response.data.status === 'ok';
     } catch (error) {
-      console.error('[Lagos Registry] Health check failed:', error);
+      logger.error('[Lagos Registry] Health check failed:', { error: String(error) });
       return false;
     }
   }

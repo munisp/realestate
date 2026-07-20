@@ -6,13 +6,12 @@ Comprehensive verification for diaspora buyers using international documents
 from flask import Flask, request, jsonify
 from typing import Dict, List, Optional, Any
 import os
-import logging
 from datetime import datetime, timedelta
 import requests
 from enum import Enum
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("diaspora-kyc-service")
 
 app = Flask(__name__)
 

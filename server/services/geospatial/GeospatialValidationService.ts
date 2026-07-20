@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { invokeLLM } from "../../_core/llm";
 import { makeRequest } from "../../_core/map";
+import { logger } from "../../_core/logger";
 
 /**
  * Geospatial Validation Service
@@ -92,7 +93,7 @@ export async function validateStateBoundaries(
 
     return { valid: false };
   } catch (error) {
-    console.error("[GeospatialValidation] State boundary check failed:", error);
+    logger.error("[GeospatialValidation] State boundary check failed:", { error: String(error) });
     return { valid: false };
   }
 }
@@ -442,7 +443,7 @@ export async function analyzeProximity(
       }
     }
   } catch (error) {
-    console.error("[GeospatialValidation] Proximity analysis failed:", error);
+    logger.error("[GeospatialValidation] Proximity analysis failed:", { error: String(error) });
     issues.push({
       type: "proximity_check_failed",
       severity: "low",
@@ -551,7 +552,7 @@ Provide your assessment in JSON format:
       score -= 30;
     }
   } catch (error) {
-    console.error("[GeospatialValidation] Land use validation failed:", error);
+    logger.error("[GeospatialValidation] Land use validation failed:", { error: String(error) });
     issues.push({
       type: "land_use_check_failed",
       severity: "low",

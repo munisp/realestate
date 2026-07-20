@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/realestate/services/go/common"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -476,9 +477,11 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next.ServeHTTP(w, r)
-		log.Printf("[%s] %s %s - %v", r.Method, r.RequestURI, r.RemoteAddr, time.Since(start))
+		log.Info("[%s] %s %s - %v", "args", []any{r.Method, r.RequestURI, r.RemoteAddr, time.Since(start}))
 	})
 }
+
+var log = common.NewLogger("escrow-service")
 
 func main() {
 	port := os.Getenv("PORT")
@@ -490,26 +493,26 @@ func main() {
 	var store StoreInterface
 	pgStore, pgErr := NewPostgresEscrowStore()
 	if pgErr != nil {
-		log.Printf("WARNING: PostgreSQL unavailable: %v. Falling back to in-memory store.", pgErr)
+		log.Info("WARNING: PostgreSQL unavailable: %v. Falling back to in-memory store.", "args", []any{pgErr})
 		store = NewEscrowStore()
 	} else {
 		defer pgStore.Close()
 		store = pgStore
-		log.Println("PostgreSQL escrow store initialized successfully")
+		log.Info("PostgreSQL escrow store initialized successfully")
 	}
 
 	// Optionally layer Redis cache on top if configured
 	redisURL := os.Getenv("REDIS_URL")
 	useRedis := redisURL != ""
 	if useRedis {
-		log.Printf("Redis cache configured: %s", redisURL)
+		log.Info("Redis cache configured: %s", "args", []any{redisURL})
 		redisStore, err := NewRedisEscrowStore(redisURL)
 		if err != nil {
-			log.Printf("Failed to connect to Redis: %v. Using PostgreSQL only.", err)
+			log.Info("Failed to connect to Redis: %v. Using PostgreSQL only.", "args", []any{err})
 		} else {
 			store = redisStore
 			defer redisStore.Close()
-			log.Println("Redis storage initialized successfully")
+			log.Info("Redis storage initialized successfully")
 		}
 	}
 
@@ -546,9 +549,10 @@ func main() {
 
 	// Graceful shutdown
 	go func() {
-		log.Printf("Starting Escrow Service on port %s", port)
+		log.Info("Starting Escrow Service on port %s", "args", []any{port})
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
+			log.Error("Server failed to start: %v", "args", []any{err})
+os.Exit(1)
 		}
 	}()
 
@@ -557,14 +561,15 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	log.Info("Shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+		log.Error("Server forced to shutdown: %v", "args", []any{err})
+os.Exit(1)
 	}
 
-	log.Println("Server exited")
+	log.Info("Server exited")
 }

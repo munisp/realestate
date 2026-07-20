@@ -12,6 +12,7 @@ import { notifyOwner } from '../_core/notification';
 import { getDb } from '../db';
 import { shortLetProperties, marketPricingRecommendations, users } from '../../drizzle/schema';
 import { eq, and, gte, desc } from 'drizzle-orm';
+import { logger } from "../_core/logger";
 
 interface PriceAlert {
   propertyId: number;
@@ -98,9 +99,9 @@ export class OwnerNotificationService {
         }
       }
 
-      console.log(`[OwnerNotificationService] Sent ${sent} price change alerts`);
+      logger.info(`[OwnerNotificationService] Sent ${sent} price change alerts`);
     } catch (error) {
-      console.error('[OwnerNotificationService] Error sending price alerts:', error);
+      logger.error('[OwnerNotificationService] Error sending price alerts:', { error: String(error) });
       throw error;
     }
 
@@ -200,9 +201,9 @@ export class OwnerNotificationService {
         if (notificationSent) sent++;
       }
 
-      console.log(`[OwnerNotificationService] Sent ${sent} optimization alerts`);
+      logger.info(`[OwnerNotificationService] Sent ${sent} optimization alerts`);
     } catch (error) {
-      console.error('[OwnerNotificationService] Error sending optimization alerts:', error);
+      logger.error('[OwnerNotificationService] Error sending optimization alerts:', { error: String(error) });
       throw error;
     }
 
@@ -226,7 +227,7 @@ export class OwnerNotificationService {
         .where(eq(shortLetProperties.status, 'active'));
 
       if (properties.length === 0) {
-        console.log('[OwnerNotificationService] No active properties for weekly summary');
+        logger.info('[OwnerNotificationService] No active properties for weekly summary');
         return false;
       }
 
@@ -271,10 +272,10 @@ export class OwnerNotificationService {
         content: summaryContent,
       });
 
-      console.log('[OwnerNotificationService] Weekly summary sent:', sent);
+      logger.info('[OwnerNotificationService] Weekly summary sent:', { detail: String(sent) });
       return sent;
     } catch (error) {
-      console.error('[OwnerNotificationService] Error sending weekly summary:', error);
+      logger.error('[OwnerNotificationService] Error sending weekly summary:', { error: String(error) });
       return false;
     }
   }
@@ -311,7 +312,7 @@ Review this recommendation in your dashboard and adjust pricing accordingly.
         content,
       });
     } catch (error) {
-      console.error('[OwnerNotificationService] Error sending price alert:', error);
+      logger.error('[OwnerNotificationService] Error sending price alert:', { error: String(error) });
       return false;
     }
   }
@@ -347,7 +348,7 @@ ${emoji} **${opportunity.description}**
         content,
       });
     } catch (error) {
-      console.error('[OwnerNotificationService] Error sending optimization alert:', error);
+      logger.error('[OwnerNotificationService] Error sending optimization alert:', { error: String(error) });
       return false;
     }
   }

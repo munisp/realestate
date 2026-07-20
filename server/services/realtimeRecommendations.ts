@@ -12,6 +12,7 @@ import type { Server as SocketIOServer, Socket } from 'socket.io';
 import { getDb } from '../db';
 import { properties, savedSearches, users } from '../../drizzle/schema';
 import { eq, and, sql } from 'drizzle-orm';
+import { logger } from "../_core/logger";
 
 // ============================================================================
 // Types
@@ -53,7 +54,7 @@ let realtimeNamespace: any = null;
  * Initialize real-time recommendation service
  */
 export function initializeRealtimeRecommendations(io: SocketIOServer): void {
-  console.log('[Real-time Recommendations] Initializing...');
+  logger.info('[Real-time Recommendations] Initializing...');
 
   // Create namespace for recommendations
   realtimeNamespace = io.of('/recommendations');
@@ -74,7 +75,7 @@ export function initializeRealtimeRecommendations(io: SocketIOServer): void {
         });
 
         socket.join(`user_${userId}`);
-        console.log(`[Real-time Recommendations] User ${userId} subscribed`);
+        logger.info(`[Real-time Recommendations] User ${userId} subscribed`);
 
         // Send confirmation
         socket.emit('subscribed', {
@@ -85,7 +86,7 @@ export function initializeRealtimeRecommendations(io: SocketIOServer): void {
         // Send any pending matches
         await sendPendingMatches(userId);
       } catch (error) {
-        console.error('[Real-time Recommendations] Subscription error:', error);
+        logger.error('[Real-time Recommendations] Subscription error:', { error: String(error) });
         socket.emit('error', { message: 'Failed to subscribe' });
       }
     });
@@ -95,7 +96,7 @@ export function initializeRealtimeRecommendations(io: SocketIOServer): void {
       const { userId } = data;
       userSubscriptions.delete(userId);
       socket.leave(`user_${userId}`);
-      console.log(`[Real-time Recommendations] User ${userId} unsubscribed`);
+      logger.info(`[Real-time Recommendations] User ${userId} unsubscribed`);
     });
 
     // Handle disconnect
@@ -104,7 +105,7 @@ export function initializeRealtimeRecommendations(io: SocketIOServer): void {
       for (const [userId, sub] of userSubscriptions.entries()) {
         if (sub.socketId === socket.id) {
           userSubscriptions.delete(userId);
-          console.log(`[Real-time Recommendations] User ${userId} disconnected`);
+          logger.info(`[Real-time Recommendations] User ${userId} disconnected`);
           break;
         }
       }
@@ -117,12 +118,12 @@ export function initializeRealtimeRecommendations(io: SocketIOServer): void {
       if (subscription) {
         subscription.preferences = preferences;
         userSubscriptions.set(userId, subscription);
-        console.log(`[Real-time Recommendations] Updated preferences for user ${userId}`);
+        logger.info(`[Real-time Recommendations] Updated preferences for user ${userId}`);
       }
     });
   });
 
-  console.log('[Real-time Recommendations] Service initialized');
+  logger.info('[Real-time Recommendations] Service initialized');
 }
 
 // ============================================================================
@@ -232,7 +233,7 @@ async function matchPropertyToUsers(property: any): Promise<PropertyMatch[]> {
  */
 export async function notifyNewPropertyMatch(propertyId: number): Promise<void> {
   if (!realtimeNamespace) {
-    console.warn('[Real-time Recommendations] Namespace not initialized');
+    logger.warn('[Real-time Recommendations] Namespace not initialized');
     return;
   }
 
@@ -250,14 +251,14 @@ export async function notifyNewPropertyMatch(propertyId: number): Promise<void> 
       .limit(1);
 
     if (!property) {
-      console.warn(`[Real-time Recommendations] Property ${propertyId} not found`);
+      logger.warn(`[Real-time Recommendations] Property ${propertyId} not found`);
       return;
     }
 
     // Find matching users
     const matches = await matchPropertyToUsers(property);
 
-    console.log(`[Real-time Recommendations] Found ${matches.length} matches for property ${propertyId}`);
+    logger.info(`[Real-time Recommendations] Found ${matches.length} matches for property ${propertyId}`);
 
     // Send notifications to matched users
     for (const match of matches) {
@@ -268,10 +269,10 @@ export async function notifyNewPropertyMatch(propertyId: number): Promise<void> 
         timestamp: new Date().toISOString(),
       });
 
-      console.log(`[Real-time Recommendations] Notified user ${match.userId} of new match (score: ${match.matchScore})`);
+      logger.info(`[Real-time Recommendations] Notified user ${match.userId} of new match (score: ${match.matchScore})`);
     }
   } catch (error) {
-    console.error('[Real-time Recommendations] Error notifying new match:', error);
+    logger.error('[Real-time Recommendations] Error notifying new match:', { error: String(error) });
   }
 }
 
@@ -324,10 +325,10 @@ async function sendPendingMatches(userId: number): Promise<void> {
         count: matches.length,
       });
 
-      console.log(`[Real-time Recommendations] Sent ${matches.length} pending matches to user ${userId}`);
+      logger.info(`[Real-time Recommendations] Sent ${matches.length} pending matches to user ${userId}`);
     }
   } catch (error) {
-    console.error('[Real-time Recommendations] Error sending pending matches:', error);
+    logger.error('[Real-time Recommendations] Error sending pending matches:', { error: String(error) });
   }
 }
 
@@ -344,7 +345,7 @@ export function broadcastRecommendationUpdate(message: string): void {
     timestamp: new Date().toISOString(),
   });
 
-  console.log('[Real-time Recommendations] Broadcasted update:', message);
+  logger.info('[Real-time Recommendations] Broadcasted update:', { detail: String(message) });
 }
 
 /**

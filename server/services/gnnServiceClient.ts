@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from "axios";
+import { logger } from "../_core/logger";
 
 interface PropertyData {
   id: number;
@@ -103,7 +104,7 @@ class GNNServiceClient {
       this.setCache(cacheKey, scores);
       return scores;
     } catch (error) {
-      console.error("[GNN Service] Failed to calculate scores:", error);
+      logger.error("[GNN Service] Failed to calculate scores:", { error: String(error) });
       // Return fallback mock scores
       return this.getFallbackScores(property);
     }
@@ -144,7 +145,7 @@ class GNNServiceClient {
       this.setCache(cacheKey, prediction);
       return prediction;
     } catch (error) {
-      console.error("[GNN Service] Failed to predict price:", error);
+      logger.error("[GNN Service] Failed to predict price:", { error: String(error) });
       // Return fallback prediction
       return {
         predictedPrice: property.price,
@@ -175,7 +176,7 @@ class GNNServiceClient {
       this.setCache(cacheKey, trends);
       return trends;
     } catch (error) {
-      console.error("[GNN Service] Failed to get market trends:", error);
+      logger.error("[GNN Service] Failed to get market trends:", { error: String(error) });
       return [];
     }
   }
@@ -215,7 +216,7 @@ class GNNServiceClient {
         this.setCache(`scores-${result.property_id}`, scores);
       }
     } catch (error) {
-      console.error("[GNN Service] Batch scoring failed, using fallback:", error);
+      logger.error("[GNN Service] Batch scoring failed, using fallback:", { error: String(error) });
       // Fallback to individual scoring
       for (const property of properties) {
         results.set(property.id, this.getFallbackScores(property));

@@ -55,7 +55,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(__name__)
+logger = get_logger("neighborhood-intelligence")
 
 # Flask app
 app = Flask(__name__)
@@ -93,7 +93,7 @@ class StreetNetworkAnalyzer:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("neighborhood-intelligence")
         self.networks = {}  # Cache for loaded networks
     
     def load_street_network(self, city: str) -> nx.MultiDiGraph:
@@ -277,7 +277,7 @@ class TransitAccessibilityAnalyzer:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("neighborhood-intelligence")
         self.gtfs_feeds = {}  # Cache for loaded GTFS feeds
     
     def load_gtfs_feed(self, city: str) -> Optional[object]:
@@ -447,7 +447,7 @@ class NeighborhoodIntelligenceService:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("neighborhood-intelligence")
         self.street_analyzer = StreetNetworkAnalyzer()
         self.transit_analyzer = TransitAccessibilityAnalyzer()
     

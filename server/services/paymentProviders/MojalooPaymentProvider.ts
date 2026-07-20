@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { IPaymentProvider, EscrowCreateResult, EscrowReleaseResult, EscrowRefundResult, EscrowStatusResult } from './IPaymentProvider';
 import { MojalooProvider } from '../../payments/providers/MojalooProvider';
+import { logger } from "../../_core/logger";
 
 export class MojalooPaymentProvider implements IPaymentProvider {
   name = 'mojaloop';
@@ -16,7 +17,7 @@ export class MojalooPaymentProvider implements IPaymentProvider {
 
   async initialize(config: any): Promise<void> {
     // Configuration is handled via environment variables in the Python service
-    console.log('[MojalooPaymentProvider] Initialized');
+    logger.info('[MojalooPaymentProvider] Initialized');
   }
 
   async createEscrow(params: {

@@ -5,14 +5,13 @@ Supports Manus Google Maps proxy for Places API
 """
 
 import os
-import logging
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import numpy as np
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("zestimate-altdata-service")
 
 app = Flask(__name__)
 CORS(app)

@@ -9,6 +9,7 @@
 import { getDb } from "../db";
 import { valuationAlertsSent, userAlertPreferences } from "../../drizzle/schema";
 import { eq, and, gte, sql } from "drizzle-orm";
+import { logger } from "../_core/logger";
 
 // ============================================================================
 // Throttling Configuration
@@ -82,7 +83,7 @@ export async function shouldSendAlert(
     // All checks passed
     return { allowed: true };
   } catch (error) {
-    console.error("[AlertThrottling] Error checking throttle:", error);
+    logger.error("[AlertThrottling] Error checking throttle:", { error: String(error) });
     return { allowed: false, reason: "Throttling check failed" };
   }
 }
@@ -135,7 +136,7 @@ async function checkDailyLimit(
       maxCount: maxAlertsPerDay,
     };
   } catch (error) {
-    console.error("[AlertThrottling] Error checking daily limit:", error);
+    logger.error("[AlertThrottling] Error checking daily limit:", { error: String(error) });
     return { allowed: false, reason: "Daily limit check failed" };
   }
 }
@@ -190,7 +191,7 @@ async function checkMinimumInterval(
 
     return { allowed: true };
   } catch (error) {
-    console.error("[AlertThrottling] Error checking interval:", error);
+    logger.error("[AlertThrottling] Error checking interval:", { error: String(error) });
     return { allowed: false, reason: "Interval check failed" };
   }
 }
@@ -244,7 +245,7 @@ async function checkDuplicateAlert(
 
     return { allowed: true };
   } catch (error) {
-    console.error("[AlertThrottling] Error checking duplicates:", error);
+    logger.error("[AlertThrottling] Error checking duplicates:", { error: String(error) });
     return { allowed: false, reason: "Duplicate check failed" };
   }
 }
@@ -309,7 +310,7 @@ export async function getThrottlingStats(userId: number) {
       throttlingActive: (todayCount?.count || 0) >= maxAlertsPerDay,
     };
   } catch (error) {
-    console.error("[AlertThrottling] Error getting stats:", error);
+    logger.error("[AlertThrottling] Error getting stats:", { error: String(error) });
     return null;
   }
 }
@@ -335,7 +336,7 @@ export async function updateMaxAlertsPerDay(
 
     return true;
   } catch (error) {
-    console.error("[AlertThrottling] Error updating max alerts:", error);
+    logger.error("[AlertThrottling] Error updating max alerts:", { error: String(error) });
     return false;
   }
 }

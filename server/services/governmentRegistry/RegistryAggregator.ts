@@ -1,4 +1,5 @@
 import { RegistryFactory } from './RegistryFactory';
+import { logger } from "../../_core/logger";
 import {
   CofOVerificationResult,
   StateCode,
@@ -29,7 +30,7 @@ export class RegistryAggregator {
           results.push(result);
           successfulStates.push(state);
         } catch (error) {
-          console.error(`[RegistryAggregator] Failed to verify with ${state}:`, error);
+          logger.error(`[RegistryAggregator] Failed to verify with ${state}:`, { error: String(error) });
           // Continue with other states even if one fails
         }
       })

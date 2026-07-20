@@ -11,7 +11,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
 import os
-import logging
 import hashlib
 import hmac
 import json
@@ -20,8 +19,8 @@ from typing import Dict, Any, Optional
 import uuid
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("mojaloop-service")
 
 app = Flask(__name__)
 CORS(app)

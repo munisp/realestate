@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { invokeLLM } from "../_core/llm";
+import { logger } from "../_core/logger";
 
 /**
  * DeepSeek OCR Service
@@ -170,7 +171,7 @@ If you cannot extract a field, set it to null. The confidence score should refle
         confidence: extractedData.confidence || 0,
       };
     } catch (error: any) {
-      console.error("[DeepSeekOCR] Extraction failed:", error);
+      logger.error("[DeepSeekOCR] Extraction failed:", { error: String(error) });
       return {
         success: false,
         confidence: 0,
@@ -214,7 +215,7 @@ If you cannot extract a field, set it to null. The confidence score should refle
 
       return response.choices[0]?.message?.content || "";
     } catch (error: any) {
-      console.error("[DeepSeekOCR] Raw text extraction failed:", error);
+      logger.error("[DeepSeekOCR] Raw text extraction failed:", { error: String(error) });
       return "";
     }
   }
@@ -331,7 +332,7 @@ Return your analysis in JSON format:
 
       return JSON.parse(content);
     } catch (error: any) {
-      console.error("[DeepSeekOCR] Authenticity validation failed:", error);
+      logger.error("[DeepSeekOCR] Authenticity validation failed:", { error: String(error) });
       return {
         isLikelyAuthentic: false,
         confidence: 0,
@@ -432,7 +433,7 @@ Return JSON:
 
       return JSON.parse(content);
     } catch (error: any) {
-      console.error("[DeepSeekOCR] Document comparison failed:", error);
+      logger.error("[DeepSeekOCR] Document comparison failed:", { error: String(error) });
       return {
         areSimilar: false,
         similarityScore: 0,

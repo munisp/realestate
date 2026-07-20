@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { ENV } from "./env";
+import { logger } from "./logger";
 
 export type NotificationPayload = {
   title: string;
@@ -108,7 +109,7 @@ export async function notifyOwner(
 
     return true;
   } catch (error) {
-    console.warn("[Notification] Error calling notification service:", error);
+    logger.warn("[Notification] Error calling notification service:", { detail: String(error) });
     return false;
   }
 }

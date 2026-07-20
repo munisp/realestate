@@ -1,3 +1,4 @@
+import { logger } from "../_core/logger";
 /**
  * Mock SMS Service for C of O Verification
  * 
@@ -94,7 +95,7 @@ export function getSentMessages(): SmsMessage[] {
  */
 export function clearSentMessages(): void {
   sentMessages.length = 0;
-  console.log('[Mock SMS Service] Message history cleared');
+  logger.info('[Mock SMS Service] Message history cleared');
 }
 
 /**

@@ -1,4 +1,5 @@
 import { notifyOwner } from "../_core/notification";
+import { logger } from "../_core/logger";
 
 interface RateAlert {
   userId: string;
@@ -78,7 +79,7 @@ export async function checkExchangeRates() {
     
     return { success: true, checked: uniqueCurrencies.size };
   } catch (error) {
-    console.error('[Exchange Rate Monitor] Error checking rates:', error);
+    logger.error('[Exchange Rate Monitor] Error checking rates:', { error: String(error) });
     return { success: false, error: String(error) };
   }
 }
@@ -103,5 +104,5 @@ export function startExchangeRateMonitoring() {
     checkExchangeRates();
   }, 60 * 60 * 1000); // 1 hour
   
-  console.log('[Exchange Rate Monitor] Started monitoring exchange rates (checking every hour)');
+  logger.info('[Exchange Rate Monitor] Started monitoring exchange rates (checking every hour)');
 }

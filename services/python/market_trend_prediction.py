@@ -40,7 +40,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(__name__)
+logger = get_logger("market-trend-prediction")
 
 # Flask app
 app = Flask(__name__)
@@ -129,7 +129,7 @@ class SpatialDiffusionModel:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("market-trend-prediction")
     
     def simulate_diffusion(
         self,
@@ -227,7 +227,7 @@ class InvestmentOpportunityDetector:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("market-trend-prediction")
     
     def score_properties(
         self,
@@ -323,7 +323,7 @@ class MarketTrendService:
     """
     
     def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = get_logger("market-trend-prediction")
         self.diffusion_model = SpatialDiffusionModel()
         self.opportunity_detector = InvestmentOpportunityDetector()
         self.tgcn_model = None

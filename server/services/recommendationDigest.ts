@@ -4,6 +4,7 @@ import { users, properties, favorites, savedSearches, recommendationPreferences 
 import { eq, inArray, sql } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { notifyOwner } from "../_core/notification";
+import { logger } from "../_core/logger";
 
 /**
  * Weekly recommendation digest service
@@ -144,7 +145,7 @@ Focus on matching property type, price range, location preferences, and features
     const result = JSON.parse(content);
     return result.recommendations || [];
   } catch (error) {
-    console.error(`[RecommendationDigest] Error generating recommendations for user ${userId}:`, error);
+    logger.error(`[RecommendationDigest] Error generating recommendations for user ${userId}:`, { error: String(error) });
     return [];
   }
 }
@@ -203,7 +204,7 @@ Happy house hunting!
     content: emailContent,
   });
 
-  console.log(`[RecommendationDigest] Sent digest to user ${userId} (${userEmail})`);
+  logger.info(`[RecommendationDigest] Sent digest to user ${userId} (${userEmail})`);
 }
 
 /**
@@ -212,12 +213,12 @@ Happy house hunting!
 export async function processWeeklyDigest() {
   const db = await getDb();
   if (!db) {
-    console.error("[RecommendationDigest] Database not available");
+    logger.error("[RecommendationDigest] Database not available");
     return;
   }
 
   try {
-    console.log("[RecommendationDigest] Starting weekly digest process...");
+    logger.info("[RecommendationDigest] Starting weekly digest process...");
 
     // Get new listings from the past 7 days
     const sevenDaysAgo = new Date();
@@ -230,11 +231,11 @@ export async function processWeeklyDigest() {
       .limit(100);
 
     if (newListings.length === 0) {
-      console.log("[RecommendationDigest] No new listings in the past 7 days");
+      logger.info("[RecommendationDigest] No new listings in the past 7 days");
       return;
     }
 
-    console.log(`[RecommendationDigest] Found ${newListings.length} new listings`);
+    logger.info(`[RecommendationDigest] Found ${newListings.length} new listings`);
 
     // Get all users who have favorites or saved searches
     const activeUserIds = new Set<number>();
@@ -250,11 +251,11 @@ export async function processWeeklyDigest() {
     usersWithSearches.forEach((u) => activeUserIds.add(u.userId));
 
     if (activeUserIds.size === 0) {
-      console.log("[RecommendationDigest] No active users with preferences");
+      logger.info("[RecommendationDigest] No active users with preferences");
       return;
     }
 
-    console.log(`[RecommendationDigest] Processing ${activeUserIds.size} active users`);
+    logger.info(`[RecommendationDigest] Processing ${activeUserIds.size} active users`);
 
     // Get user details
     const activeUsers = await db
@@ -275,7 +276,7 @@ export async function processWeeklyDigest() {
 
         // Skip if email is disabled
         if (userPrefs.length > 0 && userPrefs[0].emailEnabled === 0) {
-          console.log(`[RecommendationDigest] Skipping user ${user.id} - emails disabled`);
+          logger.info(`[RecommendationDigest] Skipping user ${user.id} - emails disabled`);
           continue;
         }
 
@@ -295,13 +296,13 @@ export async function processWeeklyDigest() {
           successCount++;
         }
       } catch (error) {
-        console.error(`[RecommendationDigest] Error processing user ${user.id}:`, error);
+        logger.error(`[RecommendationDigest] Error processing user ${user.id}:`, { error: String(error) });
       }
     }
 
-    console.log(`[RecommendationDigest] Completed. Sent ${successCount} digests.`);
+    logger.info(`[RecommendationDigest] Completed. Sent ${successCount} digests.`);
   } catch (error) {
-    console.error("[RecommendationDigest] Fatal error:", error);
+    logger.error("[RecommendationDigest] Fatal error:", { error: String(error) });
   }
 }
 
@@ -343,5 +344,5 @@ export function startWeeklyDigestScheduler() {
   }
 
   scheduleNextRun();
-  console.log("[RecommendationDigest] Weekly scheduler started");
+  logger.info("[RecommendationDigest] Weekly scheduler started");
 }

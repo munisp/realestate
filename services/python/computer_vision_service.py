@@ -10,7 +10,6 @@ from PIL import Image
 import io
 import requests
 from typing import List, Dict, Tuple, Optional
-import logging
 import os
 from datetime import datetime
 import base64
@@ -25,8 +24,8 @@ except ImportError:
     print("TensorFlow not available - using basic CV features only")
 
 app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from shared.logger import get_logger
+logger = get_logger("computer-vision-service")
 
 # Configuration
 MODEL_PATH = os.getenv('CV_MODEL_PATH', '/tmp/cv_models')

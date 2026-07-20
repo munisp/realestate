@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 /**
  * Environment variable configuration with startup validation.
  *
@@ -8,7 +9,7 @@
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value && process.env.NODE_ENV === "production") {
-    console.error(`[ENV] FATAL: Required environment variable "${name}" is not set.`);
+    logger.error(`[ENV] FATAL: Required environment variable "${name}" is not set.`);
     process.exit(1);
   }
   return value ?? "";
@@ -52,7 +53,7 @@ if (ENV.isProduction) {
   ];
   for (const name of recommended) {
     if (!process.env[name]) {
-      console.warn(`[ENV] WARNING: Recommended variable "${name}" is not set.`);
+      logger.warn(`[ENV] WARNING: Recommended variable "${name}" is not set.`);
     }
   }
 }

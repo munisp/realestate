@@ -1,4 +1,5 @@
 import { notifyOwner } from "../_core/notification";
+import { logger } from "../_core/logger";
 
 /**
  * Notification Service
@@ -33,7 +34,7 @@ export class NotificationService {
 
       return success;
     } catch (error: any) {
-      console.error("[NotificationService] Email send failed:", error);
+      logger.error("[NotificationService] Email send failed:", { error: String(error) });
       return false;
     }
   }
@@ -50,7 +51,7 @@ export class NotificationService {
       const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
       if (!accountSid || !authToken || !fromNumber) {
-        console.warn("[NotificationService] Twilio credentials not configured");
+        logger.warn("[NotificationService] Twilio credentials not configured");
         return false;
       }
 
@@ -73,13 +74,13 @@ export class NotificationService {
 
       if (!response.ok) {
         const error = await response.text();
-        console.error("[NotificationService] Twilio API error:", error);
+        logger.error("[NotificationService] Twilio API error:", { error: String(error) });
         return false;
       }
 
       return true;
     } catch (error: any) {
-      console.error("[NotificationService] SMS send failed:", error);
+      logger.error("[NotificationService] SMS send failed:", { error: String(error) });
       return false;
     }
   }

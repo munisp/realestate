@@ -1,6 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { latLngToCell } from 'h3-js';
 import { clusterCacheService } from './clusterCacheService';
+import { logger } from "../_core/logger";
 
 /**
  * Real-time Cluster Update Service
@@ -58,7 +59,7 @@ class RealtimeClusterService {
     const clusterNamespace = io.of('/clusters');
 
     clusterNamespace.on('connection', (socket) => {
-      console.log(`[RealtimeCluster] Client connected: ${socket.id}`);
+      logger.info(`[RealtimeCluster] Client connected: ${socket.id}`);
 
       // Handle viewport subscription
       socket.on('subscribe:viewport', (data: ViewportSubscription) => {
@@ -79,7 +80,7 @@ class RealtimeClusterService {
           socket.join(`cell:${h3Index}`);
         });
 
-        console.log(`[RealtimeCluster] Client ${socket.id} subscribed to zoom ${zoom}, ${h3Cells.length} cells`);
+        logger.info(`[RealtimeCluster] Client ${socket.id} subscribed to zoom ${zoom}, ${h3Cells.length} cells`);
 
         socket.emit('subscription:confirmed', {
           zoom,
@@ -115,7 +116,7 @@ class RealtimeClusterService {
           socket.join(`cell:${h3Index}`);
         });
 
-        console.log(`[RealtimeCluster] Client ${socket.id} updated viewport: zoom ${zoom}, ${h3Cells.length} cells`);
+        logger.info(`[RealtimeCluster] Client ${socket.id} updated viewport: zoom ${zoom}, ${h3Cells.length} cells`);
       });
 
       // Handle unsubscribe
@@ -132,18 +133,18 @@ class RealtimeClusterService {
           });
 
           this.subscriptions.delete(socket.id);
-          console.log(`[RealtimeCluster] Client ${socket.id} unsubscribed`);
+          logger.info(`[RealtimeCluster] Client ${socket.id} unsubscribed`);
         }
       });
 
       // Handle disconnect
       socket.on('disconnect', () => {
         this.subscriptions.delete(socket.id);
-        console.log(`[RealtimeCluster] Client disconnected: ${socket.id}`);
+        logger.info(`[RealtimeCluster] Client disconnected: ${socket.id}`);
       });
     });
 
-    console.log('[RealtimeCluster] Service initialized');
+    logger.info('[RealtimeCluster] Service initialized');
   }
 
   /**
@@ -252,7 +253,7 @@ class RealtimeClusterService {
       affectedCells: updates.map(u => ({ h3Index: u.h3Index, zoom: u.zoom })),
     });
 
-    console.log(`[RealtimeCluster] Notified property added: ${property.id}, ${updates.length} cells affected`);
+    logger.info(`[RealtimeCluster] Notified property added: ${property.id}, ${updates.length} cells affected`);
   }
 
   /**
@@ -300,7 +301,7 @@ class RealtimeClusterService {
       },
     });
 
-    console.log(`[RealtimeCluster] Notified property updated: ${property.id}`);
+    logger.info(`[RealtimeCluster] Notified property updated: ${property.id}`);
   }
 
   /**
@@ -345,7 +346,7 @@ class RealtimeClusterService {
       position: { lat: latitude, lng: longitude },
     });
 
-    console.log(`[RealtimeCluster] Notified property removed: ${property.id}`);
+    logger.info(`[RealtimeCluster] Notified property removed: ${property.id}`);
   }
 
   /**
@@ -364,7 +365,7 @@ class RealtimeClusterService {
       message: `${count} properties ${action}`,
     });
 
-    console.log(`[RealtimeCluster] Notified bulk update: ${count} properties ${action}`);
+    logger.info(`[RealtimeCluster] Notified bulk update: ${count} properties ${action}`);
   }
 
   /**

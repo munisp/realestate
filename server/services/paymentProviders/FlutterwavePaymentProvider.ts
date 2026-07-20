@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { IPaymentProvider, EscrowCreateResult, EscrowReleaseResult, EscrowRefundResult, EscrowStatusResult } from './IPaymentProvider';
 import { FlutterwaveProvider } from '../../payments/providers/FlutterwaveProvider';
+import { logger } from "../../_core/logger";
 
 export class FlutterwavePaymentProvider implements IPaymentProvider {
   name = 'flutterwave';
@@ -16,7 +17,7 @@ export class FlutterwavePaymentProvider implements IPaymentProvider {
 
   async initialize(config: any): Promise<void> {
     // Configuration is handled via environment variables in the Python service
-    console.log('[FlutterwavePaymentProvider] Initialized');
+    logger.info('[FlutterwavePaymentProvider] Initialized');
   }
 
   async createEscrow(params: {

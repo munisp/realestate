@@ -14,6 +14,7 @@
  */
 
 import { makeRequest } from '../_core/map';
+import { logger } from "../_core/logger";
 
 export interface GeocodingResult {
   lat: number;
@@ -69,7 +70,7 @@ async function geocodeWithGoogle(address: string): Promise<GeocodingResult | nul
 
     return null;
   } catch (error) {
-    console.error('[Geocoding] Google Maps error:', error);
+    logger.error('[Geocoding] Google Maps error:', { error: String(error) });
     return null;
   }
 }
@@ -119,7 +120,7 @@ async function geocodeWithNominatim(address: string): Promise<GeocodingResult | 
 
     return null;
   } catch (error) {
-    console.error('[Geocoding] Nominatim error:', error);
+    logger.error('[Geocoding] Nominatim error:', { error: String(error) });
     return null;
   }
 }
@@ -132,19 +133,19 @@ export async function geocodeAddress(address: string): Promise<GeocodingResult |
   // Try Google Maps first
   const googleResult = await geocodeWithGoogle(address);
   if (googleResult) {
-    console.log('[Geocoding] Success with Google Maps');
+    logger.info('[Geocoding] Success with Google Maps');
     return googleResult;
   }
 
   // Fallback to Nominatim
-  console.log('[Geocoding] Falling back to Nominatim');
+  logger.info('[Geocoding] Falling back to Nominatim');
   const nominatimResult = await geocodeWithNominatim(address);
   if (nominatimResult) {
-    console.log('[Geocoding] Success with Nominatim');
+    logger.info('[Geocoding] Success with Nominatim');
     return nominatimResult;
   }
 
-  console.error('[Geocoding] All providers failed for address:', address);
+  logger.error('[Geocoding] All providers failed for address:', { error: String(address) });
   return null;
 }
 
@@ -181,7 +182,7 @@ async function reverseGeocodeWithGoogle(
 
     return null;
   } catch (error) {
-    console.error('[Reverse Geocoding] Google Maps error:', error);
+    logger.error('[Reverse Geocoding] Google Maps error:', { error: String(error) });
     return null;
   }
 }
@@ -225,7 +226,7 @@ async function reverseGeocodeWithNominatim(
       provider: 'nominatim',
     };
   } catch (error) {
-    console.error('[Reverse Geocoding] Nominatim error:', error);
+    logger.error('[Reverse Geocoding] Nominatim error:', { error: String(error) });
     return null;
   }
 }
@@ -240,15 +241,15 @@ export async function reverseGeocode(
   // Try Google Maps first
   const googleResult = await reverseGeocodeWithGoogle(lat, lng);
   if (googleResult) {
-    console.log('[Reverse Geocoding] Success with Google Maps');
+    logger.info('[Reverse Geocoding] Success with Google Maps');
     return googleResult;
   }
 
   // Fallback to Nominatim
-  console.log('[Reverse Geocoding] Falling back to Nominatim');
+  logger.info('[Reverse Geocoding] Falling back to Nominatim');
   const nominatimResult = await reverseGeocodeWithNominatim(lat, lng);
   if (nominatimResult) {
-    console.log('[Reverse Geocoding] Success with Nominatim');
+    logger.info('[Reverse Geocoding] Success with Nominatim');
     return nominatimResult;
   }
 

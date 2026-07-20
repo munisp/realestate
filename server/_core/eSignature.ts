@@ -6,6 +6,7 @@
  */
 
 import { ENV } from './env';
+import { logger } from "./logger";
 
 export interface SignatureRecipient {
   email: string;
@@ -77,7 +78,7 @@ export async function getSignatureRequestStatus(
   requestId: string
 ): Promise<SignatureRequestStatus> {
   // Simulate fetching status from provider
-  console.log('[E-Signature] Fetching status for:', requestId);
+  logger.info('[E-Signature] Fetching status for:', { detail: String(requestId) });
   
   // In production, query the e-signature provider's API
   return {
@@ -93,7 +94,7 @@ export async function getSignatureRequestStatus(
 export async function cancelSignatureRequest(
   requestId: string
 ): Promise<{ success: boolean }> {
-  console.log('[E-Signature] Cancelling request:', requestId);
+  logger.info('[E-Signature] Cancelling request:', { detail: String(requestId) });
   
   // In production, call provider's cancel API
   return { success: true };
@@ -105,7 +106,7 @@ export async function cancelSignatureRequest(
 export async function downloadSignedDocument(
   requestId: string
 ): Promise<{ documentUrl: string; documentBytes?: Buffer }> {
-  console.log('[E-Signature] Downloading signed document:', requestId);
+  logger.info('[E-Signature] Downloading signed document:', { detail: String(requestId) });
   
   // In production, fetch the signed PDF from provider
   return {
@@ -122,7 +123,7 @@ export async function handleSignatureWebhook(
   provider: string,
   payload: any
 ): Promise<{ processed: boolean }> {
-  console.log('[E-Signature] Processing webhook from:', provider);
+  logger.info('[E-Signature] Processing webhook from:', { detail: String(provider) });
   
   // In production:
   // 1. Verify webhook signature
@@ -140,7 +141,7 @@ export async function getSigningUrl(
   requestId: string,
   recipientEmail: string
 ): Promise<{ signingUrl: string }> {
-  console.log('[E-Signature] Generating signing URL for:', recipientEmail);
+  logger.info('[E-Signature] Generating signing URL for:', { detail: String(recipientEmail) });
   
   // In production, call provider's API to get embedded signing URL
   return {

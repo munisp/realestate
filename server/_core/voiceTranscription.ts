@@ -26,6 +26,7 @@
  * ```
  */
 import { ENV } from "./env";
+import { logger } from "./logger";
 
 export type TranscribeOptions = {
   audioUrl: string; // URL to the audio file (e.g., S3 URL)

@@ -1,4 +1,5 @@
 import { sendEmail } from "../_core/email";
+import { logger } from "../_core/logger";
 
 interface PropertyMatch {
   propertyId: number;
@@ -200,7 +201,7 @@ export async function sendGNNAlertEmail(
 
     return { success: result.success, error: result.error };
   } catch (error) {
-    console.error('[GNN Alert Email] Error sending email:', error);
+    logger.error('[GNN Alert Email] Error sending email:', { error: String(error) });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -221,7 +222,7 @@ export async function sendGNNAlertSMS(
   }
 ): Promise<{ success: boolean; error?: string }> {
   // Mock SMS implementation - replace with actual SMS service (Twilio, etc.)
-  console.log('[GNN Alert SMS] Sending SMS to:', phoneNumber);
+  logger.info('[GNN Alert SMS] Sending SMS to:', { detail: String(phoneNumber) });
   console.log('[GNN Alert SMS] Message:', `
 🎯 GNN Alert: ${data.alertName}
 Found ${data.matchCount} ${data.matchCount === 1 ? 'property' : 'properties'}!
