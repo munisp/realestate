@@ -110,6 +110,16 @@ import { publishPropertyView, publishPropertySearch } from "./services/fluvioCli
   agents,
 } from "../drizzle/schema";
 
+import { valuationChatRouter } from "./routers/valuationChat";
+import { collaborativeBoardRouter } from "./routers/collaborativeBoard";
+import { maintenanceScoreRouter } from "./routers/maintenanceScore";
+import { documentNotarizationRouter } from "./routers/documentNotarization";
+import { smartPriceAlertRouter } from "./routers/smartPriceAlert";
+import { arVirtualStagingRouter } from "./routers/arVirtualStaging";
+import { livabilityScoreRouter } from "./routers/livabilityScore";
+import { contractRiskAnalyserRouter } from "./routers/contractRiskAnalyser";
+import { carbonFootprintRouter } from "./routers/carbonFootprint";
+import { identityWalletRouter } from "./routers/identityWallet";
 export const appRouter = router({
   system: systemRouter,
   landRecords: landRecordsRouter,
