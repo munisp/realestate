@@ -202,4 +202,22 @@ export const geospatialRouter = router({
       martinUrl: process.env.MARTIN_URL || null,
     };
   }),
+  geocodeAddress: publicProcedure
+    .input(z.object({ address: z.string().min(3) }))
+    .query(async ({ input }) => {
+      return spatialQueryEngine.geocode(input.address);
+    }),
+
+  reverseGeocode: publicProcedure
+    .input(z.object({ lat: z.number(), lng: z.number() }))
+    .query(async ({ input }) => {
+      return spatialQueryEngine.reverseGeocode(input.lat, input.lng);
+    }),
+
+  geocodeAutocomplete: publicProcedure
+    .input(z.object({ query: z.string().min(2), limit: z.number().optional() }))
+    .query(async ({ input }) => {
+      return spatialQueryEngine.geocodeAutocomplete(input.query);
+    }),
+
 });

@@ -86,7 +86,8 @@
       ],
       "expo-local-authentication",
       "expo-haptics",
-      "expo-secure-store"
+      "expo-secure-store",
+      "@maplibre/maplibre-react-native"
     ]
   }
 }

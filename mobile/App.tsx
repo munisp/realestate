@@ -28,6 +28,7 @@ import PaymentScreen from './src/screens/PaymentScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
+import MapLibreMapScreen from './src/screens/MapLibreMapScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -76,6 +77,7 @@ export default function App() {
           <Stack.Screen name="MortgageCalculator" component={MortgageCalculatorScreen} options={{ title: 'Mortgage Calculator' }} />
           <Stack.Screen name="Payment" component={PaymentScreen} options={{ title: 'Make Payment' }} />
           <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
+          <Stack.Screen name="MapSearch" component={MapLibreMapScreen} options={{ title: 'Map Search', headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
