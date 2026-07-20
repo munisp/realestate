@@ -100,9 +100,8 @@ import * as db from "./db";
 import { getDb } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { eq, and, or, lte, gte, sql } from "drizzle-orm";
-import {
-
 import { publishPropertyView, publishPropertySearch } from "./services/fluvioClient";
+import {
   messages,
   shortLetBookings,
   properties as propertiesTable,
@@ -120,6 +119,11 @@ import { livabilityScoreRouter } from "./routers/livabilityScore";
 import { contractRiskAnalyserRouter } from "./routers/contractRiskAnalyser";
 import { carbonFootprintRouter } from "./routers/carbonFootprint";
 import { identityWalletRouter } from "./routers/identityWallet";
+import { geospatialRouter } from "./routers/geospatial";
+import { geospatialAnalyticsRouter } from "./routers/geospatialAnalytics";
+import { agentPerformanceRouter } from './routers/agentPerformance';
+import { agentCRMRouter } from './routers/agentCRM';
+
 export const appRouter = router({
   system: systemRouter,
   landRecords: landRecordsRouter,
@@ -1774,9 +1778,9 @@ Provide a valuation estimate with confidence interval (lower and upper bounds) a
   }),
 
   // Property Alerts System (integrates with notification-service)
-
   // Agent Messaging System (real-time chat)
-  
+  agentPerformance: agentPerformanceRouter,
+  agentCRM: agentCRMRouter,
 });
 export type AppRouter = typeof appRouter;
 // ── tRPC v2 Router Namespace ──────────────────────────────────────────────────

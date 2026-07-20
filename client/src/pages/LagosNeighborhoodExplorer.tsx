@@ -54,6 +54,7 @@ export default function LagosNeighborhoodExplorer() {
   const [showLabels, setShowLabels] = useState(true);
   const [comparisonNeighborhoods, setComparisonNeighborhoods] = useState<LagosNeighborhoodProperties[]>([]);
   const [showStreetView, setShowStreetView] = useState(false);
+  const lagosCenter = { lat: 6.5244, lng: 3.3792 };
   const [streetViewPosition, setStreetViewPosition] = useState<google.maps.LatLngLiteral>(lagosCenter);
   const [selectedPOICategories, setSelectedPOICategories] = useState<string[]>([]);
   const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
@@ -63,7 +64,6 @@ export default function LagosNeighborhoodExplorer() {
   const [walkabilityEnabled, setWalkabilityEnabled] = useState(false);
 
   // Lagos center coordinates
-  const lagosCenter = { lat: 6.5244, lng: 3.3792 };
 
   const handleNeighborhoodClick = (properties: LagosNeighborhoodProperties) => {
     setSelectedNeighborhood(properties);

@@ -12,7 +12,9 @@
 
 import { z } from 'zod';
 import { router, publicProcedure } from '../_core/trpc';
-import { db } from '../db';
+import { getDb } from '../db';
+let _db: any = null;
+const db = { execute: async (...args: any[]) => { if (!_db) _db = await getDb(); return (_db as any).execute(...args); } };
 import { sql } from 'drizzle-orm';
 import { logger } from '../_core/logger';
 

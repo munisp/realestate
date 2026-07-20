@@ -59,7 +59,7 @@ export default function BuilderMarketplace() {
                     <SelectValue placeholder="All specialties" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All specialties</SelectItem>
+                    <SelectItem value="all">All specialties</SelectItem>
                     <SelectItem value="residential">Residential Construction</SelectItem>
                     <SelectItem value="commercial">Commercial Construction</SelectItem>
                     <SelectItem value="renovation">Renovations</SelectItem>

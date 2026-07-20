@@ -213,7 +213,7 @@ export default function AdvancedSearch() {
                         <SelectValue placeholder="Select city" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Cities</SelectItem>
+                        <SelectItem value="all">All Cities</SelectItem>
                         <SelectItem value="Lagos">Lagos</SelectItem>
                         <SelectItem value="Abuja">Abuja</SelectItem>
                         <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>

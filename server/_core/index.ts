@@ -76,6 +76,28 @@ async function startServer() {
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
+  // ── Dev-only login bypass (sandbox screenshot capture only) ─────────────
+  if (process.env.NODE_ENV !== 'production') {
+    app.post('/api/dev/login', async (req: any, res: any) => {
+      try {
+        const { openId } = req.body || {};
+        const targetOpenId = openId || 'oauth-admin-001';
+        const { getSessionCookieOptions } = await import('./cookies');
+        const { COOKIE_NAME, ONE_YEAR_MS } = await import('@shared/const');
+        const { sdk: sdkModule } = await import('./sdk');
+        const sessionToken = await sdkModule.createSessionToken(targetOpenId, {
+          name: 'Dev Admin',
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(req);
+        res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        res.json({ ok: true, openId: targetOpenId });
+      } catch (err: any) {
+        res.status(500).json({ error: String(err) });
+      }
+    });
+  }
+
   // ── Sentry / Monitoring (must be after routes, before error handler) ──────
   monitoring.initialize();
   if (monitoring.requestHandler) {

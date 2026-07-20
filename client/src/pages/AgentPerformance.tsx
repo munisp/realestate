@@ -17,6 +17,14 @@ import {
   Award,
   BarChart3,
   Clock,
+  FileText,
+  Phone,
+  Mail,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  MessageSquare,
 } from 'lucide-react';
 import { getLoginUrl } from '@/const';
 

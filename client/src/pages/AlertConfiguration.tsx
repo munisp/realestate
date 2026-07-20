@@ -362,7 +362,7 @@ function CreateAlertDialog({
                   <SelectValue placeholder="All services" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Services</SelectItem>
+                  <SelectItem value="all">All Services</SelectItem>
                   <SelectItem value="earth-engine">Earth Engine</SelectItem>
                   <SelectItem value="world-bank">World Bank</SelectItem>
                   <SelectItem value="propertypro">PropertyPro</SelectItem>

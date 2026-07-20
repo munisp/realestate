@@ -90,14 +90,20 @@ class PerformanceMonitoring {
    * Express middleware for request tracking
    */
   requestHandler() {
-    return Sentry.Handlers.requestHandler();
+    if (!this.initialized || !(Sentry as any)?.Handlers?.requestHandler) {
+      return (_req: Request, _res: Response, next: NextFunction) => next();
+    }
+    return (Sentry as any).Handlers.requestHandler();
   }
 
   /**
    * Express middleware for error tracking
    */
   errorHandler() {
-    return Sentry.Handlers.errorHandler();
+    if (!this.initialized || !(Sentry as any)?.Handlers?.errorHandler) {
+      return (err: any, _req: Request, _res: Response, next: NextFunction) => next(err);
+    }
+    return (Sentry as any).Handlers.errorHandler();
   }
 
   /**

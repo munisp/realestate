@@ -206,6 +206,9 @@ function Router() {
       <Route path="/gnn-test" component={GNNTest} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/agents" component={Agents} />
+      <Route path="/agent/performance" component={AgentPerformance} />
+      <Route path="/agent/dashboard" component={AgentDashboard} />
+      <Route path="/agent/leads" component={AgentLeads} />
       <Route path="/agent/:id" component={AgentDetail} />
       <Route path="/messages" component={Messages} />
       <Route path="/search-alerts" component={SearchAlerts} />
@@ -225,7 +228,6 @@ function Router() {
       <Route path="/investment-calculator" component={InvestmentCalculator} />
       <Route path="/alerts" component={PropertyAlerts} />
       <Route path="/documents/sign" component={DocumentSigning} />
-      <Route path="/agent/performance" component={AgentPerformance} />
       <Route path="/documents" component={Documents} />
       <Route path="/builder-projects" component={BuilderProjects} />
       <Route path="/short-lets" component={ShortLets} />
@@ -240,7 +242,6 @@ function Router() {
       <Route path="/my-bookings" component={BookingsDashboard} />
       <Route path="/my-appointments" component={MyAppointments} />
       <Route path="/my-offers" component={MyOffers} />
-      <Route path="/agent/dashboard" component={AgentDashboard} />
       <Route path="/offer-analytics" component={OfferAnalytics} />
       <Route path="/inspector/verification" component={InspectorVerification} />
       <Route path="/my-listings" component={MyListings} />
@@ -285,7 +286,6 @@ function Router() {
       <Route path="/admin/property-analytics" component={PropertyAnalyticsDashboard} />
       <Route path="/alerts" component={Alerts} />
       <Route path="/buyer-journey" component={BuyerJourney} />
-      <Route path="/agent/leads" component={AgentLeads} />
        <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/monitoring" component={AdminMonitoringOverview} />
       <Route path="/admin/monitoring/alerts" component={MonitoringDashboard} />

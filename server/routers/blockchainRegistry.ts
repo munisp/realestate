@@ -1,220 +1,189 @@
+/**
+ * Blockchain Registry Router
+ * Uses the production SHA-256 Merkle-chain registry backed by PostgreSQL.
+ * All isMockData flags are false — this is a live implementation.
+ */
 import { z } from 'zod';
 import { publicProcedure, protectedProcedure, router } from '../_core/trpc';
-import * as blockchainService from '../blockchainService';
+import { getBlockchainRegistry } from '../services/blockchain/BlockchainRegistryService';
+import crypto from 'crypto';
+import { logger } from '../_core/logger';
 
 export const blockchainRegistryRouter = router({
   /**
    * Check if blockchain service is available
    */
   isAvailable: publicProcedure.query(async () => {
-    const available = await blockchainService.isBlockchainAvailable();
-    return {
-      available,
-      message: available
-        ? 'Blockchain service is running'
-        : 'Blockchain service is not available. Using fallback data.',
-    };
+    try {
+      const registry = getBlockchainRegistry();
+      await registry.initialize();
+      const stats = await registry.getChainStats();
+      return {
+        available: true,
+        message: `Production blockchain registry active — ${stats.totalBlocks} blocks, ${stats.totalTransactions} transactions`,
+        stats,
+        isMockData: false,
+      };
+    } catch (err) {
+      logger.error('[BlockchainRegistry] Health check failed:', err);
+      return { available: false, message: 'Registry initializing...', isMockData: false };
+    }
   }),
 
   /**
    * Get property from blockchain
    */
   getProperty: publicProcedure
-    .input(z.object({
-      propertyId: z.string(),
-    }))
+    .input(z.object({ propertyId: z.string() }))
     .query(async ({ input }) => {
-      const property = await blockchainService.readProperty(input.propertyId);
-      
-      if (!property) {
-        // Return mock data if blockchain is not available
+      const registry = getBlockchainRegistry();
+      await registry.initialize();
+      const result = await registry.verifyProperty(input.propertyId);
+      if (!result.verified) {
         return {
           propertyId: input.propertyId,
-          address: '123 Main St, Lagos, Nigeria',
-          owner: 'John Doe',
-          previousOwner: 'Jane Smith',
-          price: 500000,
-          squareFeet: 2500,
-          bedrooms: 3,
-          bathrooms: 2,
-          yearBuilt: 2020,
-          propertyType: 'Residential',
-          status: 'Active',
-          titleHash: '0x' + Math.random().toString(36).substring(2, 15),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          transferCount: 2,
-          isMockData: true,
+          verified: false,
+          message: 'Property not yet registered on blockchain',
+          isMockData: false,
         };
       }
-
-      return {
-        ...property,
-        isMockData: false,
-      };
+      return { ...result, isMockData: false };
     }),
 
   /**
    * Get property transaction history
    */
   getHistory: publicProcedure
-    .input(z.object({
-      propertyId: z.string(),
-    }))
+    .input(z.object({ propertyId: z.string() }))
     .query(async ({ input }) => {
-      const history = await blockchainService.getPropertyHistory(input.propertyId);
-      
-      if (history.length === 0) {
-        // Return mock data if blockchain is not available
-        return {
-          transactions: [
-            {
-              transactionId: 'tx_' + Math.random().toString(36).substring(2, 15),
-              propertyId: input.propertyId,
-              fromOwner: 'Jane Smith',
-              toOwner: 'John Doe',
-              price: 500000,
-              timestamp: new Date(Date.now() - 86400000).toISOString(),
-              txType: 'Transfer',
-              status: 'Completed',
-            },
-            {
-              transactionId: 'tx_' + Math.random().toString(36).substring(2, 15),
-              propertyId: input.propertyId,
-              fromOwner: 'Builder Corp',
-              toOwner: 'Jane Smith',
-              price: 450000,
-              timestamp: new Date(Date.now() - 86400000 * 365).toISOString(),
-              txType: 'Transfer',
-              status: 'Completed',
-            },
-          ],
-          isMockData: true,
-        };
-      }
-
+      const registry = getBlockchainRegistry();
+      await registry.initialize();
+      const history = await registry.getPropertyHistory(input.propertyId);
       return {
-        transactions: history,
+        transactions: history.map((tx, i) => ({
+          transactionId: `TX-${i}-${tx.propertyId}`,
+          propertyId: tx.propertyId,
+          fromOwner: tx.previousOwner || 'Original Owner',
+          toOwner: tx.ownerName,
+          titleNumber: tx.titleNumber,
+          documentHash: tx.documentHash,
+          timestamp: tx.registeredAt,
+          txType: tx.transactionType,
+          status: 'Confirmed',
+          isMockData: false,
+        })),
         isMockData: false,
       };
     }),
 
   /**
-   * Get all properties from blockchain
+   * Get all registered properties
    */
   getAllProperties: publicProcedure.query(async () => {
-    const properties = await blockchainService.getAllProperties();
-    
-    if (properties.length === 0) {
-      // Return mock data if blockchain is not available
-      return {
-        properties: [
-          {
-            propertyId: 'prop_001',
-            address: '123 Main St, Lagos, Nigeria',
-            owner: 'John Doe',
-            price: 500000,
-            squareFeet: 2500,
-            bedrooms: 3,
-            bathrooms: 2,
-            yearBuilt: 2020,
-            propertyType: 'Residential',
-            status: 'Active',
-            titleHash: '0x' + Math.random().toString(36).substring(2, 15),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            transferCount: 2,
-          },
-          {
-            propertyId: 'prop_002',
-            address: '456 Oak Ave, Abuja, Nigeria',
-            owner: 'Jane Smith',
-            price: 750000,
-            squareFeet: 3200,
-            bedrooms: 4,
-            bathrooms: 3,
-            yearBuilt: 2021,
-            propertyType: 'Residential',
-            status: 'Active',
-            titleHash: '0x' + Math.random().toString(36).substring(2, 15),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            transferCount: 1,
-          },
-        ],
-        isMockData: true,
-      };
-    }
-
+    const registry = getBlockchainRegistry();
+    await registry.initialize();
+    const stats = await registry.getChainStats();
     return {
-      properties,
+      totalRegistered: stats.totalTransactions,
+      stats,
       isMockData: false,
     };
   }),
 
   /**
-   * Register property on blockchain (protected)
+   * Register a property on the blockchain
    */
   registerProperty: protectedProcedure
     .input(z.object({
       propertyId: z.string(),
-      address: z.string(),
-      owner: z.string(),
-      price: z.number(),
-      squareFeet: z.number(),
-      bedrooms: z.number(),
-      bathrooms: z.number(),
-      yearBuilt: z.number(),
-      propertyType: z.string(),
-      titleHash: z.string(),
+      titleNumber: z.string(),
+      ownerName: z.string(),
+      ownerNin: z.string(),
+      ownerBvn: z.string().optional(),
+      plotSize: z.number().default(0),
+      location: z.string(),
+      state: z.string(),
+      lga: z.string().default('Unknown'),
+      coordinates: z.object({ lat: z.number(), lng: z.number() }).optional(),
+      documentBase64: z.string().optional(),
+      // Legacy fields for backward compatibility
+      address: z.string().optional(),
+      owner: z.string().optional(),
+      price: z.number().optional(),
+      squareFeet: z.number().optional(),
+      bedrooms: z.number().optional(),
+      bathrooms: z.number().optional(),
+      yearBuilt: z.number().optional(),
+      propertyType: z.string().optional(),
+      titleHash: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      try {
-        const result = await blockchainService.registerProperty(input);
-        return {
-          success: true,
-          transactionId: result,
-          message: 'Property registered on blockchain',
-        };
-      } catch (error: any) {
-        return {
-          success: false,
-          error: error.message,
-          message: 'Failed to register property. Blockchain service may be unavailable.',
-        };
-      }
+      const registry = getBlockchainRegistry();
+      await registry.initialize();
+
+      const documentHash = input.documentBase64
+        ? crypto.createHash('sha256').update(input.documentBase64).digest('hex')
+        : input.titleHash || crypto.createHash('sha256').update(`${input.propertyId}-${input.titleNumber || input.address}-${input.ownerNin || input.owner}`).digest('hex');
+
+      const result = await registry.registerProperty({
+        propertyId: input.propertyId,
+        titleNumber: input.titleNumber || input.address || input.propertyId,
+        ownerName: input.ownerName || input.owner || '',
+        ownerNin: input.ownerNin || '',
+        ownerBvn: input.ownerBvn,
+        plotSize: input.plotSize || input.squareFeet || 0,
+        location: input.location || input.address || '',
+        state: input.state || 'Lagos',
+        lga: input.lga || 'Unknown',
+        coordinates: input.coordinates,
+        documentHash,
+        transactionType: 'REGISTER',
+        metadata: {
+          price: input.price,
+          bedrooms: input.bedrooms,
+          bathrooms: input.bathrooms,
+          yearBuilt: input.yearBuilt,
+          propertyType: input.propertyType,
+        },
+      });
+
+      return {
+        success: result.success,
+        transactionId: result.transactionId,
+        blockHash: result.blockHash,
+        blockIndex: result.blockIndex,
+        merkleRoot: result.merkleRoot,
+        message: 'Property registered on blockchain',
+        isMockData: false,
+      };
     }),
 
   /**
-   * Transfer property ownership (protected)
+   * Transfer property ownership
    */
   transferProperty: protectedProcedure
     .input(z.object({
       propertyId: z.string(),
       newOwner: z.string(),
-      price: z.number(),
-      escrowAddress: z.string(),
+      newOwnerNin: z.string().optional(),
+      price: z.number().optional(),
+      escrowAddress: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      try {
-        const result = await blockchainService.transferProperty(
-          input.propertyId,
-          input.newOwner,
-          input.price,
-          input.escrowAddress
-        );
-        return {
-          success: true,
-          transactionId: result,
-          message: 'Property ownership transferred',
-        };
-      } catch (error: any) {
-        return {
-          success: false,
-          error: error.message,
-          message: 'Failed to transfer property. Blockchain service may be unavailable.',
-        };
-      }
+      const registry = getBlockchainRegistry();
+      await registry.initialize();
+      const result = await registry.transferOwnership(input.propertyId, {
+        ownerName: input.newOwner,
+        ownerNin: input.newOwnerNin || '',
+        metadata: { price: input.price, escrowAddress: input.escrowAddress },
+      });
+      return {
+        success: result.success,
+        transactionId: result.transactionId,
+        blockHash: result.blockHash,
+        message: 'Property ownership transferred',
+        isMockData: false,
+      };
     }),
 
   /**
@@ -223,27 +192,38 @@ export const blockchainRegistryRouter = router({
   verifyTitle: publicProcedure
     .input(z.object({
       propertyId: z.string(),
-      titleHash: z.string(),
+      titleHash: z.string().optional(),
     }))
     .query(async ({ input }) => {
-      const property = await blockchainService.readProperty(input.propertyId);
-      
-      if (!property) {
-        return {
-          verified: false,
-          message: 'Property not found on blockchain',
-        };
-      }
-
-      const verified = property.titleHash === input.titleHash;
-
+      const registry = getBlockchainRegistry();
+      await registry.initialize();
+      const result = await registry.verifyProperty(input.propertyId);
       return {
-        verified,
-        message: verified
-          ? 'Title hash matches blockchain record'
-          : 'Title hash does not match blockchain record',
-        blockchainHash: property.titleHash,
-        providedHash: input.titleHash,
+        verified: result.verified,
+        chainIntegrity: result.chainIntegrity,
+        currentOwner: result.currentOwner,
+        blockHash: result.blockHash,
+        message: result.verified ? 'Property verified on blockchain' : 'Property not found on blockchain',
+        isMockData: false,
       };
     }),
+
+  /**
+   * Get blockchain chain statistics
+   */
+  getChainStats: publicProcedure.query(async () => {
+    const registry = getBlockchainRegistry();
+    await registry.initialize();
+    return registry.getChainStats();
+  }),
+
+  /**
+   * Verify chain integrity
+   */
+  verifyChain: publicProcedure.query(async () => {
+    const registry = getBlockchainRegistry();
+    await registry.initialize();
+    const integrity = await registry.verifyChainIntegrity();
+    return { chainIntegrity: integrity, isMockData: false };
+  }),
 });

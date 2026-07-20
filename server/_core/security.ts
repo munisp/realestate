@@ -252,14 +252,6 @@ export function registerHealthEndpoints(app: Application): void {
       res.status(503).json({ status: "not ready", reason: "internal error" });
     }
   });
-}
-
-// ─── Graceful Shutdown ───────────────────────────────────────────────────────
-
-/**
- * Register SIGTERM / SIGINT handlers for graceful shutdown.
- * Pass the HTTP server so it can stop accepting new connections.
- */
 
   // Prometheus-compatible /metrics endpoint (process metrics)
   app.get("/metrics", (_req: Request, res: Response) => {
@@ -285,6 +277,9 @@ export function registerHealthEndpoints(app: Application): void {
     res.setHeader("Content-Type", "text/plain; version=0.0.4");
     res.status(200).send(metrics + "\n");
   });
+}
+
+// ─── Graceful Shutdown ───────────────────────────────────────────────────────
 
 export function registerGracefulShutdown(
   server: import("http").Server

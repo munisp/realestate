@@ -5,6 +5,7 @@ import { getDb } from '../db';
 import { properties, users, transactions, builders, builderProjects, builderReviews, builderQuotes, builderQuoteResponses, projectMilestones } from '../../drizzle/schema';
 import { eq, and, like, desc, sql } from 'drizzle-orm';
 import { storagePut } from '../storage';
+import { analyseDroneImage } from '../services/droneCVClient';
 
 export const builderServicesRouter = router({
   // Get builder profiles
@@ -420,10 +421,24 @@ export const builderServicesRouter = router({
         }
       }
 
+      // ── Drone CV Analysis: analyse first photo if provided ──
+      let droneAnalysis = null;
+      let escrowReleaseRecommended = false;
+      if (input.photos && input.photos.length > 0) {
+        try {
+          const rawBase64 = input.photos[0].replace(/^data:.*base64,/, '');
+          droneAnalysis = await analyseDroneImage(rawBase64, input.milestoneId);
+          if (droneAnalysis) {
+            escrowReleaseRecommended = droneAnalysis.milestone_recommendation?.release_escrow ?? false;
+          }
+        } catch (cvErr) {
+          // CV analysis is non-blocking
+        }
+      }
+
       await db.update(projectMilestones)
         .set({
           status: input.status,
-          // completionPercentage: (input as any).progress,
           photos: uploadedPhotos.length > 0 ? JSON.stringify(uploadedPhotos) : undefined,
           notes: input.notes,
           completedAt: input.status === 'completed' ? new Date() : undefined,
@@ -434,6 +449,14 @@ export const builderServicesRouter = router({
       return {
         success: true,
         message: 'Milestone updated successfully',
+        droneAnalysis: droneAnalysis ? {
+          boundaryConfidence: droneAnalysis.boundary_confidence,
+          conditionScores: droneAnalysis.condition_scores,
+          constructionProgress: droneAnalysis.construction_progress_pct,
+          encroachmentDetected: droneAnalysis.encroachment_detected,
+          escrowReleaseRecommended,
+          isMockData: false,
+        } : null,
       };
     }),
 

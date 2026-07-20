@@ -8,7 +8,8 @@ import {
   specialEventPricing, 
   customDatePricing,
   marketPricingRecommendations,
-  shortLetProperties 
+  shortLetProperties,
+  properties
 } from "../../drizzle/schema";
 import { SmartPricingService } from "../services/smartPricingService";
 import { AutoPricingEngine } from "../jobs/autoPricingEngine";
@@ -40,7 +41,7 @@ export const pricingRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
-    const properties = await db
+    const shortletProps = await db
       .select({
         id: shortLetProperties.id,
         propertyId: shortLetProperties.propertyId,
@@ -48,12 +49,16 @@ export const pricingRouter = router({
         weeklyRate: shortLetProperties.weeklyRate,
         monthlyRate: shortLetProperties.monthlyRate,
         status: shortLetProperties.status,
+        title: properties.title,
+        city: properties.city,
+        state: properties.state,
       })
       .from(shortLetProperties)
+      .leftJoin(properties, eq(shortLetProperties.propertyId, properties.id))
       .where(eq(shortLetProperties.hostId, ctx.user.id))
       .orderBy(desc(shortLetProperties.createdAt));
 
-    return properties;
+    return shortletProps;
   }),
 
   /**

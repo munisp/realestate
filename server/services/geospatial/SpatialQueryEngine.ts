@@ -14,10 +14,13 @@ import { nigerianGeocoder } from './NigerianGeocoder';
  * - Bounding box search with optional filters
  */
 
-import { db } from '../../db';
+import { getDb } from '../../db';
+let _dbInstance: any = null;
+const db = { execute: async (...args: any[]) => { if (!_dbInstance) _dbInstance = await getDb(); return (_dbInstance as any).execute(...args); } };
 import { sql } from 'drizzle-orm';
-import { logger } from '../_core/logger';
-import { redisClient } from '../_core/redis';
+import { logger } from '../../_core/logger';
+import redis from '../../_core/redis';
+const redisClient = redis;
 
 const GEO_CACHE_TTL = 300; // 5 minutes for spatial queries
 const GEOCODE_CACHE_TTL = 604800; // 7 days for geocoding results
