@@ -1,0 +1,171 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ml-training-pipeline
+  namespace: ml-platform
+  labels:
+    app: ml-training
+spec:
+  schedule: "0 2 * * 0"   # Weekly full retrain: Sunday 2am
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: trainer
+              image: python:3.11-slim
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  pip install torch scikit-learn mlflow pandas numpy scipy --quiet
+                  cd /app
+                  python training_pipeline.py --mode full --models fraud,credit,gnn
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: url
+                - name: MLFLOW_TRACKING_URI
+                  value: "http://mlflow-service:5001"
+                - name: ML_DATA_DIR
+                  value: "/data"
+                - name: ML_MODEL_DIR
+                  value: "/models"
+                - name: SYNTHETIC_FALLBACK
+                  value: "true"
+              volumeMounts:
+                - name: ml-data
+                  mountPath: /data
+                - name: ml-models
+                  mountPath: /models
+                - name: training-code
+                  mountPath: /app
+              resources:
+                requests:
+                  memory: "4Gi"
+                  cpu: "2000m"
+                limits:
+                  memory: "8Gi"
+                  cpu: "4000m"
+          volumes:
+            - name: ml-data
+              persistentVolumeClaim:
+                claimName: ml-data-pvc
+            - name: ml-models
+              persistentVolumeClaim:
+                claimName: ml-models-pvc
+            - name: training-code
+              configMap:
+                name: training-scripts
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ml-incremental-training
+  namespace: ml-platform
+  labels:
+    app: ml-training
+spec:
+  schedule: "0 3 * * 1-6"  # Daily incremental: Mon-Sat 3am
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: trainer
+              image: python:3.11-slim
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  pip install torch scikit-learn mlflow pandas numpy scipy --quiet
+                  cd /app
+                  python training_pipeline.py --mode incremental --models fraud,credit
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: url
+                - name: MLFLOW_TRACKING_URI
+                  value: "http://mlflow-service:5001"
+                - name: SYNTHETIC_FALLBACK
+                  value: "false"
+              resources:
+                requests:
+                  memory: "2Gi"
+                  cpu: "1000m"
+                limits:
+                  memory: "4Gi"
+                  cpu: "2000m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ml-monitoring
+  namespace: ml-platform
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: monitor
+              image: python:3.11-slim
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  pip install torch scikit-learn scipy pandas numpy --quiet
+                  cd /app
+                  python model_monitoring.py --model all
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: url
+                - name: MLFLOW_TRACKING_URI
+                  value: "http://mlflow-service:5001"
+                - name: ALERT_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: alert-credentials
+                      key: webhook-url
+              resources:
+                requests:
+                  memory: "1Gi"
+                  cpu: "500m"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ml-data-pvc
+  namespace: ml-platform
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ml-models-pvc
+  namespace: ml-platform
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 20Gi

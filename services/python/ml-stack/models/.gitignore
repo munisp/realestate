@@ -1,0 +1,8 @@
+# Keep metadata JSON files
+!*.json
+# Keep TorchScript for fast inference (< 2MB)
+!fraud_scripted.pt
+# Ignore large checkpoint files (use MLflow artifact store in production)
+fraud_best.pt
+credit_best.pt
+gnn_best.pt
